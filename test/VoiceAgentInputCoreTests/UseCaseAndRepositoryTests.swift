@@ -316,6 +316,18 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadEntries(), entries)
     }
 
+    func testJSONAppSettingsRepositoryRoundTrip() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = LocalLearningDictionaryStore(directoryURL: directory)
+        let repository = try store.settingsRepository()
+
+        XCTAssertEqual(try repository.loadSettings(), AppSettings())
+
+        try repository.saveSettings(AppSettings(repositoryPath: "/tmp/repo"))
+
+        XCTAssertEqual(try repository.loadSettings(), AppSettings(repositoryPath: "/tmp/repo"))
+    }
+
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
         let localEntry = DictionaryEntry(
             spokenForms: ["ぷろじぇくとぼいす"],

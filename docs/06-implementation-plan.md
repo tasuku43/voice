@@ -44,3 +44,4 @@
 - Git root and branch detection. Initial command-backed provider done.
 - Bounded vocabulary extraction.
 - Repository-scoped suggestions. Initial repository name and branch entries are mixed into app preview dictionaries.
+- Manual repository folder setting. App shell can store a local repository path for bundled/Finder launches.

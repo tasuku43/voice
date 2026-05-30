@@ -38,6 +38,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
         menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         item.menu = menu
 
@@ -127,11 +129,48 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func loadRepositoryVocabularyEntries() -> [DictionaryEntry] {
-        let currentDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        guard let context = try? GitRepositoryContextProvider().currentContext(startingAt: currentDirectory) else {
+        let startURL = configuredRepositoryURL() ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        guard let context = try? GitRepositoryContextProvider().currentContext(startingAt: startURL) else {
             return []
         }
         return RepositoryVocabularyUseCase().entries(from: context)
+    }
+
+    private func configuredRepositoryURL() -> URL? {
+        guard
+            let settings = try? settingsRepository().loadSettings(),
+            let repositoryPath = settings.repositoryPath,
+            !repositoryPath.isEmpty
+        else {
+            return nil
+        }
+        return URL(fileURLWithPath: repositoryPath)
+    }
+
+    private func settingsRepository() throws -> JSONAppSettingsRepository {
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        return try store.settingsRepository()
+    }
+
+    @objc private func setRepositoryFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.message = "Choose a Git repository folder for repository-scoped vocabulary."
+
+        guard panel.runModal() == .OK, let url = panel.url else {
+            return
+        }
+
+        do {
+            let repository = try settingsRepository()
+            var settings = try repository.loadSettings()
+            settings.repositoryPath = url.path
+            try repository.saveSettings(settings)
+        } catch {
+            presentError(error)
+        }
     }
 
     @objc private func quit() {

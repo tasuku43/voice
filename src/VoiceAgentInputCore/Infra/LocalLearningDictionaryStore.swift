@@ -19,4 +19,9 @@ public struct LocalLearningDictionaryStore {
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
         return JSONDictionaryRepository(fileURL: directoryURL.appendingPathComponent(fileName))
     }
+
+    public func settingsRepository(fileName: String = "settings.json") throws -> JSONAppSettingsRepository {
+        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+        return JSONAppSettingsRepository(fileURL: directoryURL.appendingPathComponent(fileName))
+    }
 }
