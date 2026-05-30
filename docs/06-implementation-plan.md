@@ -19,7 +19,7 @@
 ## Phase 3: input loop
 
 - Global hotkey.
-- Pasteboard insertion.
+- Pasteboard insertion. Done for text-only adapter; real UI trigger still pending.
 - Accessibility permission messaging.
 - Explicit no-submit behavior.
 

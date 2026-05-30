@@ -50,9 +50,12 @@ Current test adapter:
 
 - `MockTextInsertionController`
 
+Current macOS adapter:
+
+- `PasteboardTextInsertionController`
+
 Future adapters:
 
-- `PasteboardInserter`
 - `AccessibilityInserter`
 
 Rules:
@@ -61,6 +64,7 @@ Rules:
 - Never press Enter or submit the target app automatically.
 - Consume `ConfirmedPrompt.promptToInsert`; ignore candidate data for insertion.
 - Reject insertion if `ConfirmedPrompt.shouldSubmitAutomatically` is true.
+- Pasteboard insertion writes text to the pasteboard only. A separate UI action must decide whether to paste.
 
 ## ContextProvider
 
