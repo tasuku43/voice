@@ -21,7 +21,7 @@
 
 - Global hotkey. Initial AppKit global/local monitor done for Command-Shift-Space.
 - Pasteboard insertion. Done for text-only adapter and wired into the app shell.
-- Accessibility permission messaging.
+- Accessibility paste insertion. Initial adapter sends Command-V only after explicit confirmation; copy fallback is used if Accessibility access is not granted.
 - Explicit no-submit behavior.
 
 ## Phase 4: real audio and STT

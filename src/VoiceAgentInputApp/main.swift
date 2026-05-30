@@ -280,7 +280,7 @@ private final class PreviewWindowController: NSWindowController {
         buttonRow.addArrangedSubview(NSView())
 
         let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancel))
-        let confirmButton = NSButton(title: "Copy to Pasteboard", target: self, action: #selector(confirm))
+        let confirmButton = NSButton(title: "Paste", target: self, action: #selector(confirm))
         confirmButton.keyEquivalent = "\r"
         buttonRow.addArrangedSubview(cancelButton)
         buttonRow.addArrangedSubview(confirmButton)
@@ -316,18 +316,36 @@ private final class PreviewWindowController: NSWindowController {
             preview: preview,
             finalEditedPrompt: correctedTextView.string
         )
-        let insertion = PromptInsertionUseCase(
-            insertionController: PasteboardTextInsertionController()
-        )
+        let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
 
         do {
             try insertion.insert(confirmed, explicitConfirmation: true)
             try approveCandidatesIfRequested(confirmed.candidates)
             close()
+        } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
+            do {
+                try PromptInsertionUseCase(
+                    insertionController: PasteboardTextInsertionController()
+                ).insert(confirmed, explicitConfirmation: true)
+                showAccessibilityFallbackAlert()
+                try approveCandidatesIfRequested(confirmed.candidates)
+                close()
+            } catch {
+                let alert = NSAlert(error: error)
+                alert.runModal()
+            }
         } catch {
             let alert = NSAlert(error: error)
             alert.runModal()
         }
+    }
+
+    private func showAccessibilityFallbackAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = "Prompt copied"
+        alert.informativeText = "Enable Accessibility access for Voice Agent Input in System Settings to paste automatically. For now, press Command-V in the target app."
+        alert.runModal()
     }
 
     private func approveCandidatesIfRequested(_ candidates: [CorrectionCandidate]) throws {

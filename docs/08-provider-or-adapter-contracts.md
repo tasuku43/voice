@@ -112,6 +112,7 @@ Current test adapter:
 Current macOS adapter:
 
 - `PasteboardTextInsertionController`
+- `AccessibilityTextInsertionController`
 
 Future adapters:
 
@@ -123,7 +124,9 @@ Rules:
 - Never press Enter or submit the target app automatically.
 - Consume `ConfirmedPrompt.promptToInsert`; ignore candidate data for insertion.
 - Reject insertion if `ConfirmedPrompt.shouldSubmitAutomatically` is true.
-- Pasteboard insertion writes text to the pasteboard only. A separate UI action must decide whether to paste.
+- Pasteboard insertion writes text to the pasteboard only.
+- Accessibility insertion writes text to the pasteboard and sends Command-V only. It never presses Enter.
+- The app shell falls back to pasteboard-only insertion when Accessibility access is not granted.
 
 ## KeyboardShortcutMonitor
 
