@@ -73,6 +73,29 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 1)
     }
 
+    func testSpeechRecognitionPermissionRequestsAccessWhenNeeded() async throws {
+        let permissionProvider = MockSpeechRecognitionPermissionProvider(status: .notDetermined, requestedStatus: .authorized)
+        let useCase = SpeechRecognitionPermissionUseCase(provider: permissionProvider)
+
+        let status = try await useCase.ensureTranscriptionAllowed()
+
+        XCTAssertEqual(status, .authorized)
+        XCTAssertEqual(permissionProvider.requestAccessCallCount, 1)
+    }
+
+    func testSpeechRecognitionPermissionRejectsDeniedStatus() async {
+        let permissionProvider = MockSpeechRecognitionPermissionProvider(status: .denied)
+        let useCase = SpeechRecognitionPermissionUseCase(provider: permissionProvider)
+
+        do {
+            _ = try await useCase.ensureTranscriptionAllowed()
+            XCTFail("Expected speech recognition permission denial")
+        } catch {
+            XCTAssertEqual(error as? SpeechRecognitionPermissionError, .transcriptionNotAllowed(status: .denied))
+            XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
+        }
+    }
+
     func testVoiceInputFlowDoesNotRecordWhenMicrophonePermissionIsDenied() async {
         let permissionProvider = MockMicrophonePermissionProvider(status: .denied)
         let useCase = VoiceInputFlowUseCase(

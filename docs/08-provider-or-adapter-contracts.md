@@ -25,13 +25,33 @@ Implementations:
 - `MockAudioRecorder` for tests and UI development.
 - `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file, reads it into `RecordedAudio`, and deletes the temporary file immediately.
 - `MockSpeechEngine` for tests and UI development.
-- `AppleSpeechEngine` for SpeechAnalyzer / SpeechTranscriber.
+- `AppleSpeechEngine` for local file transcription through `SFSpeechRecognizer`.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
 
 - `VoiceInputFlowUseCase` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, and produces a `PromptPreview`.
 - The macOS shell can record audio, but still uses mock transcription until a real Apple Speech adapter is connected.
+
+## SpeechRecognitionPermissionProvider
+
+Current protocol:
+
+```swift
+protocol SpeechRecognitionPermissionProvider {
+    func currentStatus() -> SpeechRecognitionPermissionStatus
+    func requestAccess() async -> SpeechRecognitionPermissionStatus
+}
+```
+
+Current use cases:
+
+- `SpeechRecognitionPermissionUseCase` requests access only when the status is `notDetermined`.
+
+Current adapters:
+
+- `MockSpeechRecognitionPermissionProvider`
+- `SFSpeechRecognitionPermissionProvider`
 
 ## MicrophonePermissionProvider
 
