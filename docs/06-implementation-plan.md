@@ -15,6 +15,8 @@
 - Floating preview panel. Minimal editable mock preview done.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
+- Recording settings. App shell can set local recording duration and Speech locale for later recordings.
+- Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
 - Confirm-before-paste flow.
 
 ## Phase 3: input loop
@@ -38,7 +40,7 @@
 - Diff extraction.
 - Candidate approval UI. App-shell approval dialog supports per-candidate selection.
 - Local dictionary persistence. JSON-backed Application Support store done.
-- Local learning data controls. App-shell menu can export, import, and delete approved local dictionary entries.
+- Local learning data controls. App-shell menu can export, import, inspect, and delete approved local dictionary entries.
 
 ## Phase 6: repository context
 

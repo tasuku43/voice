@@ -19,6 +19,7 @@ public struct CandidateExtractor: Sendable {
                         rawPhrase: spoken,
                         correctedPhrase: canonical,
                         confidence: dangerous ? 0.4 : 0.72,
+                        reason: "Raw transcript contained '\(spoken)' and the final edit used '\(canonical)'.",
                         suggestedScope: suggestedScope,
                         dangerous: dangerous,
                         autoApplyAllowed: !dangerous && suggestedScope != .session

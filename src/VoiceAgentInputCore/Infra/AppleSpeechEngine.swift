@@ -24,34 +24,31 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
             throw AppleSpeechEngineError.recognizerUnavailable(localeIdentifier: localeIdentifier)
         }
 
-        let url = temporaryDirectory
-            .appendingPathComponent(UUID().uuidString)
-            .appendingPathExtension("caf")
-        try audio.data.write(to: url, options: .atomic)
+        return try await TemporaryRecordedAudioFileStore(
+            directoryURL: temporaryDirectory
+        ).withRecordedAudioFile(audio) { url in
+            try await withCheckedThrowingContinuation { continuation in
+                let box = SpeechResultBox(continuation: continuation)
+                let request = SFSpeechURLRecognitionRequest(url: url)
+                request.shouldReportPartialResults = false
+                request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
 
-        return try await withCheckedThrowingContinuation { continuation in
-            let box = SpeechResultBox(continuation: continuation) {
-                try? FileManager.default.removeItem(at: url)
-            }
-            let request = SFSpeechURLRecognitionRequest(url: url)
-            request.shouldReportPartialResults = false
-            request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+                recognizer.recognitionTask(with: request) { result, error in
+                    if let error {
+                        box.resume(throwing: error)
+                        return
+                    }
 
-            recognizer.recognitionTask(with: request) { result, error in
-                if let error {
-                    box.resume(throwing: error)
-                    return
+                    guard let result, result.isFinal else {
+                        return
+                    }
+
+                    box.resume(returning: Transcript(
+                        text: result.bestTranscription.formattedString,
+                        localeIdentifier: self.localeIdentifier,
+                        confidence: nil
+                    ))
                 }
-
-                guard let result, result.isFinal else {
-                    return
-                }
-
-                box.resume(returning: Transcript(
-                    text: result.bestTranscription.formattedString,
-                    localeIdentifier: self.localeIdentifier,
-                    confidence: nil
-                ))
             }
         }
     }
@@ -69,18 +66,15 @@ private final class SpeechResultBox: @unchecked Sendable {
     private let lock = NSLock()
     private var didResume = false
     private let continuation: CheckedContinuation<Transcript, Error>
-    private let cleanup: () -> Void
 
-    init(continuation: CheckedContinuation<Transcript, Error>, cleanup: @escaping () -> Void) {
+    init(continuation: CheckedContinuation<Transcript, Error>) {
         self.continuation = continuation
-        self.cleanup = cleanup
     }
 
     func resume(returning transcript: Transcript) {
         guard markResumed() else {
             return
         }
-        cleanup()
         continuation.resume(returning: transcript)
     }
 
@@ -88,7 +82,6 @@ private final class SpeechResultBox: @unchecked Sendable {
         guard markResumed() else {
             return
         }
-        cleanup()
         continuation.resume(throwing: error)
     }
 

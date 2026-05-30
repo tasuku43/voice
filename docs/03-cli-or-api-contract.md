@@ -8,7 +8,9 @@ The production app will be a macOS menu bar utility. The scaffold also includes 
 swift run voice-agent-input-app
 ```
 
-The current shell installs a menu bar item and opens a mock preview window. Confirming the preview copies the edited prompt to the pasteboard through the same `PromptInsertionUseCase` and `PasteboardTextInsertionController` used by tests. It does not record microphone audio, register a global hotkey, or paste into the focused app yet.
+The current shell installs a menu bar item, registers Command-Shift-Space as a voice-input hotkey, records a short microphone clip with `AVFoundationAudioRecorder`, transcribes the clip through on-device `AppleSpeechEngine`, and opens an editable preview window before insertion. Confirming the preview uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after explicit confirmation and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
+
+The shell also includes a mock preview action for development, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository-scoped vocabulary, per-candidate learning approval, and export/import/open-folder/delete controls for approved local dictionary entries.
 
 ## Demo CLI
 
@@ -55,14 +57,14 @@ PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?)
 
 `PromptPreview` always requires explicit confirmation before insertion. `ConfirmedPrompt` returns the exact prompt text that a future UI or insertion adapter may paste, but it must not submit automatically.
 
-Mock voice-input orchestration:
+Voice-input orchestration:
 
 ```swift
 VoiceInputFlowUseCase.transcribeAndPreview(mockAudioText: String) async throws -> PromptPreview
 VoiceInputFlowUseCase.recordTranscribeAndPreview() async throws -> PromptPreview
 ```
 
-This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine` while allowing UI work to proceed with mock adapters before real microphone capture exists.
+This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters.
 
 Learning use case:
 
@@ -88,5 +90,27 @@ LocalLearningDataUseCase.deleteAllLocalLearningData() throws
 ```
 
 These operations apply only to approved local dictionary entries. They do not export or persist raw audio or raw transcripts.
+
+App settings:
+
+```swift
+AppSettings(
+    repositoryPath: String?,
+    recordingDurationSeconds: TimeInterval,
+    speechLocaleIdentifier: String
+)
+```
+
+Missing settings decode to local defaults: four seconds of recording and `ja-JP` speech recognition. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
+
+The macOS menu bar shell exposes these recording settings locally through `Recording Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
+
+Permission status use case:
+
+```swift
+PermissionStatusUseCase.currentStatus() -> PermissionStatusSnapshot
+```
+
+The macOS shell displays microphone, speech recognition, and Accessibility paste states through `Permission Status...`. It only reads current adapter status; recording and transcription permission prompts remain part of the explicit recording flow.
 
 These APIs must remain deterministic and testable without macOS permissions.

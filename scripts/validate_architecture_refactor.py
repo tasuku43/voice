@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+
+ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
+
+REQUIRED_SNIPPETS = {
+    "src/VoiceAgentInputCore/App/PromptContracts.swift": [
+        "public struct NormalizedPrompt",
+        "public struct RefinedPrompt",
+        "public protocol PromptNormalizer",
+        "public protocol PromptRefiner",
+        "public struct NoOpPromptRefiner",
+    ],
+    "src/VoiceAgentInputCore/App/Transcript.swift": [
+        "public struct Transcript",
+    ],
+    "src/VoiceAgentInputCore/App/PromptTextTransform.swift": [
+        "public protocol PromptTextTransform",
+        "PromptTextTransformPipeline",
+        "DictionaryPromptTextTransform",
+        "RefinementPromptTextTransform",
+    ],
+    "src/VoiceAgentInputCore/App/VoiceInputPipeline.swift": [
+        "public struct VoiceInputPipeline",
+        "audioRecorder",
+        "speechEngine",
+        "promptProcessingPipeline().process",
+    ],
+    "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
+        "public struct PromptProcessingPipeline",
+        "normalizer.normalize",
+        "refiner.refine",
+    ],
+    "src/VoiceAgentInputCore/App/DictionaryContextLoadingUseCase.swift": [
+        "public struct DictionaryContextLoadingUseCase",
+        "RepositoryVocabularyFilePathProvider",
+    ],
+    "src/VoiceAgentInputCore/App/LearningApprovalUseCase.swift": [
+        "public struct LearningApprovalUseCase",
+        "approveSelectedCandidates",
+    ],
+    "src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift": [
+        "public struct LocalLearningDataDocumentCodec",
+        "dateEncodingStrategy = .iso8601",
+        "dateDecodingStrategy = .iso8601",
+    ],
+    "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
+        "public struct AppSettingsUseCase",
+        "saveRepositoryPath",
+        "saveRecordingSettings",
+    ],
+    "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+        "let voiceInputPipeline = VoiceInputPipeline(",
+        "let result = try await voiceInputPipeline.run()",
+        "PreviewWindowController(preview: preview, previewUseCase: previewUseCase)",
+    ],
+    "src/VoiceAgentInputApp/PreviewWindowController.swift": [
+        "final class PreviewWindowController",
+        "Raw transcript",
+        "Corrected prompt",
+        "CandidateApprovalDialogController()",
+    ],
+    "src/VoiceAgentInputApp/CandidateApprovalDialogController.swift": [
+        "final class CandidateApprovalDialogController",
+        "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
+    ],
+    "docs/16-architecture-refactor-summary.md": [
+        "Responsibility Moves",
+        "App Responsibilities Still Present",
+        "Added Contracts",
+        "Added Documentation",
+        "Next Recommended Session",
+    ],
+}
+
+REQUIRED_CONTRACTS = [
+    "audio-capture.md",
+    "speech-to-text.md",
+    "normalization.md",
+    "prompt-refinement.md",
+    "voice-input-pipeline.md",
+    "preview-and-approval.md",
+    "learning.md",
+    "output.md",
+]
+
+REQUIRED_SESSIONS = [
+    "audio-capture-session.md",
+    "speech-to-text-session.md",
+    "normalization-session.md",
+    "prompt-refinement-session.md",
+    "repository-vocabulary-session.md",
+    "preview-ui-session.md",
+    "learning-session.md",
+    "output-session.md",
+]
+
+FORBIDDEN_SNIPPETS = {
+    "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+        "final class PreviewWindowController",
+        "Raw transcript",
+        "Corrected prompt",
+        "Approve dictionary candidates?",
+    ],
+    "src/VoiceAgentInputCore/App/PromptContracts.swift": [
+        "import AppKit",
+        "import AVFoundation",
+        "import Speech",
+    ],
+    "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
+        "import AppKit",
+        "import AVFoundation",
+        "import Speech",
+    ],
+}
+
+
+def fail(message: str) -> None:
+    print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+def require_snippets() -> None:
+    missing: list[str] = []
+    for relative_path, snippets in REQUIRED_SNIPPETS.items():
+        path = ROOT / relative_path
+        if not path.exists():
+            missing.append(f"{relative_path}: missing file")
+            continue
+        text = path.read_text()
+        for snippet in snippets:
+            if snippet not in text:
+                missing.append(f"{relative_path}: {snippet}")
+    if missing:
+        fail("architecture refactor missing snippets: " + ", ".join(missing))
+
+
+def require_files(directory: Path, names: list[str], label: str) -> None:
+    missing = [name for name in names if not (directory / name).exists()]
+    if missing:
+        fail(f"architecture refactor missing {label}: " + ", ".join(missing))
+
+
+def reject_forbidden() -> None:
+    hits: list[str] = []
+    for relative_path, snippets in FORBIDDEN_SNIPPETS.items():
+        path = ROOT / relative_path
+        if not path.exists():
+            continue
+        text = path.read_text()
+        for snippet in snippets:
+            if snippet in text:
+                hits.append(f"{relative_path}: {snippet}")
+    if hits:
+        fail("architecture refactor forbidden snippets: " + ", ".join(hits))
+
+
+def main() -> None:
+    require_snippets()
+    require_files(ROOT / "docs" / "contracts", REQUIRED_CONTRACTS, "contracts")
+    require_files(ROOT / "docs" / "codex-sessions", REQUIRED_SESSIONS, "codex sessions")
+    reject_forbidden()
+    print("architecture refactor ok")
+
+
+if __name__ == "__main__":
+    main()

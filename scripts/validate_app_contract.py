@@ -4,23 +4,32 @@ import sys
 
 
 ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
-APP_SOURCE = ROOT / "src" / "VoiceAgentInputApp" / "main.swift"
+APP_SOURCE_DIR = ROOT / "src" / "VoiceAgentInputApp"
 INFO_PLIST = ROOT / "src" / "VoiceAgentInputApp" / "Info.plist"
 
 
 REQUIRED_SOURCE_SNIPPETS = [
     "AppKitKeyboardShortcutMonitor()",
     "Command-Shift-Space",
-    "AVFoundationAudioRecorder(durationSeconds: 4)",
-    "AppleSpeechEngine(localeIdentifier: \"ja-JP\", requiresOnDeviceRecognition: true)",
+    "Recording Settings...",
+    "showRecordingSettings",
+    "Permission Status...",
+    "PermissionStatusUseCase",
+    "Open Privacy Settings...",
+    "AVFoundationAudioRecorder(durationSeconds: settings.effectiveRecordingDurationSeconds)",
+    "localeIdentifier: settings.effectiveSpeechLocaleIdentifier",
+    "requiresOnDeviceRecognition: true",
+    "let voiceInputPipeline = VoiceInputPipeline(",
+    "let result = try await voiceInputPipeline.run()",
     "PreviewWindowController(preview: preview, previewUseCase: previewUseCase)",
     "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
     "approveCandidatesIfRequested(confirmed.candidates)",
-    "CandidateApprovalUseCase().approveCandidates",
+    "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "Export Local Dictionary...",
     "Import Local Dictionary...",
+    "Open Local Data Folder...",
     "Delete Local Dictionary...",
     "LocalLearningDataUseCase",
 ]
@@ -43,7 +52,10 @@ def fail(message: str) -> None:
 
 
 def main() -> None:
-    source = APP_SOURCE.read_text()
+    source = "\n".join(
+        path.read_text()
+        for path in sorted(APP_SOURCE_DIR.glob("*.swift"))
+    )
     plist = INFO_PLIST.read_text()
 
     missing = [snippet for snippet in REQUIRED_SOURCE_SNIPPETS if snippet not in source]

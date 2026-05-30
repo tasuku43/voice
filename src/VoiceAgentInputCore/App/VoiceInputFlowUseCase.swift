@@ -5,17 +5,20 @@ public struct VoiceInputFlowUseCase {
     public var microphonePermissionProvider: (any MicrophonePermissionProvider)?
     public var speechEngine: any SpeechToTextEngine
     public var previewUseCase: PromptPreviewUseCase
+    public var refiner: any PromptRefiner
 
     public init(
         audioRecorder: (any AudioRecorder)? = nil,
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
-        previewUseCase: PromptPreviewUseCase
+        previewUseCase: PromptPreviewUseCase,
+        refiner: any PromptRefiner = NoOpPromptRefiner()
     ) {
         self.audioRecorder = audioRecorder
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.previewUseCase = previewUseCase
+        self.refiner = refiner
     }
 
     public init(
@@ -28,30 +31,29 @@ public struct VoiceInputFlowUseCase {
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.previewUseCase = PromptPreviewUseCase(entries: entries)
+        self.refiner = NoOpPromptRefiner()
     }
 
     public func recordTranscribeAndPreview() async throws -> PromptPreview {
-        guard let audioRecorder else {
-            throw VoiceInputFlowError.audioRecorderUnavailable
-        }
-        if let microphonePermissionProvider {
-            do {
-                try await MicrophonePermissionUseCase(provider: microphonePermissionProvider).ensureRecordingAllowed()
-            } catch let error as MicrophonePermissionError {
-                if case let .recordingNotAllowed(status) = error {
-                    throw VoiceInputFlowError.microphonePermissionDenied(status: status)
-                }
-                throw error
-            }
-        }
-        let audio = try await audioRecorder.recordOnce()
-        let transcript = try await speechEngine.transcribe(audio: audio)
-        return previewUseCase.preview(rawTranscript: transcript.text)
+        try await pipeline().run().preview
     }
 
     public func transcribeAndPreview(mockAudioText: String) async throws -> PromptPreview {
-        let rawTranscript = try await speechEngine.transcribeMockText(mockAudioText)
-        return previewUseCase.preview(rawTranscript: rawTranscript)
+        try await pipeline().run(mockAudioText: mockAudioText).preview
+    }
+
+    public func recordTranscribeNormalizeAndRefine() async throws -> VoiceInputPipelineResult {
+        try await pipeline().run()
+    }
+
+    private func pipeline() -> VoiceInputPipeline {
+        VoiceInputPipeline(
+            audioRecorder: audioRecorder,
+            microphonePermissionProvider: microphonePermissionProvider,
+            speechEngine: speechEngine,
+            refiner: refiner,
+            normalizationContext: NormalizationContext(entries: previewUseCase.normalizationUseCase.entries)
+        )
     }
 }
 

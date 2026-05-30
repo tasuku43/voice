@@ -5,6 +5,7 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
     public var correctedPhrase: String
     public var confidence: Double
     public var occurrenceCount: Int
+    public var reason: String
     public var suggestedScope: DictionaryScope
     public var approved: Bool
     public var rejected: Bool
@@ -16,6 +17,7 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
         correctedPhrase: String,
         confidence: Double,
         occurrenceCount: Int = 1,
+        reason: String = "User edited transcript to this phrase.",
         suggestedScope: DictionaryScope,
         approved: Bool = false,
         rejected: Bool = false,
@@ -26,6 +28,7 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
         self.correctedPhrase = correctedPhrase
         self.confidence = confidence
         self.occurrenceCount = occurrenceCount
+        self.reason = reason
         self.suggestedScope = suggestedScope
         self.approved = approved
         self.rejected = rejected

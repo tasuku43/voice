@@ -30,5 +30,22 @@
       "Codex",
       "branch"
     ]
+  },
+  {
+    "name": "cursor-swift-error",
+    "rawTranscript": "カーソルでスイフトのエラーを見て",
+    "expectedContains": [
+      "Cursor",
+      "Swift",
+      "error"
+    ]
+  },
+  {
+    "name": "github-npm-check",
+    "rawTranscript": "ぎっとはぶのワークフローでえぬぴーえむを確認して",
+    "expectedContains": [
+      "GitHub",
+      "npm"
+    ]
   }
 ]

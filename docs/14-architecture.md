@@ -40,6 +40,9 @@ Use-case orchestration:
 - learn candidates from edits,
 - combine stores and engines,
 - produce results for UI or CLI.
+- keep capture/STT stage outputs through `VoiceInputPipeline`.
+- keep post-STT text processing through `PromptProcessingPipeline`.
+- keep future local prompt refinement behind `PromptRefiner`.
 
 ### Infra
 
@@ -72,9 +75,24 @@ The UI must call app use cases and avoid embedding core logic.
 ## Extension points
 
 - Add STT engines behind `SpeechToTextEngine`.
+- Add local prompt cleanup behind `PromptRefiner`; `NoOpPromptRefiner` is the default.
 - Add persistence behind dictionary repository protocols.
 - Add context providers behind scoped vocabulary protocols.
 - Add UI views without changing normalization internals.
+
+## Component Contracts
+
+Short component contracts live in `docs/contracts/`:
+
+- speech-to-text,
+- normalization,
+- prompt-refinement,
+- voice-input-pipeline,
+- preview-and-approval,
+- learning,
+- output.
+
+Focused future Codex prompts live in `docs/codex-sessions/` so a session can improve one component without rereading the whole repository.
 
 ## Anti-patterns
 

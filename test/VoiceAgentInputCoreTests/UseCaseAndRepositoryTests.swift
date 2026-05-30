@@ -58,6 +58,82 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
     }
 
+    func testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndPreviewStages() async throws {
+        let pipeline = VoiceInputPipeline(
+            speechEngine: MockSpeechEngine(),
+            refiner: SuffixPromptRefiner(suffix: " please"),
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
+        )
+
+        let result = try await pipeline.run(mockAudioText: "くらのコードでタイプスクリプトエラーを直して")
+
+        XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトエラーを直して")
+        XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
+        XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
+        XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
+        XCTAssertEqual(result.preview.rawTranscript, result.transcript.text)
+        XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
+        XCTAssertTrue(result.preview.requiresExplicitConfirmation)
+    }
+
+    func testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies() async throws {
+        let pipeline = PromptProcessingPipeline(
+            refiner: SuffixPromptRefiner(suffix: " please"),
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
+        )
+
+        let result = try await pipeline.process(
+            transcript: Transcript(text: "くらのコードでタイプスクリプトを確認")
+        )
+
+        XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトを確認")
+        XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
+        XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
+        XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
+        XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
+    }
+
+    func testNoOpPromptRefinerPreservesNormalizedPrompt() async throws {
+        let normalized = NormalizedPrompt(
+            rawText: "こーでっくす",
+            normalizedText: "Codex",
+            corrections: []
+        )
+
+        let refined = try await NoOpPromptRefiner().refine(normalized, instruction: RefinementInstruction())
+
+        XCTAssertEqual(refined.normalizedText, "Codex")
+        XCTAssertEqual(refined.refinedText, "Codex")
+        XCTAssertEqual(refined.changes, [])
+    }
+
+    func testPromptTransformsExposeTextToTextConvenience() async throws {
+        let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
+        let normalizedText = try DictionaryPromptNormalizer().normalizeText(
+            "くらのコードでタイプスクリプトを確認",
+            context: context
+        )
+        let refinedText = try await NoOpPromptRefiner().refineText(normalizedText)
+
+        XCTAssertTrue(normalizedText.contains("Claude Code"))
+        XCTAssertTrue(normalizedText.contains("TypeScript"))
+        XCTAssertEqual(refinedText, normalizedText)
+    }
+
+    func testPromptTextTransformPipelineComposesDictionaryAndRefinementLayers() async throws {
+        let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
+        let pipeline = PromptTextTransformPipeline(transforms: [
+            DictionaryPromptTextTransform(context: context),
+            RefinementPromptTextTransform(refiner: SuffixPromptRefiner(suffix: " please"))
+        ])
+
+        let output = try await pipeline.transform("くらのコードでタイプスクリプトを確認")
+
+        XCTAssertTrue(output.contains("Claude Code"))
+        XCTAssertTrue(output.contains("TypeScript"))
+        XCTAssertTrue(output.hasSuffix(" please"))
+    }
+
     func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
         let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
         let useCase = VoiceInputFlowUseCase(
@@ -96,11 +172,65 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         }
     }
 
+    func testPermissionStatusUseCaseReadsCurrentAdapterStatuses() {
+        let useCase = PermissionStatusUseCase(
+            microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
+            speechRecognitionPermissionProvider: MockSpeechRecognitionPermissionProvider(status: .denied),
+            accessibilityPermissionProvider: MockAccessibilityPermissionProvider(status: .notTrusted)
+        )
+
+        XCTAssertEqual(useCase.currentStatus(), PermissionStatusSnapshot(
+            microphone: .authorized,
+            speechRecognition: .denied,
+            accessibility: .notTrusted
+        ))
+    }
+
     func testAppleSpeechEngineRequiresOnDeviceRecognitionByDefault() {
         let engine = AppleSpeechEngine()
 
         XCTAssertTrue(engine.requiresOnDeviceRecognition)
         XCTAssertEqual(engine.localeIdentifier, "ja-JP")
+    }
+
+    func testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let store = TemporaryRecordedAudioFileStore(directoryURL: directory)
+        let audio = RecordedAudio(
+            data: Data("audio".utf8),
+            formatDescription: "caf/aac",
+            durationSeconds: 1
+        )
+
+        let existedDuringOperation = try await store.withRecordedAudioFile(audio) { url in
+            FileManager.default.fileExists(atPath: url.path)
+        }
+
+        XCTAssertTrue(existedDuringOperation)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+    }
+
+    func testTemporaryRecordedAudioFileStoreRemovesFileAfterFailedOperation() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let store = TemporaryRecordedAudioFileStore(directoryURL: directory)
+        let audio = RecordedAudio(
+            data: Data("audio".utf8),
+            formatDescription: "caf/aac",
+            durationSeconds: 1
+        )
+
+        do {
+            try await store.withRecordedAudioFile(audio) { _ in
+                throw TemporaryRecordedAudioFileStoreTestError.expected
+            }
+            XCTFail("Expected temporary audio operation to fail")
+        } catch {
+            XCTAssertEqual(error as? TemporaryRecordedAudioFileStoreTestError, .expected)
+        }
+
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
     }
 
     func testVoiceInputFlowDoesNotRecordWhenMicrophonePermissionIsDenied() async {
@@ -195,6 +325,22 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(approved[0].approved)
         XCTAssertTrue(approved[1].approved)
         XCTAssertFalse(approved[1].rejected)
+    }
+
+    func testLearningApprovalUseCasePersistsOnlySelectedCandidates() throws {
+        let repository = InMemoryDictionaryRepository()
+        let candidates = [
+            CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.8, suggestedScope: .user),
+            CorrectionCandidate(rawPhrase: "却下", correctedPhrase: "reject me", confidence: 0.8, suggestedScope: .user)
+        ]
+
+        let approved = try LearningApprovalUseCase(
+            repository: repository,
+            now: { Date(timeIntervalSince1970: 42) }
+        ).approveSelectedCandidates(candidates, selectedIndexes: [0])
+
+        XCTAssertEqual(approved.map(\.canonical), ["Claude Code"])
+        XCTAssertEqual(try repository.loadEntries().map(\.canonical), ["Claude Code"])
     }
 
     func testPromptInsertionRequiresExplicitConfirmation() throws {
@@ -294,6 +440,30 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadEntries(), [replacementEntry])
     }
 
+    func testLocalLearningDataDocumentCodecRoundTrip() throws {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["くらのコード"],
+                canonical: "Claude Code",
+                kind: .toolName,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true,
+                createdAt: Date(timeIntervalSince1970: 1),
+                updatedAt: Date(timeIntervalSince1970: 2)
+            )
+        ]
+        let codec = LocalLearningDataDocumentCodec()
+
+        let data = try codec.encode(entries)
+        let text = String(data: data, encoding: .utf8) ?? ""
+        let decoded = try codec.decode(data)
+
+        XCTAssertTrue(text.contains("Claude Code"))
+        XCTAssertTrue(text.contains("1970-01-01T00:00:01Z"))
+        XCTAssertEqual(decoded, entries)
+    }
+
     func testJSONDictionaryRepositoryRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let fileURL = directory.appendingPathComponent("dictionary.json")
@@ -323,9 +493,55 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(try repository.loadSettings(), AppSettings())
 
-        try repository.saveSettings(AppSettings(repositoryPath: "/tmp/repo"))
+        try repository.saveSettings(AppSettings(
+            repositoryPath: "/tmp/repo",
+            recordingDurationSeconds: 6,
+            speechLocaleIdentifier: "en-US"
+        ))
 
-        XCTAssertEqual(try repository.loadSettings(), AppSettings(repositoryPath: "/tmp/repo"))
+        XCTAssertEqual(try repository.loadSettings(), AppSettings(
+            repositoryPath: "/tmp/repo",
+            recordingDurationSeconds: 6,
+            speechLocaleIdentifier: "en-US"
+        ))
+    }
+
+    func testJSONAppSettingsRepositoryDefaultsMissingNewFields() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let fileURL = directory.appendingPathComponent("settings.json")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try #"{"repositoryPath":"/tmp/repo"}"#.data(using: .utf8)!.write(to: fileURL)
+
+        let settings = try JSONAppSettingsRepository(fileURL: fileURL).loadSettings()
+
+        XCTAssertEqual(settings, AppSettings(repositoryPath: "/tmp/repo"))
+    }
+
+    func testAppSettingsEffectiveValuesClampUnsafeInput() {
+        let tooShort = AppSettings(recordingDurationSeconds: 0.2, speechLocaleIdentifier: "   ")
+        let tooLong = AppSettings(recordingDurationSeconds: 60, speechLocaleIdentifier: " en-US ")
+
+        XCTAssertEqual(tooShort.effectiveRecordingDurationSeconds, 1)
+        XCTAssertEqual(tooShort.effectiveSpeechLocaleIdentifier, "ja-JP")
+        XCTAssertEqual(tooLong.effectiveRecordingDurationSeconds, 30)
+        XCTAssertEqual(tooLong.effectiveSpeechLocaleIdentifier, "en-US")
+    }
+
+    func testAppSettingsUseCaseSavesRepositoryAndClampedRecordingSettings() throws {
+        let repository = InMemoryAppSettingsRepository()
+        let useCase = AppSettingsUseCase(repository: repository)
+
+        let repositorySettings = try useCase.saveRepositoryPath("/tmp/repo")
+        let recordingSettings = try useCase.saveRecordingSettings(
+            recordingDurationSeconds: 99,
+            speechLocaleIdentifier: " en-US "
+        )
+
+        XCTAssertEqual(repositorySettings.repositoryPath, "/tmp/repo")
+        XCTAssertEqual(recordingSettings.repositoryPath, "/tmp/repo")
+        XCTAssertEqual(recordingSettings.recordingDurationSeconds, 30)
+        XCTAssertEqual(recordingSettings.speechLocaleIdentifier, "en-US")
+        XCTAssertEqual(try repository.loadSettings(), recordingSettings)
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
@@ -354,6 +570,30 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(entries.count, 3)
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
         XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
+    }
+
+    func testDictionaryContextLoadingUseCaseCombinesSeedLocalAndRepositoryVocabulary() throws {
+        let localEntry = DictionaryEntry(
+            spokenForms: ["ろーかる"],
+            canonical: "local-term",
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let useCase = DictionaryContextLoadingUseCase(
+            repository: InMemoryDictionaryRepository(entries: [localEntry]),
+            repositoryContextProvider: StubRepositoryContextProvider(context: RepositoryContext(rootPath: "/tmp/voice", branchName: "feature/pipeline")),
+            repositoryVocabularyFilePathProvider: StubRepositoryVocabularyFilePathProvider(filePaths: ["Package.swift"])
+        )
+
+        let entries = try useCase.loadEntries(startingAt: URL(fileURLWithPath: "/tmp/voice"))
+
+        XCTAssertTrue(entries.contains { $0.canonical == "local-term" && $0.scope == .user })
+        XCTAssertTrue(entries.contains { $0.canonical == "Codex" && $0.scope == .global })
+        XCTAssertTrue(entries.contains { $0.canonical == "voice" && $0.scope == .repository })
+        XCTAssertTrue(entries.contains { $0.canonical == "feature/pipeline" && $0.scope == .repository })
+        XCTAssertTrue(entries.contains { $0.canonical == "Package.swift" && $0.scope == .repository })
     }
 
     func testGitRepositoryContextProviderReadsRootAndBranch() throws {
@@ -440,5 +680,59 @@ private final class InMemoryDictionaryRepository: DictionaryRepository {
 
     func saveEntries(_ entries: [DictionaryEntry]) throws {
         self.entries = entries
+    }
+}
+
+private final class InMemoryAppSettingsRepository: AppSettingsRepository {
+    private var settings: AppSettings
+
+    init(settings: AppSettings = AppSettings()) {
+        self.settings = settings
+    }
+
+    func loadSettings() throws -> AppSettings {
+        settings
+    }
+
+    func saveSettings(_ settings: AppSettings) throws {
+        self.settings = settings
+    }
+}
+
+private enum TemporaryRecordedAudioFileStoreTestError: Error, Equatable {
+    case expected
+}
+
+private struct SuffixPromptRefiner: PromptRefiner {
+    var suffix: String
+
+    func refine(_ prompt: NormalizedPrompt, instruction: RefinementInstruction) async throws -> RefinedPrompt {
+        RefinedPrompt(
+            normalizedText: prompt.normalizedText,
+            refinedText: prompt.normalizedText + suffix,
+            changes: [
+                PromptRefinementChange(
+                    before: prompt.normalizedText,
+                    after: prompt.normalizedText + suffix,
+                    reason: "test suffix"
+                )
+            ]
+        )
+    }
+}
+
+private struct StubRepositoryContextProvider: RepositoryContextProvider {
+    var context: RepositoryContext?
+
+    func currentContext(startingAt path: URL) throws -> RepositoryContext? {
+        context
+    }
+}
+
+private struct StubRepositoryVocabularyFilePathProvider: RepositoryVocabularyFilePathProvider {
+    var filePaths: [String]
+
+    func trackedVocabularyFilePaths(rootPath: String) throws -> [String] {
+        filePaths
     }
 }

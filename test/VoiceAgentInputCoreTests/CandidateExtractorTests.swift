@@ -12,6 +12,7 @@ final class CandidateExtractorTests: XCTestCase {
         XCTAssertTrue(candidates.contains { $0.rawPhrase == "くらのコード" && $0.correctedPhrase == "Claude Code" })
         XCTAssertTrue(candidates.contains { $0.rawPhrase == "タイプスクリプト" && $0.correctedPhrase == "TypeScript" })
         XCTAssertTrue(candidates.contains { $0.rawPhrase == "エラー" && $0.correctedPhrase == "error" })
+        XCTAssertTrue(candidates.allSatisfy { !$0.reason.isEmpty })
     }
 
     func testDangerousCommandCandidatesAreNotAutoApplied() {

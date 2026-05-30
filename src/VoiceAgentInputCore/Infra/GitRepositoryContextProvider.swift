@@ -1,6 +1,6 @@
 import Foundation
 
-public struct GitRepositoryContextProvider: RepositoryContextProvider {
+public struct GitRepositoryContextProvider: RepositoryContextProvider, RepositoryVocabularyFilePathProvider {
     public var commandRunner: any CommandRunner
     public var maximumVocabularyFiles: Int
     public var allowedVocabularyExtensions: Set<String>

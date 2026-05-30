@@ -19,6 +19,14 @@ public enum SeedDictionaries {
             autoApply: true
         ),
         DictionaryEntry(
+            spokenForms: ["カーソル", "かーそる"],
+            canonical: "Cursor",
+            kind: .toolName,
+            scope: .global,
+            confidence: 0.9,
+            autoApply: true
+        ),
+        DictionaryEntry(
             spokenForms: ["タイプスクリプト", "たいぷすくりぷと"],
             canonical: "TypeScript",
             kind: .programmingLanguage,
@@ -27,9 +35,33 @@ public enum SeedDictionaries {
             autoApply: true
         ),
         DictionaryEntry(
+            spokenForms: ["スイフト", "すいふと"],
+            canonical: "Swift",
+            kind: .programmingLanguage,
+            scope: .global,
+            confidence: 0.9,
+            autoApply: true
+        ),
+        DictionaryEntry(
             spokenForms: ["ぴーえぬぴーえむ", "ピーエヌピーエム"],
             canonical: "pnpm",
             kind: .command,
+            scope: .global,
+            confidence: 0.9,
+            autoApply: true
+        ),
+        DictionaryEntry(
+            spokenForms: ["えぬぴーえむ", "エヌピーエム"],
+            canonical: "npm",
+            kind: .command,
+            scope: .global,
+            confidence: 0.85,
+            autoApply: true
+        ),
+        DictionaryEntry(
+            spokenForms: ["ぎっとはぶ", "ギットハブ"],
+            canonical: "GitHub",
+            kind: .toolName,
             scope: .global,
             confidence: 0.9,
             autoApply: true

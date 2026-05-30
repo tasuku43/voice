@@ -29,7 +29,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
-The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, on-device Apple Speech transcription, preview window, Accessibility-based paste, pasteboard fallback, per-candidate local dictionary approval, local dictionary export/import/delete actions, and simple in-progress state for the recording flow.
+The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, configurable recording duration and Speech locale, permission status display, Privacy & Security settings shortcut, on-device Apple Speech transcription, preview window, Accessibility-based paste, pasteboard fallback, per-candidate local dictionary approval, local dictionary export/import/delete/open-folder actions, and simple in-progress state for the recording flow.
 The menu can store a local repository folder path for repository-scoped vocabulary when the app is launched outside a terminal. Repository context includes the git root, current branch, and a bounded set of tracked file names.
 
 ## Stack
@@ -82,11 +82,20 @@ docs/11-first-codex-prompt.md
 ```bash
 make test        # run Swift tests
 make eval        # run tests including fixture-driven evals
-make check       # one-command validation
+make check       # one-command validation, including app bundle smoke, MVP, privacy, and checklist contracts
 make goal        # print the first autonomous Codex prompt
+make manual-e2e-report  # create a dated manual macOS MVP report from the template
+make validate-manual-e2e-report REPORT=test/e2e/reports/<report>.md
 swift run voice-agent-input-app  # launch minimal menu bar shell
 open .build/VoiceAgentInput.app  # launch bundled app with microphone and speech usage descriptions after make check
 ```
+
+Use the menu bar `Recording Settings...` item to change recording duration or Speech locale locally. Use `Permission Status...` to inspect microphone, speech recognition, and Accessibility paste states before a real recording run, and `Open Privacy Settings...` to jump to macOS privacy controls. Settings, approved dictionary entries, and repository path are stored under Application Support; `Open Local Data Folder...` reveals that location for manual privacy checks. Raw audio is temporary and raw transcripts are not persisted by default.
+
+Manual macOS MVP verification lives at `test/e2e/manual-macos-mvp-checklist.md`.
+The current completion evidence and remaining manual proof are tracked in `docs/15-mvp-completion-audit.md`.
+
+Component contracts live under `docs/contracts/`, and short next-session prompts live under `docs/codex-sessions/`. Use those when continuing focused work on speech, normalization, prompt refinement, repository vocabulary, preview UI, learning, or output.
 
 ## Product boundary
 

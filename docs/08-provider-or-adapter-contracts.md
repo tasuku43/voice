@@ -25,13 +25,15 @@ Implementations:
 - `MockAudioRecorder` for tests and UI development.
 - `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file, reads it into `RecordedAudio`, and deletes the temporary file immediately.
 - `MockSpeechEngine` for tests and UI development.
-- `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`.
+- `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`; its temporary audio file is created through `TemporaryRecordedAudioFileStore` and deleted after success or failure.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
 
-- `VoiceInputFlowUseCase` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, and produces a `PromptPreview`.
-- The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine`.
+- `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, a `PromptRefiner`, and `NormalizationContext`.
+- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptPreview` stage outputs.
+- `VoiceInputFlowUseCase` remains as a compatibility wrapper for preview-oriented tests and CLI-style call sites.
+- The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
 - `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
 
 ## SpeechRecognitionPermissionProvider
@@ -68,7 +70,8 @@ protocol MicrophonePermissionProvider {
 Current use cases:
 
 - `MicrophonePermissionUseCase` requests access only when the status is `notDetermined`.
-- `VoiceInputFlowUseCase` can check microphone permission before recording when a provider is injected.
+- `VoiceInputPipeline` can check microphone permission before recording when a provider is injected.
+- `VoiceInputFlowUseCase` delegates to `VoiceInputPipeline` for compatibility.
 
 Current test adapter:
 
@@ -90,7 +93,10 @@ Current use cases:
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries with approved local entries for preview and confirmation flows.
 - `CandidateApprovalUseCase` marks selected candidates as approved and unselected candidates as rejected.
 - `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
+- `LearningApprovalUseCase` combines candidate selection review and approved-entry persistence so UI only supplies selected indexes.
 - `LocalLearningDataUseCase` exports, imports, and deletes approved local dictionary entries; the macOS shell exposes these as menu actions.
+- `LocalLearningDataDocumentCodec` owns the JSON document shape for local dictionary import/export.
+- `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
 - Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.
 
 Future adapter:

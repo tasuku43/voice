@@ -39,9 +39,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
         menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
+        menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Privacy Settings...", action: #selector(openPrivacySettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
         menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
+        menu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
         menu.addItem(NSMenuItem(title: "Delete Local Dictionary...", action: #selector(deleteLocalDictionary), keyEquivalent: "d"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
@@ -63,7 +67,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         isRecording = true
 
         let entries: [DictionaryEntry]
+        let settings: AppSettings
         do {
+            settings = try loadSettings()
             entries = try loadDictionaryEntries()
         } catch {
             isRecording = false
@@ -77,16 +83,19 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 try await SpeechRecognitionPermissionUseCase(
                     provider: SFSpeechRecognitionPermissionProvider()
                 ).ensureTranscriptionAllowed()
-                let voiceFlow = VoiceInputFlowUseCase(
-                    audioRecorder: AVFoundationAudioRecorder(durationSeconds: 4),
+                let voiceInputPipeline = VoiceInputPipeline(
+                    audioRecorder: AVFoundationAudioRecorder(durationSeconds: settings.effectiveRecordingDurationSeconds),
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
-                    speechEngine: AppleSpeechEngine(localeIdentifier: "ja-JP", requiresOnDeviceRecognition: true),
-                    previewUseCase: previewUseCase
+                    speechEngine: AppleSpeechEngine(
+                        localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
+                        requiresOnDeviceRecognition: true
+                    ),
+                    normalizationContext: NormalizationContext(entries: entries)
                 )
-                let preview = try await voiceFlow.recordTranscribeAndPreview()
+                let result = try await voiceInputPipeline.run()
                 await MainActor.run {
                     self.isRecording = false
-                    self.openPreview(preview: preview, previewUseCase: previewUseCase)
+                    self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
                 }
             } catch {
                 await MainActor.run {
@@ -124,27 +133,29 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
-        let repository = try store.repository()
-        return try DictionaryEntryLoadingUseCase(
-            repository: repository,
-            contextualEntries: loadRepositoryVocabularyEntries()
-        ).loadEntries()
+        try dictionaryContextLoader().loadEntries(startingAt: repositoryVocabularyStartURL())
     }
 
-    private func loadRepositoryVocabularyEntries() -> [DictionaryEntry] {
-        let startURL = configuredRepositoryURL() ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    private func loadSettings() throws -> AppSettings {
+        try settingsUseCase().loadSettings()
+    }
+
+    private func dictionaryContextLoader() throws -> DictionaryContextLoadingUseCase {
         let provider = GitRepositoryContextProvider()
-        guard let context = try? provider.currentContext(startingAt: startURL) else {
-            return []
-        }
-        let filePaths = (try? provider.trackedVocabularyFilePaths(rootPath: context.rootPath)) ?? []
-        return RepositoryVocabularyUseCase().entries(from: context, filePaths: filePaths)
+        return DictionaryContextLoadingUseCase(
+            repository: try approvedDictionaryRepository(),
+            repositoryContextProvider: provider,
+            repositoryVocabularyFilePathProvider: provider
+        )
+    }
+
+    private func repositoryVocabularyStartURL() -> URL {
+        configuredRepositoryURL() ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     }
 
     private func configuredRepositoryURL() -> URL? {
         guard
-            let settings = try? settingsRepository().loadSettings(),
+            let settings = try? loadSettings(),
             let repositoryPath = settings.repositoryPath,
             !repositoryPath.isEmpty
         else {
@@ -156,6 +167,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private func settingsRepository() throws -> JSONAppSettingsRepository {
         let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
         return try store.settingsRepository()
+    }
+
+    private func settingsUseCase() throws -> AppSettingsUseCase {
+        try AppSettingsUseCase(repository: settingsRepository())
     }
 
     private func approvedDictionaryRepository() throws -> JSONDictionaryRepository {
@@ -175,13 +190,87 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
 
         do {
-            let repository = try settingsRepository()
-            var settings = try repository.loadSettings()
-            settings.repositoryPath = url.path
-            try repository.saveSettings(settings)
+            try settingsUseCase().saveRepositoryPath(url.path)
         } catch {
             presentError(error)
         }
+    }
+
+    @objc private func showRecordingSettings() {
+        do {
+            let settingsUseCase = try settingsUseCase()
+            let settings = try settingsUseCase.loadSettings()
+
+            let durationField = NSTextField(
+                string: String(format: "%.0f", settings.effectiveRecordingDurationSeconds)
+            )
+            let localeField = NSTextField(string: settings.effectiveSpeechLocaleIdentifier)
+            let stack = NSStackView()
+            stack.orientation = .vertical
+            stack.alignment = .leading
+            stack.spacing = 8
+            stack.addArrangedSubview(labelledControl(label: "Recording seconds", control: durationField))
+            stack.addArrangedSubview(labelledControl(label: "Speech locale", control: localeField))
+
+            let alert = NSAlert()
+            alert.messageText = "Recording settings"
+            alert.informativeText = "These settings stay on this Mac and are used for the next recording."
+            alert.accessoryView = stack
+            alert.addButton(withTitle: "Save")
+            alert.addButton(withTitle: "Cancel")
+
+            guard alert.runModal() == .alertFirstButtonReturn else {
+                return
+            }
+
+            try settingsUseCase.saveRecordingSettings(
+                recordingDurationSeconds: Double(durationField.stringValue)
+                    ?? settings.effectiveRecordingDurationSeconds,
+                speechLocaleIdentifier: localeField.stringValue
+            )
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func showPermissionStatus() {
+        let status = PermissionStatusUseCase(
+            microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
+            speechRecognitionPermissionProvider: SFSpeechRecognitionPermissionProvider(),
+            accessibilityPermissionProvider: AXAccessibilityPermissionProvider()
+        ).currentStatus()
+
+        let alert = NSAlert()
+        alert.messageText = "Permission status"
+        alert.informativeText = """
+        Microphone: \(status.microphone.rawValue)
+        Speech recognition: \(status.speechRecognition.rawValue)
+        Accessibility paste: \(status.accessibility.rawValue)
+        """
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
+    }
+
+    @objc private func openPrivacySettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy") else {
+            return
+        }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func labelledControl(label: String, control: NSControl) -> NSView {
+        let row = NSStackView()
+        row.orientation = .horizontal
+        row.alignment = .centerY
+        row.spacing = 8
+
+        let labelField = NSTextField(labelWithString: label)
+        labelField.frame.size.width = 130
+        control.frame.size.width = 180
+
+        row.addArrangedSubview(labelField)
+        row.addArrangedSubview(control)
+        return row
     }
 
     @objc private func exportLocalDictionary() {
@@ -199,10 +288,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 return
             }
 
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-            encoder.dateEncodingStrategy = .iso8601
-            try encoder.encode(entries).write(to: url, options: [.atomic])
+            try LocalLearningDataDocumentCodec()
+                .encode(entries)
+                .write(to: url, options: [.atomic])
         } catch {
             presentError(error)
         }
@@ -221,13 +309,21 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
 
         do {
-            let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let entries = try decoder.decode([DictionaryEntry].self, from: data)
+            let entries = try LocalLearningDataDocumentCodec()
+                .decode(try Data(contentsOf: url))
             try LocalLearningDataUseCase(
                 repository: approvedDictionaryRepository()
             ).importApprovedEntries(entries, merge: true)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func openLocalDataFolder() {
+        do {
+            let url = try LocalLearningDictionaryStore.defaultDirectoryURL()
+            try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            NSWorkspace.shared.open(url)
         } catch {
             presentError(error)
         }
@@ -356,174 +452,5 @@ private final class AppKitKeyboardShortcutMonitor: KeyboardShortcutMonitor {
             modifiers.insert(.shift)
         }
         return modifiers
-    }
-}
-
-@MainActor
-private final class PreviewWindowController: NSWindowController {
-    private let preview: PromptPreview
-    private let previewUseCase: PromptPreviewUseCase
-    private let correctedTextView = NSTextView()
-
-    init(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
-        self.preview = preview
-        self.previewUseCase = previewUseCase
-
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 680, height: 420),
-            styleMask: [.titled, .closable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "Voice Agent Input"
-        window.center()
-
-        super.init(window: window)
-        window.contentView = buildContentView()
-    }
-
-    required init?(coder: NSCoder) {
-        nil
-    }
-
-    private func buildContentView() -> NSView {
-        let container = NSStackView()
-        container.orientation = .vertical
-        container.spacing = 12
-        container.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
-
-        let rawLabel = NSTextField(labelWithString: "Raw transcript")
-        let rawText = textBox(preview.rawTranscript, editable: false)
-        let correctedLabel = NSTextField(labelWithString: "Corrected prompt")
-        let correctedScrollView = textBox(preview.correctedPrompt, editable: true)
-
-        if let textView = correctedScrollView.documentView as? NSTextView {
-            correctedTextView.string = textView.string
-            correctedScrollView.documentView = correctedTextView
-            correctedTextView.isEditable = true
-            correctedTextView.font = NSFont.systemFont(ofSize: 14)
-        }
-
-        let buttonRow = NSStackView()
-        buttonRow.orientation = .horizontal
-        buttonRow.alignment = .centerY
-        buttonRow.spacing = 8
-        buttonRow.addArrangedSubview(NSView())
-
-        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancel))
-        let confirmButton = NSButton(title: "Paste", target: self, action: #selector(confirm))
-        confirmButton.keyEquivalent = "\r"
-        buttonRow.addArrangedSubview(cancelButton)
-        buttonRow.addArrangedSubview(confirmButton)
-
-        container.addArrangedSubview(rawLabel)
-        container.addArrangedSubview(rawText)
-        container.addArrangedSubview(correctedLabel)
-        container.addArrangedSubview(correctedScrollView)
-        container.addArrangedSubview(buttonRow)
-
-        rawText.heightAnchor.constraint(equalToConstant: 90).isActive = true
-        correctedScrollView.heightAnchor.constraint(equalToConstant: 170).isActive = true
-
-        return container
-    }
-
-    private func textBox(_ string: String, editable: Bool) -> NSScrollView {
-        let textView = NSTextView()
-        textView.string = string
-        textView.isEditable = editable
-        textView.font = NSFont.systemFont(ofSize: 14)
-        textView.isRichText = false
-
-        let scrollView = NSScrollView()
-        scrollView.hasVerticalScroller = true
-        scrollView.documentView = textView
-        scrollView.borderType = .bezelBorder
-        return scrollView
-    }
-
-    @objc private func confirm() {
-        let confirmed = previewUseCase.confirm(
-            preview: preview,
-            finalEditedPrompt: correctedTextView.string
-        )
-        let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
-
-        do {
-            try insertion.insert(confirmed, explicitConfirmation: true)
-            try approveCandidatesIfRequested(confirmed.candidates)
-            close()
-        } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
-            do {
-                try PromptInsertionUseCase(
-                    insertionController: PasteboardTextInsertionController()
-                ).insert(confirmed, explicitConfirmation: true)
-                showAccessibilityFallbackAlert()
-                try approveCandidatesIfRequested(confirmed.candidates)
-                close()
-            } catch {
-                let alert = NSAlert(error: error)
-                alert.runModal()
-            }
-        } catch {
-            let alert = NSAlert(error: error)
-            alert.runModal()
-        }
-    }
-
-    private func showAccessibilityFallbackAlert() {
-        let alert = NSAlert()
-        alert.alertStyle = .informational
-        alert.messageText = "Prompt copied"
-        alert.informativeText = "Enable Accessibility access for Voice Agent Input in System Settings to paste automatically. For now, press Command-V in the target app."
-        alert.runModal()
-    }
-
-    private func approveCandidatesIfRequested(_ candidates: [CorrectionCandidate]) throws {
-        guard !candidates.isEmpty else {
-            return
-        }
-
-        let limitedCandidates = Array(candidates.prefix(8))
-        let alert = NSAlert()
-        alert.messageText = "Approve dictionary candidates?"
-        alert.informativeText = "Selected candidates will be reused in later prompts."
-        let stack = NSStackView()
-        stack.orientation = .vertical
-        stack.alignment = .leading
-        stack.spacing = 8
-        let checkboxes = limitedCandidates.map { candidate in
-            let checkbox = NSButton(
-                checkboxWithTitle: "\(candidate.rawPhrase) -> \(candidate.correctedPhrase)",
-                target: nil,
-                action: nil
-            )
-            checkbox.state = candidate.dangerous ? .off : .on
-            checkbox.toolTip = candidate.dangerous ? "Dangerous command candidates are not selected by default." : nil
-            stack.addArrangedSubview(checkbox)
-            return checkbox
-        }
-        alert.accessoryView = stack
-        alert.addButton(withTitle: "Save Selected")
-        alert.addButton(withTitle: "Skip")
-
-        guard alert.runModal() == .alertFirstButtonReturn else {
-            return
-        }
-
-        let selectedIndexes = Set(checkboxes.enumerated().compactMap { index, checkbox in
-            checkbox.state == .on ? index : nil
-        })
-        let reviewedCandidates = CandidateApprovalUseCase().approveCandidates(
-            limitedCandidates,
-            selectedIndexes: selectedIndexes
-        )
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
-        let repository = try store.repository()
-        _ = try DictionaryLearningUseCase(repository: repository).approveCandidates(reviewedCandidates)
-    }
-
-    @objc private func cancel() {
-        close()
     }
 }
