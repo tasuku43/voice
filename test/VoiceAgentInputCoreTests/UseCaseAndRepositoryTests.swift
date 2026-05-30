@@ -259,6 +259,22 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: directory.path))
         XCTAssertEqual(try repository.loadEntries(), entries)
     }
+
+    @MainActor
+    func testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger() {
+        let monitor = MockKeyboardShortcutMonitor()
+        var triggerCount = 0
+
+        monitor.start(shortcut: .defaultVoiceInput) {
+            triggerCount += 1
+        }
+        monitor.trigger()
+        monitor.stop()
+        monitor.trigger()
+
+        XCTAssertEqual(triggerCount, 1)
+        XCTAssertNil(monitor.shortcut)
+    }
 }
 
 private final class InMemoryDictionaryRepository: DictionaryRepository {

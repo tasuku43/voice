@@ -18,8 +18,8 @@
 
 ## Phase 3: input loop
 
-- Global hotkey.
-- Pasteboard insertion. Done for text-only adapter; real UI trigger still pending.
+- Global hotkey. Initial AppKit global/local monitor done for Command-Shift-Space.
+- Pasteboard insertion. Done for text-only adapter and wired into the app shell.
 - Accessibility permission messaging.
 - Explicit no-submit behavior.
 
@@ -34,8 +34,8 @@
 
 - Editable prompt preview.
 - Diff extraction.
-- Candidate approval UI.
-- Local dictionary persistence.
+- Candidate approval UI. Minimal app-shell approval dialog done.
+- Local dictionary persistence. JSON-backed Application Support store done.
 
 ## Phase 6: repository context
 

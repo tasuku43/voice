@@ -102,6 +102,29 @@ Rules:
 - Reject insertion if `ConfirmedPrompt.shouldSubmitAutomatically` is true.
 - Pasteboard insertion writes text to the pasteboard only. A separate UI action must decide whether to paste.
 
+## KeyboardShortcutMonitor
+
+Current protocol:
+
+```swift
+protocol KeyboardShortcutMonitor {
+    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void)
+    func stop()
+}
+```
+
+Current default shortcut:
+
+- Command-Shift-Space
+
+Current test adapter:
+
+- `MockKeyboardShortcutMonitor`
+
+Current macOS adapter:
+
+- `AppKitKeyboardShortcutMonitor` in the app shell.
+
 ## ContextProvider
 
 Future providers:
