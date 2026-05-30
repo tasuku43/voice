@@ -1,0 +1,12 @@
+{
+  "name": "voice-agent-input",
+  "private": true,
+  "version": "0.1.0",
+  "description": "macOS-native voice input scaffold for coding-agent prompts",
+  "scripts": {
+    "test": "swift test",
+    "eval": "swift test --filter EvalHarnessTests",
+    "check": "make check",
+    "goal": "cat .codex/goals/voice-agent-input-full-build.md"
+  }
+}

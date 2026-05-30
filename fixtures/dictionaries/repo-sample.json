@@ -1,0 +1,12 @@
+[
+  {
+    "spokenForms": [
+      "組織設定ページ"
+    ],
+    "canonical": "OrganizationSettingsPage",
+    "kind": "symbol",
+    "scope": "repository",
+    "confidence": 0.72,
+    "autoApply": false
+  }
+]

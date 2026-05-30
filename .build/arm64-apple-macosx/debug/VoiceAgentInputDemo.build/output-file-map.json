@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputDemo.build/master.swiftdeps"
+  },
+  "/Users/tasuku/work/github.com/tasuku43/voice/src/VoiceAgentInputDemo/main.swift": {
+    "dependencies": "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputDemo.build/main.d",
+    "object": "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputDemo.build/main.swift.o",
+    "swiftmodule": "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputDemo.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputDemo.build/main.swiftdeps"
+  }
+}

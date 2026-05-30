@@ -1,0 +1,4 @@
+module VoiceAgentInputPackageTests {
+    header "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputPackageTests.build/VoiceAgentInputPackageTests-Swift.h"
+    requires objc
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "claude-code-typescript-error",
+    "rawTranscript": "くらのコードでタイプスクリプトエラーを直して",
+    "expectedContains": [
+      "Claude Code",
+      "TypeScript",
+      "error"
+    ]
+  },
+  {
+    "name": "codex-pnpm",
+    "rawTranscript": "こーでっくすでぴーえぬぴーえむを確認して",
+    "expectedContains": [
+      "Codex",
+      "pnpm"
+    ]
+  },
+  {
+    "name": "mcp-term",
+    "rawTranscript": "えむしーぴーの設定を見て",
+    "expectedContains": [
+      "MCP"
+    ]
+  }
+]

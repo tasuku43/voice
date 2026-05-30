@@ -1,0 +1,58 @@
+[
+  {
+    "spokenForms": [
+      "クロードコード",
+      "くらうどこーど",
+      "くらのコード"
+    ],
+    "canonical": "Claude Code",
+    "kind": "toolName",
+    "scope": "global",
+    "confidence": 0.95,
+    "autoApply": true
+  },
+  {
+    "spokenForms": [
+      "こーでっくす",
+      "コーデックス"
+    ],
+    "canonical": "Codex",
+    "kind": "toolName",
+    "scope": "global",
+    "confidence": 0.95,
+    "autoApply": true
+  },
+  {
+    "spokenForms": [
+      "タイプスクリプト",
+      "たいぷすくりぷと"
+    ],
+    "canonical": "TypeScript",
+    "kind": "programmingLanguage",
+    "scope": "global",
+    "confidence": 0.95,
+    "autoApply": true
+  },
+  {
+    "spokenForms": [
+      "ぴーえぬぴーえむ",
+      "ピーエヌピーエム"
+    ],
+    "canonical": "pnpm",
+    "kind": "command",
+    "scope": "global",
+    "confidence": 0.9,
+    "autoApply": true
+  },
+  {
+    "spokenForms": [
+      "えむしーぴー",
+      "エムシーピー"
+    ],
+    "canonical": "MCP",
+    "kind": "framework",
+    "scope": "global",
+    "confidence": 0.9,
+    "autoApply": true
+  }
+]
