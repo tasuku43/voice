@@ -120,7 +120,18 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
         let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
         let repository = try store.repository()
-        return try DictionaryEntryLoadingUseCase(repository: repository).loadEntries()
+        return try DictionaryEntryLoadingUseCase(
+            repository: repository,
+            contextualEntries: loadRepositoryVocabularyEntries()
+        ).loadEntries()
+    }
+
+    private func loadRepositoryVocabularyEntries() -> [DictionaryEntry] {
+        let currentDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        guard let context = try? GitRepositoryContextProvider().currentContext(startingAt: currentDirectory) else {
+            return []
+        }
+        return RepositoryVocabularyUseCase().entries(from: context)
     }
 
     @objc private func quit() {

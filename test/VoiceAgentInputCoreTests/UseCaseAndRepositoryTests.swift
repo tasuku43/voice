@@ -330,13 +330,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             repository: repository,
             seedEntries: [
                 DictionaryEntry(spokenForms: ["こーでっくす"], canonical: "Codex", kind: .toolName, scope: .global, confidence: 0.95, autoApply: true)
+            ],
+            contextualEntries: [
+                DictionaryEntry(spokenForms: ["めいん"], canonical: "main", kind: .projectTerm, scope: .repository, confidence: 0.7, autoApply: true)
             ]
         )
 
         let entries = try useCase.loadEntries()
         let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "こーでっくすでぷろじぇくとぼいすを確認")
 
-        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries.count, 3)
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
         XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
     }

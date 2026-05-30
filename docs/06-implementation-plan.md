@@ -43,4 +43,4 @@
 
 - Git root and branch detection. Initial command-backed provider done.
 - Bounded vocabulary extraction.
-- Repository-scoped suggestions. Initial repository name and branch entries done.
+- Repository-scoped suggestions. Initial repository name and branch entries are mixed into app preview dictionaries.

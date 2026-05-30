@@ -163,6 +163,7 @@ Current providers:
 
 - `GitRepositoryContextProvider` reads git root and current branch through bounded `git` commands.
 - `RepositoryVocabularyUseCase` turns repository name and branch name into repository-scoped dictionary entries.
+- The macOS shell currently reads repository context from the app process working directory and mixes those entries into preview dictionaries.
 
 Future providers:
 
