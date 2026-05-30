@@ -36,6 +36,7 @@ Cover the real executable path where practical:
 - expected output shape,
 - stable correction behavior.
 - `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.
+- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, preview-before-paste, candidate approval, local dictionary data controls, and absence of obvious network calls.
 
 ### Evals
 

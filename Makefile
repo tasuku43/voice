@@ -18,6 +18,7 @@ check: xcode-test-env
 	swift build $(SWIFT_PACKAGE_FLAGS) --product voice-agent-input-app
 	python3 scripts/build_app_bundle.py .
 	python3 scripts/validate_required_files.py .
+	python3 scripts/validate_app_contract.py .
 
 goal:
 	cat .codex/goals/voice-agent-input-full-build.md

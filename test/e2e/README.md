@@ -9,4 +9,4 @@ Current process-level coverage lives in `DemoCLITests` and runs the built `voice
 - explicit no-submit behavior,
 - candidate extraction from an edited prompt.
 
-Future macOS E2E coverage should add the menu bar app, preview panel, hotkey, and pasteboard insertion once those targets exist.
+Current automated coverage builds the menu bar app bundle and validates the source-level app contract for the menu, hotkey, on-device Apple Speech wiring, preview-before-paste, candidate approval, and local dictionary data controls. Manual macOS E2E should still verify microphone permission prompts, real speech transcription, Accessibility paste into another app, and the export/import/delete menu actions.
