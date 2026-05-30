@@ -28,7 +28,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
-The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, on-device Apple Speech transcription, preview window, Accessibility-based paste, pasteboard fallback, local approval of dictionary candidates, and simple in-progress state for the recording flow.
+The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, on-device Apple Speech transcription, preview window, Accessibility-based paste, pasteboard fallback, per-candidate local dictionary approval, and simple in-progress state for the recording flow.
 
 ## Stack
 

@@ -156,8 +156,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             now: { Date(timeIntervalSince1970: 1_234) }
         )
         let candidates = [
-            CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.72, suggestedScope: .user, autoApplyAllowed: true),
-            CorrectionCandidate(rawPhrase: "アールエム", correctedPhrase: "rm", confidence: 0.4, suggestedScope: .user, dangerous: true, autoApplyAllowed: true),
+            CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.72, suggestedScope: .user, approved: true, autoApplyAllowed: true),
+            CorrectionCandidate(rawPhrase: "アールエム", correctedPhrase: "rm", confidence: 0.4, suggestedScope: .user, approved: true, dangerous: true, autoApplyAllowed: true),
             CorrectionCandidate(rawPhrase: "却下", correctedPhrase: "reject me", confidence: 0.9, suggestedScope: .user, rejected: true, autoApplyAllowed: true)
         ]
 
@@ -169,6 +169,32 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(saved.contains { $0.spokenForms == ["くらのコード"] && $0.canonical == "Claude Code" && $0.autoApply })
         XCTAssertTrue(saved.contains { $0.spokenForms == ["アールエム"] && $0.canonical == "rm" && !$0.autoApply })
         XCTAssertFalse(saved.contains { $0.canonical == "reject me" })
+    }
+
+    func testUnapprovedCandidatesDoNotPersist() throws {
+        let repository = InMemoryDictionaryRepository()
+        let useCase = DictionaryLearningUseCase(repository: repository)
+
+        let approved = try useCase.approveCandidates([
+            CorrectionCandidate(rawPhrase: "候補", correctedPhrase: "candidate", confidence: 0.8, suggestedScope: .user)
+        ])
+
+        XCTAssertEqual(approved, [])
+        XCTAssertEqual(try repository.loadEntries(), [])
+    }
+
+    func testCandidateApprovalMarksSelectedOnly() {
+        let candidates = [
+            CorrectionCandidate(rawPhrase: "one", correctedPhrase: "1", confidence: 0.8, suggestedScope: .user),
+            CorrectionCandidate(rawPhrase: "two", correctedPhrase: "2", confidence: 0.8, suggestedScope: .user)
+        ]
+
+        let approved = CandidateApprovalUseCase().approveCandidates(candidates, selectedIndexes: [1])
+
+        XCTAssertTrue(approved[0].rejected)
+        XCTAssertFalse(approved[0].approved)
+        XCTAssertTrue(approved[1].approved)
+        XCTAssertFalse(approved[1].rejected)
     }
 
     func testPromptInsertionRequiresExplicitConfirmation() throws {

@@ -13,7 +13,7 @@ public struct DictionaryLearningUseCase {
     public func approveCandidates(_ candidates: [CorrectionCandidate]) throws -> [DictionaryEntry] {
         var entries = try repository.loadEntries()
         let approvedEntries = candidates
-            .filter { !$0.rejected }
+            .filter { $0.approved && !$0.rejected }
             .map { entry(from: $0) }
 
         for approvedEntry in approvedEntries where !entries.containsEquivalent(to: approvedEntry) {

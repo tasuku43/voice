@@ -353,21 +353,43 @@ private final class PreviewWindowController: NSWindowController {
             return
         }
 
+        let limitedCandidates = Array(candidates.prefix(8))
         let alert = NSAlert()
         alert.messageText = "Approve dictionary candidates?"
-        alert.informativeText = candidates.prefix(5)
-            .map { "\($0.rawPhrase) -> \($0.correctedPhrase)" }
-            .joined(separator: "\n")
-        alert.addButton(withTitle: "Approve")
+        alert.informativeText = "Selected candidates will be reused in later prompts."
+        let stack = NSStackView()
+        stack.orientation = .vertical
+        stack.alignment = .leading
+        stack.spacing = 8
+        let checkboxes = limitedCandidates.map { candidate in
+            let checkbox = NSButton(
+                checkboxWithTitle: "\(candidate.rawPhrase) -> \(candidate.correctedPhrase)",
+                target: nil,
+                action: nil
+            )
+            checkbox.state = candidate.dangerous ? .off : .on
+            checkbox.toolTip = candidate.dangerous ? "Dangerous command candidates are not selected by default." : nil
+            stack.addArrangedSubview(checkbox)
+            return checkbox
+        }
+        alert.accessoryView = stack
+        alert.addButton(withTitle: "Save Selected")
         alert.addButton(withTitle: "Skip")
 
         guard alert.runModal() == .alertFirstButtonReturn else {
             return
         }
 
+        let selectedIndexes = Set(checkboxes.enumerated().compactMap { index, checkbox in
+            checkbox.state == .on ? index : nil
+        })
+        let reviewedCandidates = CandidateApprovalUseCase().approveCandidates(
+            limitedCandidates,
+            selectedIndexes: selectedIndexes
+        )
         let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
         let repository = try store.repository()
-        _ = try DictionaryLearningUseCase(repository: repository).approveCandidates(candidates)
+        _ = try DictionaryLearningUseCase(repository: repository).approveCandidates(reviewedCandidates)
     }
 
     @objc private func cancel() {

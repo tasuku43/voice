@@ -36,7 +36,7 @@
 
 - Editable prompt preview.
 - Diff extraction.
-- Candidate approval UI. Minimal app-shell approval dialog done.
+- Candidate approval UI. App-shell approval dialog supports per-candidate selection.
 - Local dictionary persistence. JSON-backed Application Support store done.
 
 ## Phase 6: repository context
