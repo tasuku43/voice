@@ -38,6 +38,7 @@
 - Diff extraction.
 - Candidate approval UI. App-shell approval dialog supports per-candidate selection.
 - Local dictionary persistence. JSON-backed Application Support store done.
+- Local learning data controls. App-shell menu can export, import, and delete approved local dictionary entries.
 
 ## Phase 6: repository context
 

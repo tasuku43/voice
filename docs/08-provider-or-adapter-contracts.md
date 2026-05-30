@@ -90,6 +90,7 @@ Current use cases:
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries with approved local entries for preview and confirmation flows.
 - `CandidateApprovalUseCase` marks selected candidates as approved and unselected candidates as rejected.
 - `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
+- `LocalLearningDataUseCase` exports, imports, and deletes approved local dictionary entries; the macOS shell exposes these as menu actions.
 - Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.
 
 Future adapter:

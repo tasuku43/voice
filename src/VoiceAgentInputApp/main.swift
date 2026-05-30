@@ -1,4 +1,5 @@
 import AppKit
+import UniformTypeIdentifiers
 import VoiceAgentInputCore
 
 @main
@@ -39,6 +40,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
+        menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
+        menu.addItem(NSMenuItem(title: "Delete Local Dictionary...", action: #selector(deleteLocalDictionary), keyEquivalent: "d"))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         item.menu = menu
@@ -154,6 +158,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         return try store.settingsRepository()
     }
 
+    private func approvedDictionaryRepository() throws -> JSONDictionaryRepository {
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        return try store.repository()
+    }
+
     @objc private func setRepositoryFolder() {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
@@ -170,6 +179,76 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             var settings = try repository.loadSettings()
             settings.repositoryPath = url.path
             try repository.saveSettings(settings)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func exportLocalDictionary() {
+        do {
+            let entries = try LocalLearningDataUseCase(
+                repository: approvedDictionaryRepository()
+            ).exportApprovedEntries()
+
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [.json]
+            panel.nameFieldStringValue = "voice-agent-input-dictionary.json"
+            panel.message = "Export approved local dictionary entries."
+
+            guard panel.runModal() == .OK, let url = panel.url else {
+                return
+            }
+
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            encoder.dateEncodingStrategy = .iso8601
+            try encoder.encode(entries).write(to: url, options: [.atomic])
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func importLocalDictionary() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.json]
+        panel.message = "Import approved local dictionary entries from JSON."
+
+        guard panel.runModal() == .OK, let url = panel.url else {
+            return
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let entries = try decoder.decode([DictionaryEntry].self, from: data)
+            try LocalLearningDataUseCase(
+                repository: approvedDictionaryRepository()
+            ).importApprovedEntries(entries, merge: true)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func deleteLocalDictionary() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Delete local dictionary?"
+        alert.informativeText = "This removes approved local learning entries stored on this Mac. Repository context and bundled seed terms are not deleted."
+        alert.addButton(withTitle: "Delete")
+        alert.addButton(withTitle: "Cancel")
+
+        guard alert.runModal() == .alertFirstButtonReturn else {
+            return
+        }
+
+        do {
+            try LocalLearningDataUseCase(
+                repository: approvedDictionaryRepository()
+            ).deleteAllLocalLearningData()
         } catch {
             presentError(error)
         }
