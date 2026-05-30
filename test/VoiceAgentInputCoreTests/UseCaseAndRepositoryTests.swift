@@ -41,9 +41,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
     func testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview() async throws {
         let recorder = MockAudioRecorder(mockText: "くらのコードでタイプスクリプトを確認して")
+        let permissionProvider = MockMicrophonePermissionProvider(status: .authorized)
         let speechEngine = MockSpeechEngine()
         let useCase = VoiceInputFlowUseCase(
             audioRecorder: recorder,
+            microphonePermissionProvider: permissionProvider,
             speechEngine: speechEngine,
             entries: SeedDictionaries.codingAgentEntries
         )
@@ -53,6 +55,40 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトを確認して")
         XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
         XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
+        XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
+    }
+
+    func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
+        let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
+        let useCase = VoiceInputFlowUseCase(
+            audioRecorder: MockAudioRecorder(mockText: "こーでっくすでブランチを確認して"),
+            microphonePermissionProvider: permissionProvider,
+            speechEngine: MockSpeechEngine(),
+            entries: SeedDictionaries.codingAgentEntries
+        )
+
+        let preview = try await useCase.recordTranscribeAndPreview()
+
+        XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
+        XCTAssertEqual(permissionProvider.requestAccessCallCount, 1)
+    }
+
+    func testVoiceInputFlowDoesNotRecordWhenMicrophonePermissionIsDenied() async {
+        let permissionProvider = MockMicrophonePermissionProvider(status: .denied)
+        let useCase = VoiceInputFlowUseCase(
+            audioRecorder: MockAudioRecorder(mockText: "recording should not be consumed"),
+            microphonePermissionProvider: permissionProvider,
+            speechEngine: MockSpeechEngine(),
+            entries: SeedDictionaries.codingAgentEntries
+        )
+
+        do {
+            _ = try await useCase.recordTranscribeAndPreview()
+            XCTFail("Expected microphone permission denial")
+        } catch {
+            XCTAssertEqual(error as? VoiceInputFlowError, .microphonePermissionDenied(status: .denied))
+            XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
+        }
     }
 
     func testVoiceInputFlowRequiresRecorderForRecordPath() async {

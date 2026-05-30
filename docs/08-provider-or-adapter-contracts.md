@@ -32,6 +32,30 @@ Current app orchestration:
 - `VoiceInputFlowUseCase` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, and produces a `PromptPreview`.
 - Mock transcription is supported for tests and preview UI development before microphone capture exists.
 
+## MicrophonePermissionProvider
+
+Current protocol:
+
+```swift
+protocol MicrophonePermissionProvider {
+    func currentStatus() -> MicrophonePermissionStatus
+    func requestAccess() async -> MicrophonePermissionStatus
+}
+```
+
+Current use cases:
+
+- `MicrophonePermissionUseCase` requests access only when the status is `notDetermined`.
+- `VoiceInputFlowUseCase` can check microphone permission before recording when a provider is injected.
+
+Current test adapter:
+
+- `MockMicrophonePermissionProvider`
+
+Future macOS adapter:
+
+- AVFoundation-backed provider using microphone authorization APIs.
+
 ## DictionaryRepository
 
 Current adapter:
