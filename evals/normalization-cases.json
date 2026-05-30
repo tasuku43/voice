@@ -22,5 +22,13 @@
     "expectedContains": [
       "MCP"
     ]
+  },
+  {
+    "name": "codex-branch-check",
+    "rawTranscript": "こーでっくすでブランチの差分を確認して",
+    "expectedContains": [
+      "Codex",
+      "branch"
+    ]
   }
 ]
