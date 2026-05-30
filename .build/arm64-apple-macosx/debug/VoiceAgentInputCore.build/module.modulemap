@@ -1,4 +1,0 @@
-module VoiceAgentInputCore {
-    header "/Users/tasuku/work/github.com/tasuku43/voice/.build/arm64-apple-macosx/debug/VoiceAgentInputCore.build/VoiceAgentInputCore-Swift.h"
-    requires objc
-}

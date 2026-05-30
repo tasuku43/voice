@@ -1,12 +1,15 @@
-.PHONY: test eval check goal demo clean
+.PHONY: test eval check goal demo clean xcode-test-env
 
-test:
+xcode-test-env:
+	python3 scripts/require_xcode_xctest.py
+
+test: xcode-test-env
 	swift test
 
-eval:
+eval: xcode-test-env
 	swift test --filter EvalHarnessTests
 
-check:
+check: xcode-test-env
 	swift test
 	python3 scripts/validate_required_files.py .
 
