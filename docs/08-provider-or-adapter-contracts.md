@@ -161,9 +161,9 @@ App shell rules:
 
 Current providers:
 
-- `GitRepositoryContextProvider` reads git root and current branch through bounded `git` commands.
-- `RepositoryVocabularyUseCase` turns repository name and branch name into repository-scoped dictionary entries.
-- The macOS shell currently reads repository context from the app process working directory and mixes those entries into preview dictionaries.
+- `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through `git` commands.
+- `RepositoryVocabularyUseCase` turns repository name, branch name, and tracked file names into repository-scoped dictionary entries.
+- The macOS shell currently reads repository context from the configured repository folder or app process working directory and mixes those entries into preview dictionaries.
 - `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override.
 
 Future providers:

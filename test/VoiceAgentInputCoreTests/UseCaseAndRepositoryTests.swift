@@ -374,16 +374,40 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(runner.invocations[1].arguments, ["-C", "/Users/tasuku/work/github.com/tasuku43/voice", "branch", "--show-current"])
     }
 
+    func testGitRepositoryContextProviderReadsBoundedTrackedVocabularyFiles() throws {
+        let runner = MockCommandRunner(outputs: [
+            "Package.swift\nSources/App/main.swift\n.build/debug.yaml\nREADME.md\nimage.png\n"
+        ])
+        let provider = GitRepositoryContextProvider(
+            commandRunner: runner,
+            maximumVocabularyFiles: 2,
+            allowedVocabularyExtensions: ["swift", "md"]
+        )
+
+        let filePaths = try provider.trackedVocabularyFilePaths(rootPath: "/repo")
+
+        XCTAssertEqual(filePaths, ["Package.swift", "Sources/App/main.swift"])
+        XCTAssertEqual(runner.invocations.count, 1)
+        XCTAssertEqual(runner.invocations[0].executable, "/usr/bin/git")
+        XCTAssertEqual(runner.invocations[0].arguments, ["-C", "/repo", "ls-files"])
+    }
+
     func testRepositoryVocabularyEntriesUseRepositoryScope() {
         let context = RepositoryContext(
             rootPath: "/Users/tasuku/work/github.com/tasuku43/voice",
             branchName: "feature/context"
         )
 
-        let entries = RepositoryVocabularyUseCase().entries(from: context)
+        let entries = RepositoryVocabularyUseCase().entries(
+            from: context,
+            filePaths: ["Package.swift", "docs/README.md", "Sources/Package.swift"]
+        )
 
         XCTAssertTrue(entries.contains { $0.canonical == "voice" && $0.scope == .repository && $0.autoApply })
         XCTAssertTrue(entries.contains { $0.canonical == "feature/context" && $0.scope == .repository && $0.autoApply })
+        XCTAssertTrue(entries.contains { $0.canonical == "Package.swift" && $0.scope == .repository && $0.autoApply })
+        XCTAssertTrue(entries.contains { $0.canonical == "README.md" && $0.scope == .repository && $0.autoApply })
+        XCTAssertEqual(entries.filter { $0.canonical == "Package.swift" }.count, 1)
     }
 
     @MainActor

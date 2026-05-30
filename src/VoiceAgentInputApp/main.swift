@@ -130,10 +130,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func loadRepositoryVocabularyEntries() -> [DictionaryEntry] {
         let startURL = configuredRepositoryURL() ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        guard let context = try? GitRepositoryContextProvider().currentContext(startingAt: startURL) else {
+        let provider = GitRepositoryContextProvider()
+        guard let context = try? provider.currentContext(startingAt: startURL) else {
             return []
         }
-        return RepositoryVocabularyUseCase().entries(from: context)
+        let filePaths = (try? provider.trackedVocabularyFilePaths(rootPath: context.rootPath)) ?? []
+        return RepositoryVocabularyUseCase().entries(from: context, filePaths: filePaths)
     }
 
     private func configuredRepositoryURL() -> URL? {

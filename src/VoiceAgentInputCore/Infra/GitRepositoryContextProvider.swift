@@ -2,9 +2,17 @@ import Foundation
 
 public struct GitRepositoryContextProvider: RepositoryContextProvider {
     public var commandRunner: any CommandRunner
+    public var maximumVocabularyFiles: Int
+    public var allowedVocabularyExtensions: Set<String>
 
-    public init(commandRunner: any CommandRunner = ProcessCommandRunner()) {
+    public init(
+        commandRunner: any CommandRunner = ProcessCommandRunner(),
+        maximumVocabularyFiles: Int = 200,
+        allowedVocabularyExtensions: Set<String> = ["swift", "md", "json", "yml", "yaml", "sh", "py", "js", "ts", "tsx"]
+    ) {
         self.commandRunner = commandRunner
+        self.maximumVocabularyFiles = maximumVocabularyFiles
+        self.allowedVocabularyExtensions = allowedVocabularyExtensions
     }
 
     public func currentContext(startingAt path: URL) throws -> RepositoryContext? {
@@ -26,6 +34,21 @@ public struct GitRepositoryContextProvider: RepositoryContextProvider {
             rootPath: rootPath,
             branchName: branch?.isEmpty == false ? branch : nil
         )
+    }
+
+    public func trackedVocabularyFilePaths(rootPath: String) throws -> [String] {
+        guard maximumVocabularyFiles > 0 else {
+            return []
+        }
+        let output = try commandRunner.run(
+            executable: "/usr/bin/git",
+            arguments: ["-C", rootPath, "ls-files"]
+        )
+        let filePaths = output
+            .components(separatedBy: .newlines)
+            .filter { !$0.isEmpty }
+            .filter { allowedVocabularyExtensions.contains(URL(fileURLWithPath: $0).pathExtension.lowercased()) }
+        return Array(filePaths.prefix(maximumVocabularyFiles))
     }
 }
 

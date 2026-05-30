@@ -14,7 +14,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 - local dictionary learning from user edits
 - scoped dictionaries: global, user, repository, session
 - deterministic and explainable corrections
-- repository context hooks for git root and branch vocabulary
+- repository context hooks for git root, branch, and tracked file-name vocabulary
 
 ## Core workflows
 
@@ -30,7 +30,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
 The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, on-device Apple Speech transcription, preview window, Accessibility-based paste, pasteboard fallback, per-candidate local dictionary approval, and simple in-progress state for the recording flow.
-The menu can store a local repository folder path for repository-scoped vocabulary when the app is launched outside a terminal.
+The menu can store a local repository folder path for repository-scoped vocabulary when the app is launched outside a terminal. Repository context includes the git root, current branch, and a bounded set of tracked file names.
 
 ## Stack
 

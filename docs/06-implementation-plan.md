@@ -42,6 +42,6 @@
 ## Phase 6: repository context
 
 - Git root and branch detection. Initial command-backed provider done.
-- Bounded vocabulary extraction.
-- Repository-scoped suggestions. Initial repository name and branch entries are mixed into app preview dictionaries.
+- Bounded vocabulary extraction. Tracked file names from `git ls-files` are filtered by extension and capped before becoming repository-scoped entries.
+- Repository-scoped suggestions. Repository name, branch, and tracked file-name entries are mixed into app preview dictionaries.
 - Manual repository folder setting. App shell can store a local repository path for bundled/Finder launches.
