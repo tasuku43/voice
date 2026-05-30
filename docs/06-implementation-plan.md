@@ -13,7 +13,7 @@
 
 - Menu bar app. Minimal mock shell done.
 - Floating preview panel. Minimal editable mock preview done.
-- Mock STT integration. Done in App use case; shell currently uses mock transcript text.
+- Mock STT integration. Done in App use case; shell records audio but still uses a mock STT transcript pending Apple Speech.
 - Confirm-before-paste flow.
 
 ## Phase 3: input loop
@@ -25,7 +25,8 @@
 
 ## Phase 4: real audio and STT
 
-- Audio recorder abstraction. Done as protocol plus mock recorder; real microphone adapter pending.
+- Audio recorder abstraction. Done as protocol plus mock recorder.
+- AVFoundation microphone recorder. Initial adapter done; it uses a temporary local file and deletes it after reading audio data.
 - Apple Speech adapter.
 - Availability guards.
 - Mock engine retained for tests.

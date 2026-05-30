@@ -13,7 +13,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         installMenuBarItem()
         hotkeyMonitor.start(shortcut: .defaultVoiceInput) { [weak self] in
             Task { @MainActor in
-                self?.showMockPreview()
+                self?.recordVoiceInput()
             }
         }
     }
@@ -27,6 +27,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         item.button?.title = "Voice"
 
         let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "Record Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r"))
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
         menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
@@ -37,6 +38,44 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     @objc private func showMockPreview() {
+        presentPreview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
+    }
+
+    @objc private func recordVoiceInput() {
+        let entries: [DictionaryEntry]
+        do {
+            entries = try loadDictionaryEntries()
+        } catch {
+            presentError(error)
+            return
+        }
+
+        Task {
+            do {
+                let previewUseCase = PromptPreviewUseCase(entries: entries)
+                let voiceFlow = VoiceInputFlowUseCase(
+                    audioRecorder: AVFoundationAudioRecorder(durationSeconds: 4),
+                    microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
+                    speechEngine: MockSpeechEngine(transcript: Transcript(
+                        text: "音声を録音しました。Apple Speech adapter を接続すると、ここに実際の文字起こしが入ります。",
+                        localeIdentifier: "ja-JP",
+                        confidence: nil
+                    )),
+                    previewUseCase: previewUseCase
+                )
+                let preview = try await voiceFlow.recordTranscribeAndPreview()
+                await MainActor.run {
+                    self.openPreview(preview: preview, previewUseCase: previewUseCase)
+                }
+            } catch {
+                await MainActor.run {
+                    self.presentError(error)
+                }
+            }
+        }
+    }
+
+    private func presentPreview(rawTranscript: String) {
         let entries: [DictionaryEntry]
         do {
             entries = try loadDictionaryEntries()
@@ -45,8 +84,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             return
         }
         let previewUseCase = PromptPreviewUseCase(entries: entries)
-        let preview = previewUseCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
+        let preview = previewUseCase.preview(rawTranscript: rawTranscript)
+        openPreview(preview: preview, previewUseCase: previewUseCase)
+    }
 
+    private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         let controller = PreviewWindowController(preview: preview, previewUseCase: previewUseCase)
         previewWindowController = controller
         controller.showWindow(nil)

@@ -26,9 +26,9 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 7. Paste only after explicit confirmation.
 8. Learn dictionary candidates from the raw transcript, auto-corrected prompt, and final edited prompt.
 
-The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. macOS microphone recording and real STT adapters are intentionally represented as documented next steps.
+The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. Real STT adapters are intentionally represented as documented next steps.
 
-The current app shell includes a minimal macOS menu bar executable with a mock preview window, Command-Shift-Space hotkey trigger, pasteboard insertion, and local approval of dictionary candidates. It does not record real audio yet.
+The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, preview window, pasteboard insertion, and local approval of dictionary candidates. It still uses a mock STT engine after recording until an Apple Speech adapter is connected.
 
 ## Stack
 

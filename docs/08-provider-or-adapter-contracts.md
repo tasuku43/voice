@@ -23,6 +23,7 @@ protocol AudioRecorder {
 Implementations:
 
 - `MockAudioRecorder` for tests and UI development.
+- `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file, reads it into `RecordedAudio`, and deletes the temporary file immediately.
 - `MockSpeechEngine` for tests and UI development.
 - `AppleSpeechEngine` for SpeechAnalyzer / SpeechTranscriber.
 - `WhisperSpeechEngine` optional fallback later.
@@ -30,7 +31,7 @@ Implementations:
 Current app orchestration:
 
 - `VoiceInputFlowUseCase` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, and produces a `PromptPreview`.
-- Mock transcription is supported for tests and preview UI development before microphone capture exists.
+- The macOS shell can record audio, but still uses mock transcription until a real Apple Speech adapter is connected.
 
 ## MicrophonePermissionProvider
 
@@ -52,9 +53,9 @@ Current test adapter:
 
 - `MockMicrophonePermissionProvider`
 
-Future macOS adapter:
+Current macOS adapter:
 
-- AVFoundation-backed provider using microphone authorization APIs.
+- `AVFoundationMicrophonePermissionProvider`
 
 ## DictionaryRepository
 
