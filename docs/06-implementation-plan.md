@@ -11,9 +11,9 @@
 
 ## Phase 2: macOS shell
 
-- Menu bar app.
-- Floating preview panel.
-- Mock STT integration.
+- Menu bar app. Minimal mock shell done.
+- Floating preview panel. Minimal editable mock preview done.
+- Mock STT integration. Done in App use case; shell currently uses mock transcript text.
 - Confirm-before-paste flow.
 
 ## Phase 3: input loop

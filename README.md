@@ -28,6 +28,8 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. macOS UI, hotkey, microphone, STT, and pasteboard adapters are intentionally represented as documented next steps.
 
+The current app shell includes a minimal macOS menu bar executable with a mock preview window. It does not record audio or install a global hotkey yet.
+
 ## Stack
 
 - Swift Package Manager
@@ -80,6 +82,7 @@ make test        # run Swift tests
 make eval        # run tests including fixture-driven evals
 make check       # one-command validation
 make goal        # print the first autonomous Codex prompt
+swift run voice-agent-input-app  # launch minimal menu bar shell
 ```
 
 ## Product boundary

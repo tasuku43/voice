@@ -2,4 +2,6 @@
 .swiftpm/
 DerivedData/
 
+.codex/config.toml
+
 .DS_Store

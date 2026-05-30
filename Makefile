@@ -11,6 +11,7 @@ eval: xcode-test-env
 
 check: xcode-test-env
 	swift test
+	swift build --product voice-agent-input-app
 	python3 scripts/validate_required_files.py .
 
 goal:

@@ -2,6 +2,14 @@
 
 The production app will be a macOS menu bar utility. The scaffold also includes a small CLI demo so core behavior can be tested in CI and by coding agents.
 
+## macOS app shell
+
+```bash
+swift run voice-agent-input-app
+```
+
+The current shell installs a menu bar item and opens a mock preview window. Confirming the preview copies the edited prompt to the pasteboard through the same `PromptInsertionUseCase` and `PasteboardTextInsertionController` used by tests. It does not record microphone audio, register a global hotkey, or paste into the focused app yet.
+
 ## Demo CLI
 
 ```bash
