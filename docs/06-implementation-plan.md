@@ -41,6 +41,6 @@
 
 ## Phase 6: repository context
 
-- Git root and branch detection.
+- Git root and branch detection. Initial command-backed provider done.
 - Bounded vocabulary extraction.
-- Repository-scoped suggestions.
+- Repository-scoped suggestions. Initial repository name and branch entries done.

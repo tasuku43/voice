@@ -341,6 +341,36 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
     }
 
+    func testGitRepositoryContextProviderReadsRootAndBranch() throws {
+        let runner = MockCommandRunner(outputs: [
+            "/Users/tasuku/work/github.com/tasuku43/voice\n",
+            "main\n"
+        ])
+        let provider = GitRepositoryContextProvider(commandRunner: runner)
+
+        let context = try provider.currentContext(startingAt: URL(fileURLWithPath: "/tmp/inside-repo"))
+
+        XCTAssertEqual(context, RepositoryContext(
+            rootPath: "/Users/tasuku/work/github.com/tasuku43/voice",
+            branchName: "main"
+        ))
+        XCTAssertEqual(runner.invocations.count, 2)
+        XCTAssertEqual(runner.invocations[0].arguments, ["-C", "/tmp/inside-repo", "rev-parse", "--show-toplevel"])
+        XCTAssertEqual(runner.invocations[1].arguments, ["-C", "/Users/tasuku/work/github.com/tasuku43/voice", "branch", "--show-current"])
+    }
+
+    func testRepositoryVocabularyEntriesUseRepositoryScope() {
+        let context = RepositoryContext(
+            rootPath: "/Users/tasuku/work/github.com/tasuku43/voice",
+            branchName: "feature/context"
+        )
+
+        let entries = RepositoryVocabularyUseCase().entries(from: context)
+
+        XCTAssertTrue(entries.contains { $0.canonical == "voice" && $0.scope == .repository && $0.autoApply })
+        XCTAssertTrue(entries.contains { $0.canonical == "feature/context" && $0.scope == .repository && $0.autoApply })
+    }
+
     @MainActor
     func testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger() {
         let monitor = MockKeyboardShortcutMonitor()

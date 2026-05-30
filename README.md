@@ -14,6 +14,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 - local dictionary learning from user edits
 - scoped dictionaries: global, user, repository, session
 - deterministic and explainable corrections
+- repository context hooks for git root and branch vocabulary
 
 ## Core workflows
 

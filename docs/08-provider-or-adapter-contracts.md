@@ -159,9 +159,13 @@ App shell rules:
 
 ## ContextProvider
 
+Current providers:
+
+- `GitRepositoryContextProvider` reads git root and current branch through bounded `git` commands.
+- `RepositoryVocabularyUseCase` turns repository name and branch name into repository-scoped dictionary entries.
+
 Future providers:
 
 - focused app provider,
 - terminal current directory provider,
-- git context provider,
 - repository vocabulary provider.
