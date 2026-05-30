@@ -2,7 +2,7 @@
 
 ## SpeechToTextEngine
 
-Future protocol:
+Current protocol:
 
 ```swift
 protocol SpeechToTextEngine {
@@ -10,15 +10,26 @@ protocol SpeechToTextEngine {
 }
 ```
 
+## AudioRecorder
+
+Current protocol:
+
+```swift
+protocol AudioRecorder {
+    func recordOnce() async throws -> RecordedAudio
+}
+```
+
 Implementations:
 
+- `MockAudioRecorder` for tests and UI development.
 - `MockSpeechEngine` for tests and UI development.
 - `AppleSpeechEngine` for SpeechAnalyzer / SpeechTranscriber.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
 
-- `VoiceInputFlowUseCase` accepts a `SpeechToTextEngine` and produces a `PromptPreview`.
+- `VoiceInputFlowUseCase` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, and produces a `PromptPreview`.
 - Mock transcription is supported for tests and preview UI development before microphone capture exists.
 
 ## DictionaryRepository

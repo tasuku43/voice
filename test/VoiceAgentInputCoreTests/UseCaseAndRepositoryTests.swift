@@ -39,6 +39,36 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.requiresExplicitConfirmation)
     }
 
+    func testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview() async throws {
+        let recorder = MockAudioRecorder(mockText: "くらのコードでタイプスクリプトを確認して")
+        let speechEngine = MockSpeechEngine()
+        let useCase = VoiceInputFlowUseCase(
+            audioRecorder: recorder,
+            speechEngine: speechEngine,
+            entries: SeedDictionaries.codingAgentEntries
+        )
+
+        let preview = try await useCase.recordTranscribeAndPreview()
+
+        XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトを確認して")
+        XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
+        XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
+    }
+
+    func testVoiceInputFlowRequiresRecorderForRecordPath() async {
+        let useCase = VoiceInputFlowUseCase(
+            speechEngine: MockSpeechEngine(),
+            entries: SeedDictionaries.codingAgentEntries
+        )
+
+        do {
+            _ = try await useCase.recordTranscribeAndPreview()
+            XCTFail("Expected recorder unavailable error")
+        } catch {
+            XCTAssertEqual(error as? VoiceInputFlowError, .audioRecorderUnavailable)
+        }
+    }
+
     func testConfirmingEditedPromptExtractsLearningCandidates() {
         let useCase = PromptPreviewUseCase(entries: [])
         let preview = useCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")

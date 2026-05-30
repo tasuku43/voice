@@ -59,9 +59,10 @@ Mock voice-input orchestration:
 
 ```swift
 VoiceInputFlowUseCase.transcribeAndPreview(mockAudioText: String) async throws -> PromptPreview
+VoiceInputFlowUseCase.recordTranscribeAndPreview() async throws -> PromptPreview
 ```
 
-This keeps STT behind `SpeechToTextEngine` while allowing UI work to proceed with a mock engine before real microphone capture exists.
+This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine` while allowing UI work to proceed with mock adapters before real microphone capture exists.
 
 Learning use case:
 

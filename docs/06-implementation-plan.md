@@ -25,7 +25,7 @@
 
 ## Phase 4: real audio and STT
 
-- Audio recorder abstraction.
+- Audio recorder abstraction. Done as protocol plus mock recorder; real microphone adapter pending.
 - Apple Speech adapter.
 - Availability guards.
 - Mock engine retained for tests.
