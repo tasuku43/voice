@@ -247,6 +247,18 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let loaded = try repository.loadEntries()
         XCTAssertEqual(loaded, entries)
     }
+
+    func testLocalLearningDictionaryStoreCreatesRepositoryDirectory() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = LocalLearningDictionaryStore(directoryURL: directory)
+        let repository = try store.repository()
+        let entries = [DictionaryEntry(spokenForms: ["くらのコード"], canonical: "Claude Code", kind: .toolName, scope: .user, confidence: 0.9, autoApply: true)]
+
+        try repository.saveEntries(entries)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: directory.path))
+        XCTAssertEqual(try repository.loadEntries(), entries)
+    }
 }
 
 private final class InMemoryDictionaryRepository: DictionaryRepository {

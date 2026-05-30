@@ -49,6 +49,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 @MainActor
 private final class PreviewWindowController: NSWindowController {
     private let preview: PromptPreview
+    private let previewUseCase = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
     private let correctedTextView = NSTextView()
 
     init(preview: PromptPreview) {
@@ -128,7 +129,7 @@ private final class PreviewWindowController: NSWindowController {
     }
 
     @objc private func confirm() {
-        let confirmed = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries).confirm(
+        let confirmed = previewUseCase.confirm(
             preview: preview,
             finalEditedPrompt: correctedTextView.string
         )
@@ -138,11 +139,34 @@ private final class PreviewWindowController: NSWindowController {
 
         do {
             try insertion.insert(confirmed, explicitConfirmation: true)
+            try approveCandidatesIfRequested(confirmed.candidates)
             close()
         } catch {
             let alert = NSAlert(error: error)
             alert.runModal()
         }
+    }
+
+    private func approveCandidatesIfRequested(_ candidates: [CorrectionCandidate]) throws {
+        guard !candidates.isEmpty else {
+            return
+        }
+
+        let alert = NSAlert()
+        alert.messageText = "Approve dictionary candidates?"
+        alert.informativeText = candidates.prefix(5)
+            .map { "\($0.rawPhrase) -> \($0.correctedPhrase)" }
+            .joined(separator: "\n")
+        alert.addButton(withTitle: "Approve")
+        alert.addButton(withTitle: "Skip")
+
+        guard alert.runModal() == .alertFirstButtonReturn else {
+            return
+        }
+
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        let repository = try store.repository()
+        _ = try DictionaryLearningUseCase(repository: repository).approveCandidates(candidates)
     }
 
     @objc private func cancel() {

@@ -61,6 +61,7 @@ Future macOS adapter:
 Current adapter:
 
 - `JSONDictionaryRepository`
+- `LocalLearningDictionaryStore` creates the Application Support-backed JSON repository used by the macOS shell.
 
 Current use cases:
 
