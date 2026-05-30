@@ -260,6 +260,31 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadEntries(), entries)
     }
 
+    func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
+        let localEntry = DictionaryEntry(
+            spokenForms: ["ぷろじぇくとぼいす"],
+            canonical: "voice-agent-input",
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let repository = InMemoryDictionaryRepository(entries: [localEntry])
+        let useCase = DictionaryEntryLoadingUseCase(
+            repository: repository,
+            seedEntries: [
+                DictionaryEntry(spokenForms: ["こーでっくす"], canonical: "Codex", kind: .toolName, scope: .global, confidence: 0.95, autoApply: true)
+            ]
+        )
+
+        let entries = try useCase.loadEntries()
+        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "こーでっくすでぷろじぇくとぼいすを確認")
+
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
+        XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
+    }
+
     @MainActor
     func testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger() {
         let monitor = MockKeyboardShortcutMonitor()

@@ -37,14 +37,26 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     @objc private func showMockPreview() {
-        let preview = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries).preview(
-            rawTranscript: "くらのコードでタイプスクリプトエラーを直して"
-        )
+        let entries: [DictionaryEntry]
+        do {
+            entries = try loadDictionaryEntries()
+        } catch {
+            presentError(error)
+            return
+        }
+        let previewUseCase = PromptPreviewUseCase(entries: entries)
+        let preview = previewUseCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
 
-        let controller = PreviewWindowController(preview: preview)
+        let controller = PreviewWindowController(preview: preview, previewUseCase: previewUseCase)
         previewWindowController = controller
         controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func loadDictionaryEntries() throws -> [DictionaryEntry] {
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        let repository = try store.repository()
+        return try DictionaryEntryLoadingUseCase(repository: repository).loadEntries()
     }
 
     @objc private func quit() {
@@ -125,11 +137,12 @@ private final class AppKitKeyboardShortcutMonitor: KeyboardShortcutMonitor {
 @MainActor
 private final class PreviewWindowController: NSWindowController {
     private let preview: PromptPreview
-    private let previewUseCase = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
+    private let previewUseCase: PromptPreviewUseCase
     private let correctedTextView = NSTextView()
 
-    init(preview: PromptPreview) {
+    init(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         self.preview = preview
+        self.previewUseCase = previewUseCase
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 680, height: 420),

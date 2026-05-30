@@ -65,6 +65,7 @@ Current adapter:
 
 Current use cases:
 
+- `DictionaryEntryLoadingUseCase` combines seed dictionary entries with approved local entries for preview and confirmation flows.
 - `DictionaryLearningUseCase` persists only approved candidates as local dictionary entries.
 - Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.
 
