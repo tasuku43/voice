@@ -70,4 +70,14 @@ PromptInsertionUseCase.insert(_ confirmedPrompt: ConfirmedPrompt, explicitConfir
 
 Insertion requires `explicitConfirmation = true`, always passes `submitAutomatically = false` to the insertion adapter, and rejects any `ConfirmedPrompt` that requests automatic submission.
 
+Local learning data use case:
+
+```swift
+LocalLearningDataUseCase.exportApprovedEntries() throws -> [DictionaryEntry]
+LocalLearningDataUseCase.importApprovedEntries(_ entries: [DictionaryEntry], merge: Bool) throws
+LocalLearningDataUseCase.deleteAllLocalLearningData() throws
+```
+
+These operations apply only to approved local dictionary entries. They do not export or persist raw audio or raw transcripts.
+
 These APIs must remain deterministic and testable without macOS permissions.

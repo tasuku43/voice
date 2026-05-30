@@ -118,6 +118,60 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(insertionController.insertedRequests.isEmpty)
     }
 
+    func testLocalLearningDataExportImportAndDeleteAll() throws {
+        let existingEntry = DictionaryEntry(
+            spokenForms: ["くらのコード"],
+            canonical: "Claude Code",
+            kind: .toolName,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let importedEntry = DictionaryEntry(
+            spokenForms: ["りぽ"],
+            canonical: "repo",
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.8,
+            autoApply: true
+        )
+        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
+        let useCase = LocalLearningDataUseCase(repository: repository)
+
+        XCTAssertEqual(try useCase.exportApprovedEntries(), [existingEntry])
+
+        try useCase.importApprovedEntries([existingEntry, importedEntry])
+        XCTAssertEqual(try repository.loadEntries(), [existingEntry, importedEntry])
+
+        try useCase.deleteAllLocalLearningData()
+        XCTAssertEqual(try repository.loadEntries(), [])
+    }
+
+    func testLocalLearningDataImportCanReplaceExistingEntries() throws {
+        let existingEntry = DictionaryEntry(
+            spokenForms: ["くらのコード"],
+            canonical: "Claude Code",
+            kind: .toolName,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let replacementEntry = DictionaryEntry(
+            spokenForms: ["こーでっくす"],
+            canonical: "Codex",
+            kind: .toolName,
+            scope: .user,
+            confidence: 0.85,
+            autoApply: true
+        )
+        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
+        let useCase = LocalLearningDataUseCase(repository: repository)
+
+        try useCase.importApprovedEntries([replacementEntry], merge: false)
+
+        XCTAssertEqual(try repository.loadEntries(), [replacementEntry])
+    }
+
     func testJSONDictionaryRepositoryRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let fileURL = directory.appendingPathComponent("dictionary.json")

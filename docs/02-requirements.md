@@ -12,6 +12,7 @@
 - Store approved dictionary entries locally.
 - Support dictionary scopes: global, user, repository, session.
 - Provide import/export for dictionaries.
+- Provide a delete-all-local-learning-data path.
 
 ## Non-functional requirements
 
@@ -26,5 +27,6 @@
 
 - Do not store raw audio by default.
 - Do not upload audio or transcripts.
+- Do not export raw audio or raw transcripts as local learning data.
 - Do not auto-submit prompts.
 - Treat dangerous command substitutions conservatively.
