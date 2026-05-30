@@ -4,10 +4,16 @@ import Speech
 public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
     public let localeIdentifier: String
     public let temporaryDirectory: URL
+    public let requiresOnDeviceRecognition: Bool
 
-    public init(localeIdentifier: String = "ja-JP", temporaryDirectory: URL = FileManager.default.temporaryDirectory) {
+    public init(
+        localeIdentifier: String = "ja-JP",
+        temporaryDirectory: URL = FileManager.default.temporaryDirectory,
+        requiresOnDeviceRecognition: Bool = true
+    ) {
         self.localeIdentifier = localeIdentifier
         self.temporaryDirectory = temporaryDirectory
+        self.requiresOnDeviceRecognition = requiresOnDeviceRecognition
     }
 
     public func transcribe(audio: RecordedAudio) async throws -> Transcript {
@@ -29,6 +35,7 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
             }
             let request = SFSpeechURLRecognitionRequest(url: url)
             request.shouldReportPartialResults = false
+            request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
 
             recognizer.recognitionTask(with: request) { result, error in
                 if let error {

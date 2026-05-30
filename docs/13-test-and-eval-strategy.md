@@ -35,6 +35,7 @@ Cover the real executable path where practical:
 - `swift run voice-agent-input-demo ...`
 - expected output shape,
 - stable correction behavior.
+- `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.
 
 ### Evals
 

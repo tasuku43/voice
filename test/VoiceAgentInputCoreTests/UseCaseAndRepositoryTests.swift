@@ -96,6 +96,13 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         }
     }
 
+    func testAppleSpeechEngineRequiresOnDeviceRecognitionByDefault() {
+        let engine = AppleSpeechEngine()
+
+        XCTAssertTrue(engine.requiresOnDeviceRecognition)
+        XCTAssertEqual(engine.localeIdentifier, "ja-JP")
+    }
+
     func testVoiceInputFlowDoesNotRecordWhenMicrophonePermissionIsDenied() async {
         let permissionProvider = MockMicrophonePermissionProvider(status: .denied)
         let useCase = VoiceInputFlowUseCase(

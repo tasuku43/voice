@@ -13,7 +13,7 @@
 
 - Menu bar app. Minimal mock shell done.
 - Floating preview panel. Minimal editable mock preview done.
-- Mock STT integration. Done in App use case; shell records audio but still uses a mock STT transcript pending Apple Speech.
+- Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Confirm-before-paste flow.
 
 ## Phase 3: input loop
@@ -27,7 +27,7 @@
 
 - Audio recorder abstraction. Done as protocol plus mock recorder.
 - AVFoundation microphone recorder. Initial adapter done; it uses a temporary local file and deletes it after reading audio data.
-- Apple Speech adapter. Initial `SFSpeechRecognizer` file transcription adapter and permission provider done; app shell wiring pending bundled permission flow.
+- Apple Speech adapter. Initial `SFSpeechRecognizer` file transcription adapter and permission provider wired into bundled app flow.
 - Availability guards.
 - Mock engine retained for tests.
 

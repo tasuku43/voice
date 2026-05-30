@@ -53,14 +53,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         Task {
             do {
                 let previewUseCase = PromptPreviewUseCase(entries: entries)
+                try await SpeechRecognitionPermissionUseCase(
+                    provider: SFSpeechRecognitionPermissionProvider()
+                ).ensureTranscriptionAllowed()
                 let voiceFlow = VoiceInputFlowUseCase(
                     audioRecorder: AVFoundationAudioRecorder(durationSeconds: 4),
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
-                    speechEngine: MockSpeechEngine(transcript: Transcript(
-                        text: "音声を録音しました。Apple Speech adapter を接続すると、ここに実際の文字起こしが入ります。",
-                        localeIdentifier: "ja-JP",
-                        confidence: nil
-                    )),
+                    speechEngine: AppleSpeechEngine(localeIdentifier: "ja-JP", requiresOnDeviceRecognition: true),
                     previewUseCase: previewUseCase
                 )
                 let preview = try await voiceFlow.recordTranscribeAndPreview()

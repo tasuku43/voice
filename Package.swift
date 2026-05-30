@@ -25,7 +25,8 @@ let package = Package(
         .executableTarget(
             name: "VoiceAgentInputApp",
             dependencies: ["VoiceAgentInputCore"],
-            path: "src/VoiceAgentInputApp"
+            path: "src/VoiceAgentInputApp",
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "VoiceAgentInputCoreTests",

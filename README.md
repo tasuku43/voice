@@ -28,7 +28,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 The current scaffold implements the testable core: dictionary models, normalization, candidate extraction, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
-The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, preview window, pasteboard insertion, and local approval of dictionary candidates. It still uses a mock STT engine after recording until the Apple Speech adapter is wired through the bundled app permission flow.
+The current app shell includes a minimal macOS menu bar executable with a Command-Shift-Space hotkey trigger, AVFoundation microphone recording, on-device Apple Speech transcription, preview window, pasteboard insertion, and local approval of dictionary candidates.
 
 ## Stack
 
@@ -83,6 +83,7 @@ make eval        # run tests including fixture-driven evals
 make check       # one-command validation
 make goal        # print the first autonomous Codex prompt
 swift run voice-agent-input-app  # launch minimal menu bar shell
+open .build/VoiceAgentInput.app  # launch bundled app with microphone and speech usage descriptions after make check
 ```
 
 ## Product boundary
