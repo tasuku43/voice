@@ -1,10 +1,5 @@
 import Foundation
 
-public protocol SpeechToTextEngine {
-    func transcribe(audio: RecordedAudio) async throws -> Transcript
-    func transcribeMockText(_ text: String) async throws -> String
-}
-
 public struct MockSpeechEngine: SpeechToTextEngine {
     public var transcript: Transcript?
 
