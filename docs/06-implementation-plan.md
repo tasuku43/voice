@@ -14,6 +14,7 @@
 - Menu bar app. Minimal mock shell done.
 - Floating preview panel. Minimal editable mock preview done.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
+- Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
 - Confirm-before-paste flow.
 
 ## Phase 3: input loop

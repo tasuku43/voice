@@ -148,6 +148,11 @@ Current macOS adapter:
 
 - `AppKitKeyboardShortcutMonitor` in the app shell.
 
+App shell rules:
+
+- Command-Shift-Space starts the same record/transcribe/preview path as the menu item.
+- Repeated hotkey/menu triggers are ignored while a recording/transcription flow is active.
+
 ## ContextProvider
 
 Future providers:

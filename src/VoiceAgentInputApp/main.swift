@@ -5,8 +5,14 @@ import VoiceAgentInputCore
 @MainActor
 final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
+    private var recordMenuItem: NSMenuItem?
     private var previewWindowController: PreviewWindowController?
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
+    private var isRecording = false {
+        didSet {
+            updateRecordingState()
+        }
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -27,7 +33,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         item.button?.title = "Voice"
 
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "Record Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r"))
+        let recordItem = NSMenuItem(title: "Record Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r")
+        menu.addItem(recordItem)
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
         menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
@@ -35,6 +42,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         item.menu = menu
 
         statusItem = item
+        recordMenuItem = recordItem
+        updateRecordingState()
     }
 
     @objc private func showMockPreview() {
@@ -42,10 +51,16 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     @objc private func recordVoiceInput() {
+        guard !isRecording else {
+            return
+        }
+        isRecording = true
+
         let entries: [DictionaryEntry]
         do {
             entries = try loadDictionaryEntries()
         } catch {
+            isRecording = false
             presentError(error)
             return
         }
@@ -64,14 +79,22 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 )
                 let preview = try await voiceFlow.recordTranscribeAndPreview()
                 await MainActor.run {
+                    self.isRecording = false
                     self.openPreview(preview: preview, previewUseCase: previewUseCase)
                 }
             } catch {
                 await MainActor.run {
+                    self.isRecording = false
                     self.presentError(error)
                 }
             }
         }
+    }
+
+    private func updateRecordingState() {
+        statusItem?.button?.title = isRecording ? "Voice..." : "Voice"
+        recordMenuItem?.title = isRecording ? "Recording..." : "Record Voice Input"
+        recordMenuItem?.isEnabled = !isRecording
     }
 
     private func presentPreview(rawTranscript: String) {
@@ -105,8 +128,38 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func presentError(_ error: Error) {
-        let alert = NSAlert(error: error)
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Voice input could not start"
+        alert.informativeText = userFacingMessage(for: error)
         alert.runModal()
+    }
+
+    private func userFacingMessage(for error: Error) -> String {
+        if let flowError = error as? VoiceInputFlowError {
+            switch flowError {
+            case .audioRecorderUnavailable:
+                return "The audio recorder is not available."
+            case let .microphonePermissionDenied(status):
+                return "Microphone access is \(status.rawValue). Enable microphone access in System Settings and try again."
+            }
+        }
+
+        if let speechError = error as? SpeechRecognitionPermissionError {
+            switch speechError {
+            case let .transcriptionNotAllowed(status):
+                return "Speech recognition access is \(status.rawValue). Enable speech recognition in System Settings and try again."
+            }
+        }
+
+        if let speechError = error as? AppleSpeechEngineError {
+            switch speechError {
+            case let .recognizerUnavailable(localeIdentifier):
+                return "Apple Speech is not available for \(localeIdentifier) right now. Check the macOS speech recognition setting and try again."
+            }
+        }
+
+        return String(describing: error)
     }
 }
 
