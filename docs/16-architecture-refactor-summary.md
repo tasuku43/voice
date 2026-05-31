@@ -5,13 +5,14 @@ This summarizes the component-boundary refactor whose goal is to make future Cod
 ## Current Dependency Shape
 
 ```text
-VoiceAgentInputApp/VoiceAgentInputApp.swift
+VoiceAgentInputApp/main.swift
+    -> VoiceAgentInputApp/VoiceAgentInputApp.swift
     -> App use cases and pipelines
         -> Domain algorithms and value types
     -> Infra adapters through protocols
 ```
 
-Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, preview window, and paste-entry user actions. `PreviewWindowController` is isolated from the menu-bar entrypoint, and `CandidateApprovalDialogController` is isolated from the preview window, so focused AppKit work can stay inside one boundary at a time.
+Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, preview window, and paste-entry user actions. `main.swift` only starts `NSApplication` and installs `VoiceAgentInputApp` as the delegate. `PreviewWindowController` is isolated from the app delegate, and `CandidateApprovalDialogController` is isolated from the preview window, so focused AppKit work can stay inside one boundary at a time.
 
 ## Responsibility Moves
 
@@ -23,8 +24,10 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Dictionary replacement and refinement also expose `PromptTextTransform` for simple `String -> String` composition.
 - Future local LLM formatting is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`.
 - Candidate selection persistence moved toward `LearningApprovalUseCase`, leaving the UI to collect selected indexes.
-- Preview window rendering moved out of `main.swift` into `PreviewWindowController.swift`.
+- App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
+- Preview window rendering moved into `PreviewWindowController.swift`.
 - Candidate approval dialog presentation moved out of `PreviewWindowController.swift` into `CandidateApprovalDialogController.swift`.
+- Debug launch logging moved into `AppDebugLogger.swift`.
 - Local dictionary import/export JSON encoding moved into `LocalLearningDataDocumentCodec`.
 - Repository path and recording setting updates moved into `AppSettingsUseCase`.
 
@@ -32,6 +35,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 
 - Menu bar installation and menu commands.
 - Hotkey start/stop.
+- Debug launch diagnostics and optional local debug log.
 - macOS permission status display and privacy-settings shortcut.
 - Recording settings dialog.
 - Preview window rendering and user edits in `PreviewWindowController.swift`.

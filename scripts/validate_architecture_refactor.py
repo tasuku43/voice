@@ -51,6 +51,16 @@ REQUIRED_SNIPPETS = {
         "saveRepositoryPath",
         "saveRecordingSettings",
     ],
+    "src/VoiceAgentInputApp/main.swift": [
+        "NSApplication.shared",
+        "VoiceAgentInputApp()",
+        "app.run()",
+    ],
+    "src/VoiceAgentInputApp/AppDebugLogger.swift": [
+        "struct AppDebugLogger",
+        "VOICE_AGENT_INPUT_DEBUG",
+        "debug.log",
+    ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",

@@ -21,7 +21,7 @@
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>
-    <true/>
+    <false/>
     <key>NSMicrophoneUsageDescription</key>
     <string>Voice Agent Input records short local clips only after you trigger voice input.</string>
     <key>NSSpeechRecognitionUsageDescription</key>

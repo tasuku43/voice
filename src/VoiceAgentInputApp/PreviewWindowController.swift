@@ -36,15 +36,16 @@ final class PreviewWindowController: NSWindowController {
         container.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
 
         let rawLabel = NSTextField(labelWithString: "Raw transcript")
-        let rawText = textBox(preview.rawTranscript, editable: false)
+        let rawText = textBox(preview.rawTranscript, editable: false, highlights: rawHighlights())
         let correctedLabel = NSTextField(labelWithString: "Corrected prompt")
-        let correctedScrollView = textBox(preview.correctedPrompt, editable: true)
+        let correctedScrollView = textBox(preview.correctedPrompt, editable: true, highlights: correctedHighlights())
 
         if let textView = correctedScrollView.documentView as? NSTextView {
-            correctedTextView.string = textView.string
+            correctedTextView.textStorage?.setAttributedString(textView.attributedString())
             correctedScrollView.documentView = correctedTextView
             correctedTextView.isEditable = true
             correctedTextView.font = NSFont.systemFont(ofSize: 14)
+            correctedTextView.isRichText = false
         }
 
         let buttonRow = NSStackView()
@@ -71,9 +72,9 @@ final class PreviewWindowController: NSWindowController {
         return container
     }
 
-    private func textBox(_ string: String, editable: Bool) -> NSScrollView {
+    private func textBox(_ string: String, editable: Bool, highlights: [String]) -> NSScrollView {
         let textView = NSTextView()
-        textView.string = string
+        textView.textStorage?.setAttributedString(highlightedString(string, highlights: highlights))
         textView.isEditable = editable
         textView.font = NSFont.systemFont(ofSize: 14)
         textView.isRichText = false
@@ -83,6 +84,43 @@ final class PreviewWindowController: NSWindowController {
         scrollView.documentView = textView
         scrollView.borderType = .bezelBorder
         return scrollView
+    }
+
+    private func rawHighlights() -> [String] {
+        preview.corrections.map(\.original)
+    }
+
+    private func correctedHighlights() -> [String] {
+        preview.corrections.map { correction in
+            correction.replacement.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
+    private func highlightedString(_ string: String, highlights: [String]) -> NSAttributedString {
+        let attributed = NSMutableAttributedString(
+            string: string,
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 14),
+                .foregroundColor: NSColor.labelColor
+            ]
+        )
+        let highlightColor = NSColor.systemYellow.withAlphaComponent(0.24)
+
+        for highlight in highlights where !highlight.isEmpty {
+            var searchRange = string.startIndex..<string.endIndex
+            while let range = string.range(of: highlight, options: [], range: searchRange) {
+                attributed.addAttributes(
+                    [
+                        .backgroundColor: highlightColor,
+                        .toolTip: "Dictionary correction"
+                    ],
+                    range: NSRange(range, in: string)
+                )
+                searchRange = range.upperBound..<string.endIndex
+            }
+        }
+
+        return attributed
     }
 
     @objc private func confirm() {

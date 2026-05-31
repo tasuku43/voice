@@ -1,8 +1,9 @@
 # Audio Capture Contract
 
 ## Inputs
-- Recording settings such as duration and temporary directory.
+- Recording settings such as temporary directory.
 - A recording start request from the app or pipeline.
+- A user stop request.
 
 ## Outputs
 - `RecordedAudio`
@@ -10,6 +11,7 @@
 
 ## Allowed
 - Capture one microphone recording.
+- Keep recording until the user explicitly stops.
 - Use a temporary file while recording.
 - Remove temporary audio after reading it.
 
@@ -38,4 +40,5 @@
 
 ## Done
 - Audio capture returns `RecordedAudio` only.
+- Recording ends by user stop instead of a short fixed timer.
 - Temporary raw audio is removed and not persisted by default.

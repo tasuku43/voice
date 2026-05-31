@@ -2,12 +2,16 @@ import AppKit
 import UniformTypeIdentifiers
 import VoiceAgentInputCore
 
-@main
 @MainActor
 final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
+    private let debugLogger = AppDebugLogger()
     private var statusItem: NSStatusItem?
     private var recordMenuItem: NSMenuItem?
+    private var launchRecordButton: NSButton?
+    private var launchWindowController: NSWindowController?
+    private var debugWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
+    private var activeAudioRecorder: AVFoundationAudioRecorder?
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
     private var isRecording = false {
         didSet {
@@ -16,20 +20,26 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
+        debugLogger.log("applicationDidFinishLaunching started")
+        NSApp.setActivationPolicy(.regular)
         installMenuBarItem()
+        showLaunchWindow()
+        showDebugWindowIfNeeded()
         hotkeyMonitor.start(shortcut: .defaultVoiceInput) { [weak self] in
             Task { @MainActor in
                 self?.recordVoiceInput()
             }
         }
+        debugLogger.log("applicationDidFinishLaunching finished")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        debugLogger.log("applicationWillTerminate")
         hotkeyMonitor.stop()
     }
 
     private func installMenuBarItem() {
+        debugLogger.log("installMenuBarItem started")
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.title = "Voice"
 
@@ -54,14 +64,104 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         statusItem = item
         recordMenuItem = recordItem
         updateRecordingState()
+        debugLogger.log("installMenuBarItem finished; button=\(item.button == nil ? "nil" : "present")")
+    }
+
+    private func showLaunchWindow() {
+        debugLogger.log("showLaunchWindow started")
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
+            styleMask: [.titled, .closable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Voice Agent Input"
+        window.center()
+
+        let container = NSStackView()
+        container.orientation = .vertical
+        container.spacing = 12
+        container.alignment = .centerX
+        container.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+
+        let title = NSTextField(labelWithString: "Voice Agent Input")
+        title.font = NSFont.boldSystemFont(ofSize: 18)
+        let status = NSTextField(labelWithString: "Ready")
+
+        let buttons = NSStackView()
+        buttons.orientation = .horizontal
+        buttons.spacing = 8
+        buttons.alignment = .centerY
+        buttons.addArrangedSubview(NSButton(title: "Mock Preview", target: self, action: #selector(showMockPreview)))
+        let recordButton = NSButton(title: "Record", target: self, action: #selector(recordVoiceInput))
+        launchRecordButton = recordButton
+        buttons.addArrangedSubview(recordButton)
+
+        container.addArrangedSubview(title)
+        container.addArrangedSubview(status)
+        container.addArrangedSubview(buttons)
+
+        window.contentView = container
+        let controller = NSWindowController(window: window)
+        launchWindowController = controller
+        controller.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        debugLogger.log("showLaunchWindow finished; visible=\(window.isVisible)")
+    }
+
+    private func showDebugWindowIfNeeded() {
+        guard debugLogger.enabled else {
+            return
+        }
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 220),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "Voice Agent Input Debug"
+        window.center()
+
+        let textView = NSTextView()
+        textView.isEditable = false
+        textView.isRichText = false
+        textView.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+        textView.string = """
+        Voice Agent Input debug mode is active.
+
+        Log file:
+        \(debugLogger.logFileURL.path)
+
+        Try:
+        open -n .build/VoiceAgentInput.app --args --debug
+        tail -f "\(debugLogger.logFileURL.path)"
+        """
+
+        let scrollView = NSScrollView()
+        scrollView.hasVerticalScroller = true
+        scrollView.documentView = textView
+        window.contentView = scrollView
+
+        let controller = NSWindowController(window: window)
+        debugWindowController = controller
+        controller.showWindow(nil)
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        debugLogger.log("showDebugWindowIfNeeded finished; visible=\(window.isVisible)")
     }
 
     @objc private func showMockPreview() {
+        debugLogger.log("showMockPreview")
         presentPreview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
     }
 
     @objc private func recordVoiceInput() {
-        guard !isRecording else {
+        debugLogger.log("recordVoiceInput requested")
+        if isRecording {
+            debugLogger.log("recordVoiceInput requested while active; stopping recording")
+            activeAudioRecorder?.stopRecording()
             return
         }
         isRecording = true
@@ -71,8 +171,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         do {
             settings = try loadSettings()
             entries = try loadDictionaryEntries()
+            debugLogger.log("recordVoiceInput loaded settings and \(entries.count) dictionary entries")
         } catch {
             isRecording = false
+            debugLogger.log("recordVoiceInput setup failed: \(error)")
             presentError(error)
             return
         }
@@ -83,8 +185,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 try await SpeechRecognitionPermissionUseCase(
                     provider: SFSpeechRecognitionPermissionProvider()
                 ).ensureTranscriptionAllowed()
+                let audioRecorder = AVFoundationAudioRecorder()
+                await MainActor.run {
+                    self.activeAudioRecorder = audioRecorder
+                    self.debugLogger.log("recordVoiceInput recording started; waiting for user stop")
+                }
                 let voiceInputPipeline = VoiceInputPipeline(
-                    audioRecorder: AVFoundationAudioRecorder(durationSeconds: settings.effectiveRecordingDurationSeconds),
+                    audioRecorder: audioRecorder,
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
                     speechEngine: AppleSpeechEngine(
                         localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
@@ -94,12 +201,16 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 )
                 let result = try await voiceInputPipeline.run()
                 await MainActor.run {
+                    self.activeAudioRecorder = nil
                     self.isRecording = false
+                    self.debugLogger.log("recordVoiceInput completed; opening preview")
                     self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
                 }
             } catch {
                 await MainActor.run {
+                    self.activeAudioRecorder = nil
                     self.isRecording = false
+                    self.debugLogger.log("recordVoiceInput failed: \(error)")
                     self.presentError(error)
                 }
             }
@@ -108,8 +219,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func updateRecordingState() {
         statusItem?.button?.title = isRecording ? "Voice..." : "Voice"
-        recordMenuItem?.title = isRecording ? "Recording..." : "Record Voice Input"
-        recordMenuItem?.isEnabled = !isRecording
+        recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Record Voice Input"
+        recordMenuItem?.isEnabled = true
+        launchRecordButton?.title = isRecording ? "Stop" : "Record"
     }
 
     private func presentPreview(rawTranscript: String) {
@@ -126,9 +238,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
+        debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
         let controller = PreviewWindowController(preview: preview, previewUseCase: previewUseCase)
         previewWindowController = controller
         controller.showWindow(nil)
+        controller.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -383,6 +497,14 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             switch speechError {
             case let .recognizerUnavailable(localeIdentifier):
                 return "Apple Speech is not available for \(localeIdentifier) right now. Check the macOS speech recognition setting and try again."
+            case .noSpeechDetected:
+                return """
+                No speech was detected in the recording.
+
+                Try again while speaking during the full recording window, or open Recording Settings and increase the recording seconds. Also check that macOS is using the expected microphone input.
+                """
+            case let .transcriptionFailed(description):
+                return "Apple Speech could not transcribe the recording: \(description)"
             }
         }
 

@@ -2,15 +2,14 @@ import AVFoundation
 import Foundation
 
 public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRecorderDelegate, @unchecked Sendable {
-    public let durationSeconds: TimeInterval
     public let temporaryDirectory: URL
 
+    private var recordingStartDate: Date?
     private var recorder: AVAudioRecorder?
     private var recordingURL: URL?
     private var continuation: CheckedContinuation<RecordedAudio, Error>?
 
-    public init(durationSeconds: TimeInterval = 4, temporaryDirectory: URL = FileManager.default.temporaryDirectory) {
-        self.durationSeconds = durationSeconds
+    public init(temporaryDirectory: URL = FileManager.default.temporaryDirectory) {
         self.temporaryDirectory = temporaryDirectory
     }
 
@@ -36,13 +35,18 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
         recorder.isMeteringEnabled = false
         recorder.prepareToRecord()
         self.recorder = recorder
+        recordingStartDate = Date()
 
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
-            if recorder.record(forDuration: durationSeconds) == false {
+            if recorder.record() == false {
                 finishWithError(AVFoundationAudioRecorderError.failedToStartRecording)
             }
         }
+    }
+
+    public func stopRecording() {
+        recorder?.stop()
     }
 
     public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
@@ -68,7 +72,7 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
             let audio = RecordedAudio(
                 data: data,
                 formatDescription: "caf/aac; sampleRate=16000; channels=1",
-                durationSeconds: durationSeconds
+                durationSeconds: recordingStartDate.map { Date().timeIntervalSince($0) } ?? 0
             )
             cleanup()
             continuation?.resume(returning: audio)
@@ -87,6 +91,7 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
     private func cleanup() {
         recorder?.stop()
         recorder = nil
+        recordingStartDate = nil
         if let recordingURL {
             try? FileManager.default.removeItem(at: recordingURL)
         }

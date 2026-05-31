@@ -193,6 +193,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(engine.localeIdentifier, "ja-JP")
     }
 
+    func testAppleSpeechEngineMapsNoSpeechDetectedError() {
+        let error = NSError(
+            domain: "kAFAssistantErrorDomain",
+            code: 1110,
+            userInfo: [NSLocalizedDescriptionKey: "No speech detected"]
+        )
+
+        XCTAssertEqual(AppleSpeechEngineError.map(error), .noSpeechDetected)
+    }
+
     func testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation() async throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

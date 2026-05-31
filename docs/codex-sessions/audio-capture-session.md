@@ -16,6 +16,7 @@ Avoid:
 
 Contract:
 - Return `RecordedAudio` only.
+- End recording by explicit user stop.
 - Do not transcribe, correct, refine, paste, learn, or persist raw audio by default.
 
 Tests:

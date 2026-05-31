@@ -8,6 +8,15 @@ ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
 
 REQUIRED_COVERAGE = {
     "hotkey invocation": {
+        "src/VoiceAgentInputApp/main.swift": [
+            "NSApplication.shared",
+            "VoiceAgentInputApp()",
+            "app.run()",
+        ],
+        "src/VoiceAgentInputApp/AppDebugLogger.swift": [
+            "VOICE_AGENT_INPUT_DEBUG",
+            "debug.log",
+        ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "AppKitKeyboardShortcutMonitor()",
             "Command-Shift-Space",

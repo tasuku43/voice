@@ -45,6 +45,11 @@ ALLOWED_WRITE_SNIPPETS = {
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         ".write(to: url, options: [.atomic])",
     ],
+    "src/VoiceAgentInputApp/AppDebugLogger.swift": [
+        "enabled = arguments.contains(\"--debug\") || environment[\"VOICE_AGENT_INPUT_DEBUG\"] == \"1\"",
+        "guard enabled else",
+        "try line.write(to: logFileURL, atomically: true, encoding: .utf8)",
+    ],
     "src/VoiceAgentInputCore/Infra/JSONAppSettingsRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],
