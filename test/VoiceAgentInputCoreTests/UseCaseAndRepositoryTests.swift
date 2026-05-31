@@ -76,6 +76,81 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.preview.requiresExplicitConfirmation)
     }
 
+    func testSpeechTranscriptAccumulatorMergesPauseSplitSnapshots() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("最初の文章を入力しています")
+        accumulator.record("次の文章も続けて入力しています")
+
+        XCTAssertEqual(
+            accumulator.bestText(),
+            "最初の文章を入力しています次の文章も続けて入力しています"
+        )
+    }
+
+    func testSpeechTranscriptAccumulatorDeduplicatesOverlappingSnapshots() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("Codexでテストを")
+        accumulator.record("テストを追加して")
+        accumulator.record("テストを追加してmake checkを実行")
+
+        XCTAssertEqual(
+            accumulator.bestText(),
+            "Codexでテストを追加してmake checkを実行"
+        )
+    }
+
+    func testSpeechTranscriptAccumulatorReplacesRevisedRollingSnapshot() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("佐藤さや蓄積マージの方法についてつい")
+        accumulator.record("蓄積マージの方法について実装を入れてもらう")
+        accumulator.record("蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって")
+
+        XCTAssertEqual(
+            accumulator.bestText(),
+            "佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって"
+        )
+    }
+
+    func testSpeechTranscriptAccumulatorRepairsLateSnapshotFromLastRepeatedAnchor() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって蓄積マージの方法について")
+        accumulator.record("蓄積マージの方法についてテストです")
+
+        XCTAssertEqual(
+            accumulator.bestText(),
+            "佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって蓄積マージの方法についてテストです"
+        )
+    }
+
+    func testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("録音開始から最初の依頼を話す")
+        accumulator.record("次に補足を話す")
+
+        XCTAssertEqual(
+            accumulator.bestText(preferredFinalText: "次に補足を話す"),
+            "録音開始から最初の依頼を話す次に補足を話す"
+        )
+    }
+
+    func testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("使い勝手はだいぶ良くなっている気がする")
+        accumulator.record("というのも")
+        accumulator.record("今ってレコードからストップまで全部見てくれているんですよね")
+
+        XCTAssertEqual(
+            accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね"),
+            "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね"
+        )
+    }
+
     func testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies() async throws {
         let pipeline = PromptProcessingPipeline(
             refiner: SuffixPromptRefiner(suffix: " please"),
@@ -220,6 +295,17 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         XCTAssertEqual(AppleSpeechEngineError.map(error), .noSpeechDetected)
+    }
+
+    func testSpeechTranscriptAccumulatorKeepsFullPartialWhenFinalOnlyContainsLastUtterance() {
+        var accumulator = SpeechTranscriptAccumulator()
+        accumulator.record("使い勝手はだいぶ良くなっている気がする")
+        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも")
+        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね")
+
+        let best = accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね")
+
+        XCTAssertEqual(best, "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね")
     }
 
     func testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation() async throws {
