@@ -35,6 +35,7 @@ required = [
     'scripts/validate_app_ui_split.py',
     'src/VoiceAgentInputApp/main.swift',
     'src/VoiceAgentInputApp/AppDebugLogger.swift',
+    'src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift',
     'src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift',
     'src/VoiceAgentInputCore/App/PromptTextTransform.swift',
     'src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift',

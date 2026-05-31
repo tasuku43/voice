@@ -32,7 +32,7 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
 
         let recorder = try AVAudioRecorder(url: url, settings: settings)
         recorder.delegate = self
-        recorder.isMeteringEnabled = false
+        recorder.isMeteringEnabled = true
         recorder.prepareToRecord()
         self.recorder = recorder
         recordingStartDate = Date()
@@ -47,6 +47,16 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
 
     public func stopRecording() {
         recorder?.stop()
+    }
+
+    public func currentInputLevel() -> Float? {
+        guard let recorder, recorder.isRecording else {
+            return nil
+        }
+        recorder.updateMeters()
+        let averagePower = recorder.averagePower(forChannel: 0)
+        let normalized = max(0, min(1, (averagePower + 60) / 60))
+        return normalized
     }
 
     public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {

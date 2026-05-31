@@ -11,7 +11,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var launchWindowController: NSWindowController?
     private var debugWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
+    private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
     private var activeAudioRecorder: AVFoundationAudioRecorder?
+    private var inputLevelTimer: Timer?
+    private var hasDetectedVoiceInput = false
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
     private var isRecording = false {
         didSet {
@@ -188,19 +191,29 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 let audioRecorder = AVFoundationAudioRecorder()
                 await MainActor.run {
                     self.activeAudioRecorder = audioRecorder
+                    self.hasDetectedVoiceInput = false
+                    self.showRecordingFeedback()
+                    self.startInputLevelMonitoring()
                     self.debugLogger.log("recordVoiceInput recording started; waiting for user stop")
                 }
+                let speechEngine = AppleSpeechEngine(
+                    localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
+                    requiresOnDeviceRecognition: true,
+                    recognitionSnapshotHandler: { [debugLogger] snapshot, isFinal in
+                        debugLogger.log("speech snapshot final=\(isFinal) text=\(snapshot)")
+                    }
+                )
                 let voiceInputPipeline = VoiceInputPipeline(
                     audioRecorder: audioRecorder,
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
-                    speechEngine: AppleSpeechEngine(
-                        localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
-                        requiresOnDeviceRecognition: true
-                    ),
+                    speechEngine: speechEngine,
+                    refiner: JapanesePunctuationPromptRefiner(),
                     normalizationContext: NormalizationContext(entries: entries)
                 )
                 let result = try await voiceInputPipeline.run()
                 await MainActor.run {
+                    self.stopInputLevelMonitoring()
+                    self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
                     self.isRecording = false
                     self.debugLogger.log("recordVoiceInput completed; opening preview")
@@ -208,6 +221,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 }
             } catch {
                 await MainActor.run {
+                    self.stopInputLevelMonitoring()
+                    self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
                     self.isRecording = false
                     self.debugLogger.log("recordVoiceInput failed: \(error)")
@@ -222,6 +237,49 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Record Voice Input"
         recordMenuItem?.isEnabled = true
         launchRecordButton?.title = isRecording ? "Stop" : "Record"
+    }
+
+    private func showRecordingFeedback() {
+        let controller = RecordingFeedbackWindowController { [weak self] in
+            Task { @MainActor in
+                self?.recordVoiceInput()
+            }
+        }
+        recordingFeedbackWindowController = controller
+        controller.showWindow(nil)
+        controller.window?.makeKeyAndOrderFront(nil)
+        controller.update(level: nil, hasDetectedVoice: false)
+    }
+
+    private func closeRecordingFeedback() {
+        recordingFeedbackWindowController?.close()
+        recordingFeedbackWindowController = nil
+    }
+
+    private func startInputLevelMonitoring() {
+        stopInputLevelMonitoring()
+        inputLevelTimer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateInputLevelFeedback()
+            }
+        }
+    }
+
+    private func stopInputLevelMonitoring() {
+        inputLevelTimer?.invalidate()
+        inputLevelTimer = nil
+    }
+
+    private func updateInputLevelFeedback() {
+        let level = activeAudioRecorder?.currentInputLevel()
+        if let level, level > 0.08, !hasDetectedVoiceInput {
+            hasDetectedVoiceInput = true
+            debugLogger.log("recordVoiceInput detected microphone signal level=\(level)")
+        }
+        recordingFeedbackWindowController?.update(
+            level: level,
+            hasDetectedVoice: hasDetectedVoiceInput
+        )
     }
 
     private func presentPreview(rawTranscript: String) {

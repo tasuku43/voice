@@ -5,15 +5,18 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
     public let localeIdentifier: String
     public let temporaryDirectory: URL
     public let requiresOnDeviceRecognition: Bool
+    public var recognitionSnapshotHandler: (@Sendable (String, Bool) -> Void)?
 
     public init(
         localeIdentifier: String = "ja-JP",
         temporaryDirectory: URL = FileManager.default.temporaryDirectory,
-        requiresOnDeviceRecognition: Bool = true
+        requiresOnDeviceRecognition: Bool = true,
+        recognitionSnapshotHandler: (@Sendable (String, Bool) -> Void)? = nil
     ) {
         self.localeIdentifier = localeIdentifier
         self.temporaryDirectory = temporaryDirectory
         self.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+        self.recognitionSnapshotHandler = recognitionSnapshotHandler
     }
 
     public func transcribe(audio: RecordedAudio) async throws -> Transcript {
@@ -35,7 +38,9 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
 
                 recognizer.recognitionTask(with: request) { result, error in
                     if let result {
-                        box.storeLatest(result.bestTranscription.formattedString, localeIdentifier: self.localeIdentifier)
+                        let snapshot = result.bestTranscription.formattedString
+                        self.recognitionSnapshotHandler?(snapshot, result.isFinal)
+                        box.storeLatest(snapshot, localeIdentifier: self.localeIdentifier)
                     }
 
                     if let error {

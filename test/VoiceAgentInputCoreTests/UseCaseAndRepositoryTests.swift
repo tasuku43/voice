@@ -107,6 +107,25 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(refined.changes, [])
     }
 
+    func testJapanesePunctuationPromptRefinerAddsLightweightPunctuation() async throws {
+        let normalized = NormalizedPrompt(
+            rawText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
+            normalizedText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
+            corrections: []
+        )
+
+        let refined = try await JapanesePunctuationPromptRefiner().refine(
+            normalized,
+            instruction: RefinementInstruction()
+        )
+
+        XCTAssertEqual(
+            refined.refinedText,
+            "使い勝手はだいぶ良くなっている気がする。というのも、今ってレコードからストップまで全部見てくれているんですよね"
+        )
+        XCTAssertEqual(refined.changes.count, 1)
+    }
+
     func testPromptTransformsExposeTextToTextConvenience() async throws {
         let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         let normalizedText = try DictionaryPromptNormalizer().normalizeText(

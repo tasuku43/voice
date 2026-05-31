@@ -17,6 +17,11 @@ REQUIRED_COVERAGE = {
             "VOICE_AGENT_INPUT_DEBUG",
             "debug.log",
         ],
+        "src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift": [
+            "Connecting microphone...",
+            "Listening",
+            "InputLevelView",
+        ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "AppKitKeyboardShortcutMonitor()",
             "Command-Shift-Space",

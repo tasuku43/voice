@@ -12,6 +12,7 @@
 ## Allowed
 - Capture one microphone recording.
 - Keep recording until the user explicitly stops.
+- Expose microphone input level for recording feedback.
 - Use a temporary file while recording.
 - Remove temporary audio after reading it.
 
@@ -41,4 +42,5 @@
 ## Done
 - Audio capture returns `RecordedAudio` only.
 - Recording ends by user stop instead of a short fixed timer.
+- UI can distinguish microphone connection wait from active input.
 - Temporary raw audio is removed and not persisted by default.

@@ -61,6 +61,12 @@ REQUIRED_SNIPPETS = {
         "VOICE_AGENT_INPUT_DEBUG",
         "debug.log",
     ],
+    "src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift": [
+        "final class RecordingFeedbackWindowController",
+        "Connecting microphone...",
+        "Listening",
+        "InputLevelView",
+    ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
