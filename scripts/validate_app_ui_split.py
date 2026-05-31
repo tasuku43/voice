@@ -19,7 +19,7 @@ MAIN_REQUIRED = [
 ENTRYPOINT_REQUIRED = [
     "installMenuBarItem",
     "recordVoiceInput",
-    "PreviewWindowController(preview: preview, previewUseCase: previewUseCase)",
+    "learningCandidateReviewer()",
 ]
 
 ENTRYPOINT_FORBIDDEN = [
@@ -51,6 +51,8 @@ CANDIDATE_APPROVAL_REQUIRED = [
     "Approve dictionary candidates?",
     "Save Selected",
     "Dangerous command candidates are not selected by default.",
+    "candidateDetailText",
+    "Confidence",
     "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
 ]
 

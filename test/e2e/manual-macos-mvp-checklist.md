@@ -57,6 +57,10 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 2. Run another mock or real preview using the same spoken form.
 3. Verify the approved dictionary entry affects normalization.
 4. Reject or leave unselected any dangerous command candidate and verify it is not auto-applied by default.
+5. Choose `Learning Settings...`, leave reviewer command blank or disable it, and verify candidate learning still works without a reviewer command.
+6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation.
+7. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
+8. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
 
 ## Local Data Controls
 

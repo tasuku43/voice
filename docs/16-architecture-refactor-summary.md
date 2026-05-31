@@ -100,7 +100,7 @@ Future Codex session prompts:
 
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
 - `PreviewWindowController.swift` still contains insertion fallback UI.
-- The LLM/refinement layer is a no-op placeholder; no local LLM implementation is included.
+- The prompt-refinement layer remains deterministic by default; local LLM-style learning can be integrated as an opt-in reviewer command after preview confirmation, not in the STT or normalization hot path.
 - Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, candidate approval UI, local data menus, and privacy filesystem checks.
 
 ## Next Recommended Session

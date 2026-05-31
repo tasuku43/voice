@@ -16,8 +16,14 @@ public struct DictionaryLearningUseCase {
             .filter { $0.approved && !$0.rejected }
             .map { entry(from: $0) }
 
-        for approvedEntry in approvedEntries where !entries.containsEquivalent(to: approvedEntry) {
-            entries.append(approvedEntry)
+        for approvedEntry in approvedEntries {
+            if let index = entries.firstEquivalentIndex(to: approvedEntry) {
+                entries[index].confidence = max(entries[index].confidence, approvedEntry.confidence)
+                entries[index].autoApply = entries[index].autoApply || approvedEntry.autoApply
+                entries[index].updatedAt = approvedEntry.updatedAt
+            } else {
+                entries.append(approvedEntry)
+            }
         }
 
         try repository.saveEntries(entries)
@@ -40,8 +46,8 @@ public struct DictionaryLearningUseCase {
 }
 
 private extension Array where Element == DictionaryEntry {
-    func containsEquivalent(to entry: DictionaryEntry) -> Bool {
-        contains { existing in
+    func firstEquivalentIndex(to entry: DictionaryEntry) -> Int? {
+        firstIndex { existing in
             existing.canonical == entry.canonical &&
                 existing.scope == entry.scope &&
                 Set(existing.spokenForms) == Set(entry.spokenForms)

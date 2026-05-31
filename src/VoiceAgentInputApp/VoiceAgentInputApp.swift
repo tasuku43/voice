@@ -4,6 +4,8 @@ import VoiceAgentInputCore
 
 @MainActor
 final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
+    private static let interactiveLearningReviewerTimeoutSeconds: TimeInterval = 0.5
+
     private let debugLogger = AppDebugLogger()
     private var statusItem: NSStatusItem?
     private var recordMenuItem: NSMenuItem?
@@ -56,6 +58,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Privacy Settings...", action: #selector(openPrivacySettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
+        menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
         menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
         menu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
@@ -297,11 +301,34 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
-        let controller = PreviewWindowController(preview: preview, previewUseCase: previewUseCase)
+        let controller = PreviewWindowController(
+            preview: preview,
+            previewUseCase: previewUseCase,
+            editLearningUseCase: PromptEditLearningUseCase(
+                previewUseCase: previewUseCase,
+                candidateReviewer: learningCandidateReviewer()
+            )
+        )
         previewWindowController = controller
         controller.showWindow(nil)
         controller.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func learningCandidateReviewer() -> any LearningCandidateReviewer {
+        guard
+            let settings = try? loadSettings(),
+            let path = settings.learningReviewerCommandPath?.trimmingCharacters(in: .whitespacesAndNewlines),
+            !path.isEmpty
+        else {
+            return NoOpLearningCandidateReviewer()
+        }
+        debugLogger.log("learning reviewer command configured path=\(path) arguments=\(settings.learningReviewerCommandArguments)")
+        return LocalCommandLearningCandidateReviewer(
+            executableURL: URL(fileURLWithPath: path),
+            arguments: settings.learningReviewerCommandArguments,
+            timeoutSeconds: Self.interactiveLearningReviewerTimeoutSeconds
+        )
     }
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
@@ -405,6 +432,42 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
+    @objc private func showLearningSettings() {
+        do {
+            let settingsUseCase = try settingsUseCase()
+            let settings = try settingsUseCase.loadSettings()
+            let reviewerCommandField = NSTextField(string: settings.learningReviewerCommandPath ?? "")
+            let reviewerArgumentsField = NSTextField(string: settings.learningReviewerCommandArguments.joined(separator: "\n"))
+            let stack = NSStackView()
+            stack.orientation = .vertical
+            stack.alignment = .leading
+            stack.spacing = 8
+            stack.addArrangedSubview(labelledControl(label: "Reviewer command", control: reviewerCommandField))
+            stack.addArrangedSubview(labelledControl(label: "Arguments", control: reviewerArgumentsField))
+
+            let alert = NSAlert()
+            alert.messageText = "Learning settings"
+            alert.informativeText = "Optional local command used only after preview confirmation to review dictionary candidates. Put one argument per line. Leave command blank to keep learning fully rule-based."
+            alert.accessoryView = stack
+            alert.addButton(withTitle: "Save")
+            alert.addButton(withTitle: "Disable")
+            alert.addButton(withTitle: "Cancel")
+
+            let response = alert.runModal()
+            if response == .alertFirstButtonReturn {
+                try settingsUseCase.saveLearningReviewerCommand(
+                    path: reviewerCommandField.stringValue,
+                    arguments: reviewerArgumentsField.stringValue
+                        .components(separatedBy: .newlines)
+                )
+            } else if response == .alertSecondButtonReturn {
+                try settingsUseCase.saveLearningReviewerCommand(path: nil)
+            }
+        } catch {
+            presentError(error)
+        }
+    }
+
     @objc private func showPermissionStatus() {
         let status = PermissionStatusUseCase(
             microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
@@ -496,6 +559,32 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let url = try LocalLearningDictionaryStore.defaultDirectoryURL()
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             NSWorkspace.shared.open(url)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func learnFromAgentHistory() {
+        do {
+            let historyProvider = LocalAgentHistoryTextProvider()
+            let existingEntries = try loadDictionaryEntries()
+            let learningScope = try loadSettings().preferredLearningScope
+            let result = try AgentHistoryLearningModeUseCase(
+                historyProvider: historyProvider,
+                dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
+            debugLogger.log("learnFromAgentHistory scanned \(historyProvider.historyFileURLs().count) local files, loaded \(result.scannedTextCount) texts, skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue)")
+            guard !result.candidates.isEmpty else {
+                let alert = NSAlert()
+                alert.alertStyle = .informational
+                alert.messageText = "No dictionary candidates found"
+                alert.informativeText = "No new repeated developer terms were found in the bounded local Codex/Claude history scan."
+                alert.runModal()
+                return
+            }
+
+            try CandidateApprovalDialogController()
+                .approveCandidatesIfRequested(result.candidates, maximumVisibleCandidates: 24)
         } catch {
             presentError(error)
         }

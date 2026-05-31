@@ -171,7 +171,9 @@ Current providers:
 - `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through `git` commands.
 - `RepositoryVocabularyUseCase` turns repository name, branch name, and tracked file names into repository-scoped dictionary entries.
 - The macOS shell currently reads repository context from the configured repository folder or app process working directory and mixes those entries into preview dictionaries.
-- `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override.
+- `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override and optional local learning-reviewer command path.
+- `LocalAgentHistoryTextProvider` reads bounded local Codex and Claude history text for explicit learning mode.
+- `LocalCommandLearningCandidateReviewer` invokes a user-configured local command through stdin/stdout JSON after preview confirmation. It is an infra adapter for candidate review only, not speech recognition or prompt transformation. The interactive app passes a short timeout and falls back to unreviewed candidates if optional review fails.
 
 Future providers:
 

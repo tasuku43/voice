@@ -72,6 +72,10 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Non-dangerous candidate approved: pass/fail
 - Approved candidate reused later: pass/fail
 - Dangerous command candidate not auto-applied by default: pass/fail
+- Learning Settings blank/disabled path keeps learning local and rule-based: pass/fail
+- Optional trusted local reviewer command runs only after preview confirmation: pass/fail/not applicable
+- Learn From Agent History presents bounded Codex/Claude candidates: pass/fail
+- History-derived project identifier affects later rule-based normalization: pass/fail
 - Notes:
 
 ## Local Data Controls Evidence

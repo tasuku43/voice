@@ -151,6 +151,37 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
     }
 
+    func testSpeechTranscriptAccumulatorKeepsPauseSeparatedPromptAcrossRollingRevisionsAndFinalRegression() {
+        var accumulator = SpeechTranscriptAccumulator()
+
+        accumulator.record("使い勝手はだいぶ良くなっている気がする")
+        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも")
+        accumulator.record("というのも今ってレコードからストップまで全部見てくれているんですよね")
+
+        XCTAssertEqual(
+            accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね"),
+            "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね"
+        )
+    }
+
+    func testJapanesePunctuationPromptRefinerPunctuatesPauseSeparatedRecordingScenario() async throws {
+        let normalized = NormalizedPrompt(
+            rawText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
+            normalizedText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
+            corrections: []
+        )
+
+        let refined = try await JapanesePunctuationPromptRefiner().refine(
+            normalized,
+            instruction: RefinementInstruction()
+        )
+
+        XCTAssertEqual(
+            refined.refinedText,
+            "使い勝手はだいぶ良くなっている気がする。というのも、今ってレコードからストップまで全部見てくれているんですよね"
+        )
+    }
+
     func testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies() async throws {
         let pipeline = PromptProcessingPipeline(
             refiner: SuffixPromptRefiner(suffix: " please"),
@@ -226,6 +257,417 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(output.contains("Claude Code"))
         XCTAssertTrue(output.contains("TypeScript"))
         XCTAssertTrue(output.hasSuffix(" please"))
+    }
+
+    func testAgentHistoryDictionaryLearningFindsRepeatedDeveloperTerms() {
+        let texts = [
+            "Fix the SwiftUI preview and call the API from Codex.",
+            "The SwiftUI view should not block the API call.",
+            "Codex should preserve the JSON payload.",
+            "ProjectSpecificName appears more than once.",
+            "ProjectSpecificName appears again."
+        ]
+
+        let candidates = AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            .candidates(from: texts)
+
+        XCTAssertTrue(candidates.contains {
+            $0.correctedPhrase == "SwiftUI" &&
+            $0.rawPhrase == "すいふとゆーあい" &&
+            $0.occurrenceCount == 2
+        })
+        XCTAssertTrue(candidates.contains {
+            $0.correctedPhrase == "API" &&
+            $0.rawPhrase == "えーぴーあい"
+        })
+        XCTAssertTrue(candidates.contains {
+            $0.correctedPhrase == "ProjectSpecificName" &&
+            $0.rawPhrase == "project specific name"
+        })
+        XCTAssertTrue(candidates.allSatisfy { $0.autoApplyAllowed })
+    }
+
+    func testLocalAgentHistoryTextProviderReadsBoundedLocalHistories() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let codexDirectory = home.appendingPathComponent(".codex")
+        let claudeDirectory = home.appendingPathComponent(".claude/projects/project-a")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: claudeDirectory, withIntermediateDirectories: true)
+
+        try "codex history SwiftUI API".write(
+            to: codexDirectory.appendingPathComponent("history.jsonl"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try "claude jsonl Codex".write(
+            to: claudeDirectory.appendingPathComponent("session.jsonl"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try "0123456789abcdef".write(
+            to: claudeDirectory.appendingPathComponent("session.md"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try "ignored binary".write(
+            to: claudeDirectory.appendingPathComponent("session.bin"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let provider = LocalAgentHistoryTextProvider(
+            homeDirectory: home,
+            maximumClaudeProjectFiles: 2,
+            maximumBytesPerFile: 10,
+            allowedClaudeProjectExtensions: ["jsonl", "md"]
+        )
+        let texts = try provider.historyTexts()
+
+        XCTAssertTrue(texts.contains { $0.contains("codex hist") })
+        XCTAssertTrue(texts.contains { $0.contains("claude jso") })
+        XCTAssertTrue(texts.contains("0123456789"))
+        XCTAssertFalse(texts.contains { $0.contains("ignored binary") })
+    }
+
+    func testLocalAgentHistoryTextProviderExtractsUserTextFromStructuredJSONL() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let codexDirectory = home.appendingPathComponent(".codex")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+
+        try """
+        {"role":"assistant","content":"AssistantOnlyTerm should not train the dictionary."}
+        {"role":"user","content":"Please fix SwiftUI previews and JSON fixtures."}
+        {"message":{"role":"user","content":[{"type":"text","text":"Codex should preserve MCP settings."}]}}
+        {"text":"Fallback project note mentions Claude Code."}
+        """.write(
+            to: codexDirectory.appendingPathComponent("history.jsonl"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let texts = try LocalAgentHistoryTextProvider(homeDirectory: home).historyTexts()
+        let joined = texts.joined(separator: "\n")
+
+        XCTAssertTrue(joined.contains("SwiftUI previews"))
+        XCTAssertTrue(joined.contains("Codex should preserve MCP settings"))
+        XCTAssertTrue(joined.contains("Claude Code"))
+        XCTAssertFalse(joined.contains("AssistantOnlyTerm"))
+    }
+
+    func testLocalAgentHistoryTextProviderSkipsStructuredJSONWithoutUserText() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let codexDirectory = home.appendingPathComponent(".codex")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+
+        try """
+        {"session_id":"metadata-only","updated_at":"2026-05-31T00:00:00Z"}
+        {"role":"assistant","content":"AssistantOnlyTerm should not train the dictionary."}
+        """.write(
+            to: codexDirectory.appendingPathComponent("history.jsonl"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let texts = try LocalAgentHistoryTextProvider(homeDirectory: home).historyTexts()
+
+        XCTAssertFalse(texts.joined(separator: "\n").contains("metadata-only"))
+        XCTAssertFalse(texts.joined(separator: "\n").contains("AssistantOnlyTerm"))
+    }
+
+    func testLocalAgentHistoryTextProviderPrefersRecentlyModifiedClaudeProjectFiles() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let claudeDirectory = home.appendingPathComponent(".claude/projects/project-a")
+        try FileManager.default.createDirectory(at: claudeDirectory, withIntermediateDirectories: true)
+
+        let oldURL = claudeDirectory.appendingPathComponent("old-session.jsonl")
+        let newURL = claudeDirectory.appendingPathComponent("new-session.jsonl")
+        try "old SwiftUI".write(to: oldURL, atomically: true, encoding: .utf8)
+        try "new ProjectSpecificName".write(to: newURL, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: 10)],
+            ofItemAtPath: oldURL.path
+        )
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date(timeIntervalSince1970: 20)],
+            ofItemAtPath: newURL.path
+        )
+
+        let texts = try LocalAgentHistoryTextProvider(
+            homeDirectory: home,
+            maximumClaudeProjectFiles: 1
+        ).historyTexts()
+        let joined = texts.joined(separator: "\n")
+
+        XCTAssertTrue(joined.contains("new ProjectSpecificName"))
+        XCTAssertFalse(joined.contains("old SwiftUI"))
+    }
+
+    func testLocalCommandLearningCandidateReviewerUsesExplicitLocalCommand() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scriptURL = directory.appendingPathComponent("reviewer.py")
+        try """
+        import json
+        import sys
+        payload = json.load(sys.stdin)
+        for candidate in payload["candidates"]:
+            candidate["confidence"] = 0.88
+            candidate["reason"] = "Reviewed by explicit local command."
+        json.dump({"candidates": payload["candidates"]}, sys.stdout)
+        """.write(to: scriptURL, atomically: true, encoding: .utf8)
+
+        let reviewed = try await LocalCommandLearningCandidateReviewer(
+            executableURL: URL(fileURLWithPath: "/usr/bin/python3"),
+            arguments: [scriptURL.path]
+        ).review(
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "コーデックス",
+                    correctedPhrase: "Codex",
+                    confidence: 0.62,
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ],
+            diff: PromptDiff(
+                rawText: "コーデックスで直して",
+                autoCorrectedText: "コーデックスで直して",
+                finalEditedText: "Codex で直して"
+            )
+        )
+
+        XCTAssertEqual(reviewed[0].confidence, 0.88)
+        XCTAssertEqual(reviewed[0].reason, "Reviewed by explicit local command.")
+        XCTAssertTrue(reviewed[0].autoApplyAllowed)
+    }
+
+    func testBundledLocalLearningReviewerExampleFollowsCommandContract() async throws {
+        let scriptURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+            .appendingPathComponent("scripts/local_learning_reviewer_example.py")
+
+        let reviewed = try await LocalCommandLearningCandidateReviewer(
+            executableURL: URL(fileURLWithPath: "/usr/bin/python3"),
+            arguments: [scriptURL.path]
+        ).review(
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "コーデックス",
+                    correctedPhrase: "Codex",
+                    confidence: 0.62,
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ],
+            diff: PromptDiff(
+                rawText: "コーデックスで直して",
+                autoCorrectedText: "コーデックスで直して",
+                finalEditedText: "Codex で直して"
+            )
+        )
+
+        XCTAssertEqual(reviewed[0].confidence, 0.78)
+        XCTAssertTrue(reviewed[0].reason.contains("Local reviewer"))
+        XCTAssertTrue(reviewed[0].autoApplyAllowed)
+    }
+
+    func testLocalCommandLearningCandidateReviewerPreservesDangerousGuardrails() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scriptURL = directory.appendingPathComponent("unsafe-reviewer.py")
+        try """
+        import json
+        import sys
+        payload = json.load(sys.stdin)
+        for candidate in payload["candidates"]:
+            candidate["confidence"] = 0.99
+            candidate["dangerous"] = False
+            candidate["autoApplyAllowed"] = True
+            candidate["reason"] = "Unsafe reviewer tried to auto-apply."
+        json.dump({"candidates": payload["candidates"]}, sys.stdout)
+        """.write(to: scriptURL, atomically: true, encoding: .utf8)
+
+        let reviewed = try await LocalCommandLearningCandidateReviewer(
+            executableURL: URL(fileURLWithPath: "/usr/bin/python3"),
+            arguments: [scriptURL.path]
+        ).review(
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "アールエム",
+                    correctedPhrase: "rm",
+                    confidence: 0.3,
+                    suggestedScope: .user,
+                    dangerous: true,
+                    autoApplyAllowed: false
+                )
+            ],
+            diff: PromptDiff(
+                rawText: "アールエムして",
+                autoCorrectedText: "アールエムして",
+                finalEditedText: "rm して"
+            )
+        )
+
+        XCTAssertEqual(reviewed[0].confidence, 0.4)
+        XCTAssertTrue(reviewed[0].dangerous)
+        XCTAssertFalse(reviewed[0].autoApplyAllowed)
+        XCTAssertEqual(reviewed[0].reason, "Unsafe reviewer tried to auto-apply.")
+    }
+
+    func testLocalCommandLearningCandidateReviewerDoesNotAutoApplyInjectedCandidates() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scriptURL = directory.appendingPathComponent("injecting-reviewer.py")
+        try """
+        import json
+        import sys
+        payload = json.load(sys.stdin)
+        payload["candidates"].append({
+            "rawPhrase": "ぜんぶけして",
+            "correctedPhrase": "rm -rf /",
+            "confidence": 0.99,
+            "occurrenceCount": 1,
+            "reason": "Injected by reviewer.",
+            "suggestedScope": "user",
+            "approved": False,
+            "rejected": False,
+            "dangerous": False,
+            "autoApplyAllowed": True
+        })
+        json.dump({"candidates": payload["candidates"]}, sys.stdout)
+        """.write(to: scriptURL, atomically: true, encoding: .utf8)
+
+        let reviewed = try await LocalCommandLearningCandidateReviewer(
+            executableURL: URL(fileURLWithPath: "/usr/bin/python3"),
+            arguments: [scriptURL.path]
+        ).review(
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "コーデックス",
+                    correctedPhrase: "Codex",
+                    confidence: 0.62,
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ],
+            diff: PromptDiff(
+                rawText: "コーデックスで直して",
+                autoCorrectedText: "コーデックスで直して",
+                finalEditedText: "Codex で直して"
+            )
+        )
+
+        let injected = try XCTUnwrap(reviewed.first { $0.correctedPhrase == "rm -rf /" })
+        XCTAssertFalse(injected.autoApplyAllowed)
+    }
+
+    func testLocalCommandLearningCandidateReviewerTimesOutSlowCommand() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scriptURL = directory.appendingPathComponent("slow-reviewer.py")
+        try """
+        import time
+        time.sleep(2)
+        """.write(to: scriptURL, atomically: true, encoding: .utf8)
+
+        do {
+            _ = try await LocalCommandLearningCandidateReviewer(
+                executableURL: URL(fileURLWithPath: "/usr/bin/python3"),
+                arguments: [scriptURL.path],
+                timeoutSeconds: 0.05
+            ).review(
+                candidates: [
+                    CorrectionCandidate(
+                        rawPhrase: "コーデックス",
+                        correctedPhrase: "Codex",
+                        confidence: 0.62,
+                        suggestedScope: .user
+                    )
+                ],
+                diff: PromptDiff(
+                    rawText: "コーデックス",
+                    autoCorrectedText: "コーデックス",
+                    finalEditedText: "Codex"
+                )
+            )
+            XCTFail("Expected local reviewer timeout")
+        } catch {
+            XCTAssertEqual(
+                error as? LocalCommandLearningCandidateReviewerError,
+                .timedOut(seconds: 0.05)
+            )
+        }
+    }
+
+    func testAgentHistoryLearningModeUseCaseLoadsHistoryAndGeneratesCandidates() throws {
+        let provider = StubAgentHistoryTextProvider(texts: [
+            "Fix SwiftUI in Codex.",
+            "SwiftUI should preserve JSON.",
+            "Codex writes JSON fixtures."
+        ])
+        let result = try AgentHistoryLearningModeUseCase(
+            historyProvider: provider,
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates()
+
+        XCTAssertEqual(result.scannedTextCount, 3)
+        XCTAssertTrue(result.candidates.contains {
+            $0.correctedPhrase == "SwiftUI" &&
+            $0.rawPhrase == "すいふとゆーあい"
+        })
+        XCTAssertTrue(result.candidates.contains {
+            $0.correctedPhrase == "JSON" &&
+            $0.rawPhrase == "じぇいそん"
+        })
+    }
+
+    func testAgentHistoryLearningModeSkipsExistingDictionaryEntries() throws {
+        let provider = StubAgentHistoryTextProvider(texts: [
+            "Fix SwiftUI in Codex.",
+            "SwiftUI should preserve JSON.",
+            "Codex writes JSON fixtures."
+        ])
+        let existingEntries = [
+            DictionaryEntry(
+                spokenForms: ["すいふとゆーあい"],
+                canonical: "SwiftUI",
+                kind: .framework,
+                scope: .user,
+                confidence: 0.8,
+                autoApply: true
+            )
+        ]
+
+        let result = try AgentHistoryLearningModeUseCase(
+            historyProvider: provider,
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates(existingEntries: existingEntries)
+
+        XCTAssertEqual(result.skippedExistingCandidateCount, 1)
+        XCTAssertFalse(result.candidates.contains { $0.correctedPhrase == "SwiftUI" })
+        XCTAssertTrue(result.candidates.contains { $0.correctedPhrase == "JSON" })
+    }
+
+    func testAgentHistoryLearningModeCanGenerateRepositoryScopedCandidates() throws {
+        let provider = StubAgentHistoryTextProvider(texts: [
+            "SwiftUI renders JSON previews.",
+            "SwiftUI loads JSON fixtures."
+        ])
+
+        let result = try AgentHistoryLearningModeUseCase(
+            historyProvider: provider,
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates(scope: .repository)
+
+        XCTAssertFalse(result.candidates.isEmpty)
+        XCTAssertTrue(result.candidates.allSatisfy { $0.suggestedScope == .repository })
     }
 
     func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
@@ -394,6 +836,79 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(confirmed.shouldSubmitAutomatically)
     }
 
+    func testPromptEditLearningCanReviewCandidatesOffTheTranscriptionPath() async throws {
+        let previewUseCase = PromptPreviewUseCase(entries: [])
+        let preview = previewUseCase.preview(rawTranscript: "コーデックスで直して")
+        let confirmed = try await PromptEditLearningUseCase(
+            previewUseCase: previewUseCase,
+            candidateReviewer: StubLearningCandidateReviewer { candidates, _ in
+                candidates.map { candidate in
+                    var reviewed = candidate
+                    reviewed.confidence = 0.93
+                    reviewed.reason = "Reviewed after user confirmation by an off-path detector."
+                    return reviewed
+                }
+            }
+        ).confirm(
+            preview: preview,
+            finalEditedPrompt: "Codex で直して"
+        )
+
+        let codex = try XCTUnwrap(confirmed.candidates.first { $0.correctedPhrase == "Codex" })
+        XCTAssertEqual(confirmed.promptToInsert, "Codex で直して")
+        XCTAssertEqual(codex.confidence, 0.93)
+        XCTAssertEqual(codex.reason, "Reviewed after user confirmation by an off-path detector.")
+        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
+    }
+
+    func testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails() async throws {
+        let previewUseCase = PromptPreviewUseCase(entries: [])
+        let preview = previewUseCase.preview(rawTranscript: "コーデックスで直して")
+        let confirmed = try await PromptEditLearningUseCase(
+            previewUseCase: previewUseCase,
+            candidateReviewer: StubLearningCandidateReviewer { _, _ in
+                throw PromptEditLearningTestError.reviewerFailed
+            }
+        ).confirm(
+            preview: preview,
+            finalEditedPrompt: "Codex で直して"
+        )
+
+        let codex = try XCTUnwrap(confirmed.candidates.first { $0.correctedPhrase == "Codex" })
+        XCTAssertEqual(confirmed.promptToInsert, "Codex で直して")
+        XCTAssertEqual(codex.rawPhrase, "コーデックス")
+        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
+    }
+
+    func testDetectorBackedLearningReviewerPreservesDangerousCandidateGuardrails() async throws {
+        let diff = PromptDiff(
+            rawText: "アールエムを使って消して",
+            autoCorrectedText: "アールエムを使って消して",
+            finalEditedText: "rm を使って消して"
+        )
+        let reviewed = try await DetectorBackedLearningCandidateReviewer(
+            detector: FixedVoiceMisrecognitionDetector(
+                evidence: VoiceMisrecognitionEvidence(confidence: 0.99, reason: "High confidence detector result.")
+            )
+        ).review(
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "アールエム",
+                    correctedPhrase: "rm",
+                    confidence: 0.3,
+                    suggestedScope: .user,
+                    dangerous: true,
+                    autoApplyAllowed: true
+                )
+            ],
+            diff: diff
+        )
+
+        XCTAssertEqual(reviewed[0].confidence, 0.4)
+        XCTAssertEqual(reviewed[0].reason, "High confidence detector result.")
+        XCTAssertFalse(reviewed[0].autoApplyAllowed)
+    }
+
     func testApprovedCandidatesPersistAsLocalDictionaryEntries() throws {
         let repository = InMemoryDictionaryRepository()
         let useCase = DictionaryLearningUseCase(
@@ -428,6 +943,41 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadEntries(), [])
     }
 
+    func testApprovingEquivalentCandidateStrengthensExistingDictionaryEntry() throws {
+        let existingEntry = DictionaryEntry(
+            spokenForms: ["すいふとゆーあい"],
+            canonical: "SwiftUI",
+            kind: .phrase,
+            scope: .user,
+            confidence: 0.55,
+            autoApply: false,
+            createdAt: Date(timeIntervalSince1970: 10),
+            updatedAt: Date(timeIntervalSince1970: 10)
+        )
+        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
+
+        _ = try DictionaryLearningUseCase(
+            repository: repository,
+            now: { Date(timeIntervalSince1970: 20) }
+        ).approveCandidates([
+            CorrectionCandidate(
+                rawPhrase: "すいふとゆーあい",
+                correctedPhrase: "SwiftUI",
+                confidence: 0.82,
+                suggestedScope: .user,
+                approved: true,
+                autoApplyAllowed: true
+            )
+        ])
+        let saved = try repository.loadEntries()
+
+        XCTAssertEqual(saved.count, 1)
+        XCTAssertEqual(saved[0].confidence, 0.82)
+        XCTAssertTrue(saved[0].autoApply)
+        XCTAssertEqual(saved[0].createdAt, Date(timeIntervalSince1970: 10))
+        XCTAssertEqual(saved[0].updatedAt, Date(timeIntervalSince1970: 20))
+    }
+
     func testCandidateApprovalMarksSelectedOnly() {
         let candidates = [
             CorrectionCandidate(rawPhrase: "one", correctedPhrase: "1", confidence: 0.8, suggestedScope: .user),
@@ -456,6 +1006,71 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(approved.map(\.canonical), ["Claude Code"])
         XCTAssertEqual(try repository.loadEntries().map(\.canonical), ["Claude Code"])
+    }
+
+    func testApprovedLearningEntriesAffectNextRuleBasedNormalization() throws {
+        let repository = InMemoryDictionaryRepository()
+        let candidates = [
+            CorrectionCandidate(
+                rawPhrase: "すいふとゆーあい",
+                correctedPhrase: "SwiftUI",
+                confidence: 0.8,
+                suggestedScope: .user,
+                autoApplyAllowed: true
+            )
+        ]
+
+        _ = try LearningApprovalUseCase(repository: repository)
+            .approveSelectedCandidates(candidates, selectedIndexes: [0])
+        let entries = try DictionaryEntryLoadingUseCase(
+            repository: repository,
+            seedEntries: [],
+            contextualEntries: []
+        ).loadEntries()
+        let preview = PromptPreviewUseCase(entries: entries)
+            .preview(rawTranscript: "すいふとゆーあいのpreviewを直して")
+        var foundLearnedCorrection = false
+        for correction in preview.corrections {
+            if correction.original == "すいふとゆーあい",
+               correction.replacement == "SwiftUI ",
+               correction.canonical == "SwiftUI" {
+                foundLearnedCorrection = true
+            }
+        }
+
+        XCTAssertEqual(preview.correctedPrompt, "SwiftUI のpreviewを直して")
+        XCTAssertTrue(foundLearnedCorrection)
+    }
+
+    func testAgentHistoryLearningApprovalEvolvesRuleBasedNormalizationForProjectTerms() throws {
+        let repository = InMemoryDictionaryRepository()
+        let historyProvider = StubAgentHistoryTextProvider(texts: [
+            "ProjectSpecificName appears in this repository prompt.",
+            "Please preserve ProjectSpecificName when editing docs."
+        ])
+        let learningResult = try AgentHistoryLearningModeUseCase(
+            historyProvider: historyProvider,
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates(existingEntries: try repository.loadEntries())
+
+        guard let index = learningResult.candidates.firstIndex(where: {
+            $0.rawPhrase == "project specific name" &&
+                $0.correctedPhrase == "ProjectSpecificName"
+        }) else {
+            return XCTFail("Expected ProjectSpecificName learning candidate")
+        }
+
+        _ = try LearningApprovalUseCase(repository: repository)
+            .approveSelectedCandidates(learningResult.candidates, selectedIndexes: [index])
+        let entries = try DictionaryEntryLoadingUseCase(
+            repository: repository,
+            seedEntries: [],
+            contextualEntries: []
+        ).loadEntries()
+        let preview = PromptPreviewUseCase(entries: entries)
+            .preview(rawTranscript: "project specific nameの設定を直して")
+
+        XCTAssertEqual(preview.correctedPrompt, "ProjectSpecificName の設定を直して")
     }
 
     func testPromptInsertionRequiresExplicitConfirmation() throws {
@@ -630,6 +1245,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let settings = try JSONAppSettingsRepository(fileURL: fileURL).loadSettings()
 
         XCTAssertEqual(settings, AppSettings(repositoryPath: "/tmp/repo"))
+        XCTAssertNil(settings.learningReviewerCommandPath)
+        XCTAssertEqual(settings.learningReviewerCommandArguments, [])
     }
 
     func testAppSettingsEffectiveValuesClampUnsafeInput() {
@@ -640,6 +1257,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(tooShort.effectiveSpeechLocaleIdentifier, "ja-JP")
         XCTAssertEqual(tooLong.effectiveRecordingDurationSeconds, 30)
         XCTAssertEqual(tooLong.effectiveSpeechLocaleIdentifier, "en-US")
+        XCTAssertEqual(AppSettings().preferredLearningScope, .user)
+        XCTAssertEqual(AppSettings(repositoryPath: "/tmp/repo").preferredLearningScope, .repository)
     }
 
     func testAppSettingsUseCaseSavesRepositoryAndClampedRecordingSettings() throws {
@@ -657,6 +1276,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(recordingSettings.recordingDurationSeconds, 30)
         XCTAssertEqual(recordingSettings.speechLocaleIdentifier, "en-US")
         XCTAssertEqual(try repository.loadSettings(), recordingSettings)
+
+        let learningSettings = try useCase.saveLearningReviewerCommand(
+            path: " /usr/local/bin/local-reviewer ",
+            arguments: [" --model ", "", " local-model "]
+        )
+        XCTAssertEqual(learningSettings.learningReviewerCommandPath, "/usr/local/bin/local-reviewer")
+        XCTAssertEqual(learningSettings.learningReviewerCommandArguments, ["--model", "local-model"])
+        let disabledLearningSettings = try useCase.saveLearningReviewerCommand(path: " ")
+        XCTAssertNil(disabledLearningSettings.learningReviewerCommandPath)
+        XCTAssertEqual(disabledLearningSettings.learningReviewerCommandArguments, [])
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
@@ -818,6 +1447,10 @@ private enum TemporaryRecordedAudioFileStoreTestError: Error, Equatable {
     case expected
 }
 
+private enum PromptEditLearningTestError: Error {
+    case reviewerFailed
+}
+
 private struct SuffixPromptRefiner: PromptRefiner {
     var suffix: String
 
@@ -849,5 +1482,33 @@ private struct StubRepositoryVocabularyFilePathProvider: RepositoryVocabularyFil
 
     func trackedVocabularyFilePaths(rootPath: String) throws -> [String] {
         filePaths
+    }
+}
+
+private struct StubAgentHistoryTextProvider: AgentHistoryTextProvider {
+    var texts: [String]
+
+    func historyTexts() throws -> [String] {
+        texts
+    }
+}
+
+private struct StubLearningCandidateReviewer: LearningCandidateReviewer {
+    var reviewClosure: @Sendable ([CorrectionCandidate], PromptDiff) async throws -> [CorrectionCandidate]
+
+    init(_ reviewClosure: @escaping @Sendable ([CorrectionCandidate], PromptDiff) async throws -> [CorrectionCandidate]) {
+        self.reviewClosure = reviewClosure
+    }
+
+    func review(candidates: [CorrectionCandidate], diff: PromptDiff) async throws -> [CorrectionCandidate] {
+        try await reviewClosure(candidates, diff)
+    }
+}
+
+private struct FixedVoiceMisrecognitionDetector: VoiceMisrecognitionDetector {
+    var evidence: VoiceMisrecognitionEvidence
+
+    func evidence(rawPhrase: String, correctedPhrase: String, diff: PromptDiff) -> VoiceMisrecognitionEvidence {
+        evidence
     }
 }

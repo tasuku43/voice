@@ -28,6 +28,7 @@ check: xcode-test-env
 	python3 scripts/validate_app_contract.py .
 	python3 scripts/validate_privacy_contract.py .
 	python3 scripts/validate_mvp_coverage.py .
+	python3 scripts/validate_learning_goal_audit.py .
 	python3 scripts/validate_manual_e2e_checklist.py .
 
 goal:

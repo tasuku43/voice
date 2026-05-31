@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PromptDiff: Equatable, Sendable {
+public struct PromptDiff: Codable, Equatable, Sendable {
     public var rawText: String
     public var autoCorrectedText: String
     public var finalEditedText: String

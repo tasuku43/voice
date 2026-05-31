@@ -46,10 +46,54 @@ REQUIRED_SNIPPETS = {
         "dateEncodingStrategy = .iso8601",
         "dateDecodingStrategy = .iso8601",
     ],
+    "src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift": [
+        "public protocol VoiceMisrecognitionDetector",
+        "public struct RuleBasedVoiceMisrecognitionDetector",
+        "Likely voice misrecognition",
+    ],
+    "src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift": [
+        "public enum DeveloperTermSpeechRules",
+        "extractTerms(from text:",
+        "spokenPhrase(for term:",
+        "spokenIdentifierPhrase",
+    ],
     "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
         "public struct AppSettingsUseCase",
         "saveRepositoryPath",
         "saveRecordingSettings",
+        "saveLearningReviewerCommand",
+    ],
+    "src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift": [
+        "public protocol LearningCandidateReviewer",
+        "public struct PromptEditLearningUseCase",
+        "candidateReviewer.review",
+        "reviewedCandidates = confirmed.candidates",
+    ],
+    "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
+        "public protocol AgentHistoryTextProvider",
+        "historyTexts()",
+    ],
+    "src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift": [
+        "public struct AgentHistoryLearningModeUseCase",
+        "historyProvider.historyTexts()",
+        "dictionaryLearningUseCase.candidates",
+        "skippedExistingCandidateCount",
+    ],
+    "src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift": [
+        "public struct AgentHistoryDictionaryLearningUseCase",
+        "candidates(from texts:",
+        "Found \\(count) uses in local agent history.",
+    ],
+    "src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift": [
+        "public struct LocalAgentHistoryTextProvider",
+        ".codex/history.jsonl",
+        ".claude/projects",
+        "maximumBytesPerFile",
+    ],
+    "src/VoiceAgentInputCore/Infra/LocalCommandLearningCandidateReviewer.swift": [
+        "public struct LocalCommandLearningCandidateReviewer",
+        "LocalCommandLearningReviewRequest",
+        "process.executableURL",
     ],
     "src/VoiceAgentInputApp/main.swift": [
         "NSApplication.shared",
@@ -70,7 +114,9 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
-        "PreviewWindowController(preview: preview, previewUseCase: previewUseCase)",
+        "learningCandidateReviewer()",
+        "Learn From Agent History...",
+        "AgentHistoryLearningModeUseCase",
     ],
     "src/VoiceAgentInputApp/PreviewWindowController.swift": [
         "final class PreviewWindowController",
@@ -80,6 +126,8 @@ REQUIRED_SNIPPETS = {
     ],
     "src/VoiceAgentInputApp/CandidateApprovalDialogController.swift": [
         "final class CandidateApprovalDialogController",
+        "candidateDetailText",
+        "Confidence",
         "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     ],
     "docs/16-architecture-refactor-summary.md": [

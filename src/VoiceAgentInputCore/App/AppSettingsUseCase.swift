@@ -32,4 +32,26 @@ public struct AppSettingsUseCase {
         try repository.saveSettings(settings)
         return settings
     }
+
+    @discardableResult
+    public func saveLearningReviewerCommand(
+        path: String?,
+        arguments: [String] = []
+    ) throws -> AppSettings {
+        var settings = try repository.loadSettings()
+        let trimmed = path?.trimmingCharacters(in: .whitespacesAndNewlines)
+        settings.learningReviewerCommandPath = trimmed?.isEmpty == true ? nil : trimmed
+        settings.learningReviewerCommandArguments = settings.learningReviewerCommandPath == nil
+            ? []
+            : arguments
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+        try repository.saveSettings(settings)
+        return settings
+    }
+
+    @discardableResult
+    public func saveLearningReviewerCommandPath(_ path: String?) throws -> AppSettings {
+        try saveLearningReviewerCommand(path: path)
+    }
 }

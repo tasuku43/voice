@@ -7,15 +7,21 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var repositoryPath: String?
     public var recordingDurationSeconds: TimeInterval
     public var speechLocaleIdentifier: String
+    public var learningReviewerCommandPath: String?
+    public var learningReviewerCommandArguments: [String]
 
     public init(
         repositoryPath: String? = nil,
         recordingDurationSeconds: TimeInterval = Self.defaultRecordingDurationSeconds,
-        speechLocaleIdentifier: String = Self.defaultSpeechLocaleIdentifier
+        speechLocaleIdentifier: String = Self.defaultSpeechLocaleIdentifier,
+        learningReviewerCommandPath: String? = nil,
+        learningReviewerCommandArguments: [String] = []
     ) {
         self.repositoryPath = repositoryPath
         self.recordingDurationSeconds = recordingDurationSeconds
         self.speechLocaleIdentifier = speechLocaleIdentifier
+        self.learningReviewerCommandPath = learningReviewerCommandPath
+        self.learningReviewerCommandArguments = learningReviewerCommandArguments
     }
 
     public var effectiveRecordingDurationSeconds: TimeInterval {
@@ -27,10 +33,19 @@ public struct AppSettings: Codable, Equatable, Sendable {
         return trimmed.isEmpty ? Self.defaultSpeechLocaleIdentifier : trimmed
     }
 
+    public var preferredLearningScope: DictionaryScope {
+        guard let repositoryPath, !repositoryPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return .user
+        }
+        return .repository
+    }
+
     private enum CodingKeys: String, CodingKey {
         case repositoryPath
         case recordingDurationSeconds
         case speechLocaleIdentifier
+        case learningReviewerCommandPath
+        case learningReviewerCommandArguments
     }
 
     public init(from decoder: Decoder) throws {
@@ -40,6 +55,9 @@ public struct AppSettings: Codable, Equatable, Sendable {
             ?? Self.defaultRecordingDurationSeconds
         speechLocaleIdentifier = try container.decodeIfPresent(String.self, forKey: .speechLocaleIdentifier)
             ?? Self.defaultSpeechLocaleIdentifier
+        learningReviewerCommandPath = try container.decodeIfPresent(String.self, forKey: .learningReviewerCommandPath)
+        learningReviewerCommandArguments = try container.decodeIfPresent([String].self, forKey: .learningReviewerCommandArguments)
+            ?? []
     }
 }
 

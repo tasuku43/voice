@@ -97,13 +97,26 @@ App settings:
 AppSettings(
     repositoryPath: String?,
     recordingDurationSeconds: TimeInterval,
-    speechLocaleIdentifier: String
+    speechLocaleIdentifier: String,
+    learningReviewerCommandPath: String?,
+    learningReviewerCommandArguments: [String]
 )
 ```
 
-Missing settings decode to local defaults: four seconds of recording and `ja-JP` speech recognition. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
+Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, and no learning reviewer command. Runtime use clamps recording duration to 1...30 seconds, falls back to `ja-JP` when the stored locale is blank, trims reviewer command arguments, and treats a blank reviewer command path as disabled.
 
 The macOS menu bar shell exposes these recording settings locally through `Recording Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
+
+The macOS menu bar shell exposes learning reviewer command configuration through `Learning Settings...`. The command is optional and local-only. When configured, the app sends candidate-review JSON to the command only after preview confirmation; it is not part of speech recognition, dictionary normalization, or prompt refinement. The interactive app uses a short reviewer timeout so optional review cannot become a noticeable paste-confirmation bottleneck.
+
+Learning candidate review:
+
+```swift
+PromptEditLearningUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?, suggestedScope: DictionaryScope) async throws -> ConfirmedPrompt
+LocalCommandLearningCandidateReviewer.review(candidates: [CorrectionCandidate], diff: PromptDiff) async throws -> [CorrectionCandidate]
+```
+
+Candidate review must preserve dangerous-command guardrails. A reviewer may update reasons and confidence, but it must not make a dangerous substitution auto-apply.
 
 Permission status use case:
 
