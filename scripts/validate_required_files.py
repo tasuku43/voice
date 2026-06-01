@@ -14,6 +14,7 @@ required = [
     'docs/15-mvp-completion-audit.md',
     'docs/16-architecture-refactor-summary.md',
     'docs/17-learning-goal-audit.md',
+    'docs/18-spec-trim-audit.md',
     'docs/contracts/audio-capture.md',
     'docs/contracts/speech-to-text.md',
     'docs/contracts/local-context-model.md',

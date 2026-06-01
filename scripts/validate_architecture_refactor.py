@@ -47,6 +47,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
         "public protocol LocalContextModelRepository",
         "public struct LocalContextModelDataUseCase",
+        "rebuildModel",
         "deleteLocalContextModel",
     ],
     "src/VoiceAgentInputCore/App/DictionaryEntryLoadingUseCase.swift": [

@@ -895,6 +895,43 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 1)
     }
 
+    func testLocalContextModelDataUseCaseRebuildsAndPersistsModel() throws {
+        let approvedEntry = DictionaryEntry(
+            spokenForms: ["ぼいす"],
+            canonical: "VoiceAgentInput",
+            recognitionHints: ["VoiceAgentInput"],
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let learningResult = AgentHistoryLearningModeResult(
+            scannedTextCount: 1,
+            sourceTextCounts: ["repositoryVocabulary": 1],
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "めいんぶらんち",
+                    correctedPhrase: "main",
+                    confidence: 0.75,
+                    occurrenceCount: 1,
+                    reason: "Found in repository vocabulary.",
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ]
+        )
+        let repository = InMemoryLocalContextModelRepository()
+
+        let model = try LocalContextModelDataUseCase(
+            repository: repository,
+            buildUseCase: LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [approvedEntry])
+        ).rebuildModel(learningResult: learningResult)
+
+        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["VoiceAgentInput", "main"])
+        XCTAssertEqual(model.sourceTextCounts["repositoryVocabulary"], 1)
+        XCTAssertEqual(try repository.loadModel(), model)
+    }
+
     func testLocalContextModelDocumentCodecRoundTrip() throws {
         let model = LocalContextModel(
             entries: [

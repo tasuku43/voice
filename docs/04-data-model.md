@@ -22,7 +22,7 @@ Current code represents this with `LocalContextModel` in the App layer. It wraps
 - `model.sourceTextCounts`
 - `model.generatedCandidateCount`
 
-The same model should support two runtime uses:
+The app rebuilds and persists this model after an explicit learning-source run. The same saved model supports two runtime uses:
 
 ```text
 LocalContextModel

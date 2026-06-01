@@ -39,10 +39,10 @@
 
 ## Phase 5: model education loop
 
-- Learning source selection.
-- Local Codex / Claude Code history source.
-- Git repository vocabulary source.
-- Local context model rebuild.
+- Learning source selection. Initial app flow done.
+- Local Codex / Claude Code history source. Done through bounded local history adapters.
+- Git repository vocabulary source. Done through explicit repository vocabulary learning source.
+- Local context model rebuild. App training now rebuilds and persists the local context model from selected sources.
 - Optional editable prompt preview.
 - Optional diff extraction.
 - Optional candidate approval UI. App-shell approval dialog supports per-candidate selection.
@@ -53,7 +53,7 @@
 
 - Git root and branch detection. Initial command-backed provider done.
 - Bounded vocabulary extraction. Tracked file names from `git ls-files` are filtered by extension and capped before becoming repository-scoped entries.
-- Repository-scoped suggestions. Repository name, branch, and tracked file-name entries are mixed into app preview dictionaries.
+- Repository-scoped suggestions. Repository name, branch, and tracked file-name entries are available through explicit learning-source selection and model rebuilds.
 - Manual repository folder setting. App shell can store a local repository path for bundled/Finder launches.
 
 ## Phase 7: local Foundation Model fallback

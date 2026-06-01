@@ -2,13 +2,12 @@
 
 ## Core
 
-- Define the local context model document shape.
-- Generate recognition hints from learned context.
+- Add first-class local context model rebuild/export/import/delete UI.
+- Add stale-model and last-rebuilt metadata to the local context model document.
 - Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.
 - Add confidence accumulation for repeated corrections.
 - Add repository-scoped candidate promotion rules.
-- Add dictionary import/export tests.
 - Add golden snapshots for demo CLI output.
 
 ## macOS app
@@ -34,7 +33,7 @@
 - Apple Speech adapter.
 - Availability and locale checks.
 - Local-only WhisperKit fallback investigation.
-- Local Foundation Model conversion fallback investigation.
+- Local Foundation Model conversion fallback investigation after deterministic transforms prove insufficient.
 
 ## Context
 
@@ -51,7 +50,7 @@
 ## Persistence
 
 - JSON dictionary storage.
-- Local context model storage.
+- Local context model storage. Initial JSON repository exists.
 - SQLite migration if needed.
 - Export/import UI for learned context.
 - Delete local learning data.

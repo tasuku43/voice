@@ -102,6 +102,7 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
             "LocalContextModelRepository",
             "LocalContextModelDataUseCase",
+            "rebuildModel",
             "deleteLocalContextModel",
         ],
         "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
@@ -120,6 +121,7 @@ REQUIRED_COVERAGE = {
             "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
             "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
             "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
+            "testLocalContextModelDataUseCaseRebuildsAndPersistsModel",
             "testLocalContextModelDocumentCodecRoundTrip",
             "testJSONLocalContextModelRepositoryRoundTripAndDelete",
             "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",
@@ -440,8 +442,15 @@ REQUIRED_COVERAGE = {
             "Local Context Model Contract",
             "Recognition hints for STT adapters",
             "Post-STT transform entries",
+            "rebuildModel",
             "local Foundation Model",
             "Network IO",
+        ],
+        "docs/18-spec-trim-audit.md": [
+            "Spec trim audit",
+            "Preview/edit UI is an optional curation surface",
+            "Any requirement that the default hotkey path show a preview before insertion",
+            "local Foundation Model adapter",
         ],
         "docs/codex-sessions/local-context-model-session.md": [
             "Purpose:",

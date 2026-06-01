@@ -15,6 +15,7 @@ REQUIRED_SNIPPETS = {
         "SpeechRecognitionHintsUseCase",
         "contextualStrings",
         "recognitionHints",
+        "LocalContextModelDataUseCase.rebuildModel",
         "legacy dictionary decoding",
         "Educate a local context model from environment-specific sources.",
         "structured user text extraction",
@@ -54,8 +55,16 @@ REQUIRED_SNIPPETS = {
         "Recognition hints for STT adapters",
         "Post-STT transform entries",
         "DictionaryEntryLoadingUseCase",
+        "rebuildModel",
         "local Foundation Model",
         "Network IO",
+    ],
+    "docs/18-spec-trim-audit.md": [
+        "Spec trim audit",
+        "hotkey voice input",
+        "Preview/edit UI is an optional curation surface",
+        "Any requirement that normal dictation wait for candidate approval",
+        "local Foundation Model adapter",
     ],
     "docs/contracts/learning-reviewer-command.md": [
         "The learning reviewer command is optional.",
@@ -102,6 +111,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
         "public protocol LocalContextModelRepository",
         "LocalContextModelDataUseCase",
+        "rebuildModel",
         "deleteLocalContextModel",
     ],
     "src/VoiceAgentInputCore/Domain/DictionaryEntry.swift": [
@@ -157,6 +167,7 @@ REQUIRED_SNIPPETS = {
         "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
         "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
         "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
+        "testLocalContextModelDataUseCaseRebuildsAndPersistsModel",
         "testLocalContextModelDocumentCodecRoundTrip",
         "testJSONLocalContextModelRepositoryRoundTripAndDelete",
         "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",

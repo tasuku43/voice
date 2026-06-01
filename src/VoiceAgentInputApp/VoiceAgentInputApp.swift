@@ -1194,7 +1194,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         let alert = NSAlert()
         alert.messageText = "Train dictionary from sources"
-        alert.informativeText = "Selected local sources are scanned for developer terms. Nothing is uploaded; candidates are saved only after approval."
+        alert.informativeText = "Selected local sources refresh the local context model. Nothing is uploaded; approved dictionary entries are saved only after approval."
         alert.accessoryView = stack
         alert.addButton(withTitle: "Train")
         if repositoryURL == nil {
@@ -1229,6 +1229,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     ) throws {
         let historyProvider = LocalAgentHistoryTextProvider()
         let existingEntries = try loadDictionaryEntries()
+        let approvedEntries = try approvedDictionaryRepository().loadEntries()
         let learningScope = try loadSettings().preferredLearningScope
         let learningSources = try configuredLearningSources(
             selection: selection,
@@ -1242,11 +1243,17 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
         debugLogger.log("dictionary training scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
+        let localContextModel = try LocalContextModelDataUseCase(
+            repository: localContextModelRepository(),
+            buildUseCase: LocalContextModelBuildUseCase(approvedEntries: approvedEntries)
+        ).rebuildModel(learningResult: result)
+        debugLogger.log("local context model rebuilt with \(localContextModel.entries.count) entries and \(localContextModel.generatedCandidateCount) generated candidates")
+
         guard !result.candidates.isEmpty else {
             let alert = NSAlert()
             alert.alertStyle = .informational
             alert.messageText = "No dictionary candidates found"
-            alert.informativeText = emptyMessage
+            alert.informativeText = emptyMessage + " The local context model was refreshed from the selected sources."
             alert.runModal()
             return
         }
