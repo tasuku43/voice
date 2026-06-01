@@ -749,9 +749,29 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(hints.contextualStrings, [
             "ProjectVoice",
-            "ぷろじぇくとぼいす",
-            "Project Voice"
+            "project voice",
+            "プロジェクト ボイス",
+            "プロジェクトボイス"
         ])
+    }
+
+    func testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms() {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["くらのコード"],
+                canonical: "Claude Code",
+                recognitionHints: [" Claude Code ", "クロードコード"],
+                kind: .toolName,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true
+            )
+        ]
+
+        let hints = SpeechRecognitionHintsUseCase().hints(from: entries)
+
+        XCTAssertEqual(hints.contextualStrings, ["Claude Code", "クロードコード"])
+        XCTAssertFalse(hints.contextualStrings.contains("くらのコード"))
     }
 
     func testSpeechRecognitionHintsCanBeBounded() {
@@ -759,6 +779,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             DictionaryEntry(
                 spokenForms: ["one", "two"],
                 canonical: "Canonical",
+                recognitionHints: ["Canonical", "one", "two"],
                 kind: .phrase,
                 scope: .user,
                 confidence: 0.9,
@@ -1061,8 +1082,19 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(approved.count, 2)
         XCTAssertEqual(saved.count, 2)
-        XCTAssertTrue(saved.contains { $0.spokenForms == ["くらのコード"] && $0.canonical == "Claude Code" && $0.autoApply })
-        XCTAssertTrue(saved.contains { $0.spokenForms == ["アールエム"] && $0.canonical == "rm" && !$0.autoApply })
+        XCTAssertTrue(saved.contains {
+            $0.spokenForms == ["くらのコード"] &&
+                $0.canonical == "Claude Code" &&
+                $0.recognitionHints.contains("Claude Code") &&
+                !$0.recognitionHints.contains("くらのコード") &&
+                $0.autoApply
+        })
+        XCTAssertTrue(saved.contains {
+            $0.spokenForms == ["アールエム"] &&
+                $0.canonical == "rm" &&
+                $0.recognitionHints == ["rm"] &&
+                !$0.autoApply
+        })
         XCTAssertFalse(saved.contains { $0.canonical == "reject me" })
     }
 
@@ -1325,8 +1357,35 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let decoded = try codec.decode(data)
 
         XCTAssertTrue(text.contains("Claude Code"))
+        XCTAssertTrue(text.contains("recognitionHints"))
         XCTAssertTrue(text.contains("1970-01-01T00:00:01Z"))
         XCTAssertEqual(decoded, entries)
+    }
+
+    func testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints() throws {
+        let data = """
+        [
+          {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "spokenForms": ["くらのコード"],
+            "canonical": "Claude Code",
+            "kind": "toolName",
+            "scope": "user",
+            "confidence": 0.9,
+            "autoApply": true,
+            "createdAt": "1970-01-01T00:00:01Z",
+            "updatedAt": "1970-01-01T00:00:02Z"
+          }
+        ]
+        """.data(using: .utf8)!
+
+        let decoded = try LocalLearningDataDocumentCodec().decode(data)
+
+        XCTAssertEqual(decoded.count, 1)
+        XCTAssertEqual(decoded[0].spokenForms, ["くらのコード"])
+        XCTAssertEqual(decoded[0].canonical, "Claude Code")
+        XCTAssertTrue(decoded[0].recognitionHints.contains("Claude Code"))
+        XCTAssertFalse(decoded[0].recognitionHints.contains("くらのコード"))
     }
 
     func testJSONDictionaryRepositoryRoundTrip() throws {

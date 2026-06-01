@@ -71,10 +71,18 @@ REQUIRED_COVERAGE = {
             "public struct SpeechRecognitionHints",
             "contextualStrings",
             "public struct SpeechRecognitionHintsUseCase",
+            "entry.recognitionHints",
             "DictionaryEntry",
+        ],
+        "src/VoiceAgentInputCore/Domain/DictionaryEntry.swift": [
+            "recognitionHints",
+            "defaultRecognitionHints",
+            "decodeIfPresent([String].self, forKey: .recognitionHints)",
         ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
             "testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings",
+            "testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms",
+            "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
             "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",

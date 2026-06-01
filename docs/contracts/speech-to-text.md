@@ -3,7 +3,7 @@
 ## Inputs
 - `RecordedAudio`
 - Speech locale from `AppSettings`
-- Optional `SpeechRecognitionHints` derived from loaded `DictionaryEntry` values.
+- Optional `SpeechRecognitionHints` derived from loaded `DictionaryEntry.recognitionHints` values.
 
 ## Outputs
 - `Transcript`
@@ -13,6 +13,7 @@
 - Convert one audio input into raw transcript text.
 - Report recognition availability or transcription failure.
 - Pass domain vocabulary hints to Apple Speech through `SFSpeechRecognitionRequest.contextualStrings`.
+- Prefer ASR-friendly `recognitionHints` over post-STT `spokenForms` when building contextual strings.
 
 ## Forbidden
 - Dictionary correction.
@@ -38,5 +39,5 @@
 
 ## Done
 - Raw transcript behavior is covered by tests.
-- Learned dictionary entries can be converted into speech recognition contextual strings before ASR.
+- Learned dictionary entries keep ASR-friendly `recognitionHints` that can be converted into speech recognition contextual strings before ASR.
 - No dictionary, preview, or paste behavior leaks into speech code.

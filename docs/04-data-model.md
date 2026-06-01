@@ -2,19 +2,22 @@
 
 ## DictionaryEntry
 
-Represents a reusable mapping from spoken forms to a canonical written form.
+Represents a reusable mapping from spoken forms to a canonical written form, with ASR-first recognition hints kept separate from post-STT correction forms.
 
 Fields:
 
 - `id`
 - `spokenForms`
 - `canonical`
+- `recognitionHints`
 - `kind`
 - `scope`
 - `confidence`
 - `autoApply`
 - `createdAt`
 - `updatedAt`
+
+`recognitionHints` are the strings sent to Apple Speech `contextualStrings`; they should prefer the canonical output and ASR-friendly variants. `spokenForms` remain the correction-side raw phrases used by `NormalizationEngine` when ASR still returns the wrong text.
 
 ## DictionaryEntryKind
 

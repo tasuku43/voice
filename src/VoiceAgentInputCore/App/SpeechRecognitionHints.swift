@@ -20,7 +20,10 @@ public struct SpeechRecognitionHintsUseCase: Sendable {
         var contextualStrings: [String] = []
 
         for entry in entries {
-            for phrase in [entry.canonical] + entry.spokenForms {
+            let phrases = entry.recognitionHints.isEmpty
+                ? [entry.canonical] + entry.spokenForms
+                : entry.recognitionHints
+            for phrase in phrases {
                 let trimmed = phrase.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else {
                     continue

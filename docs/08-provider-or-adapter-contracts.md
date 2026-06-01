@@ -92,7 +92,7 @@ Current adapter:
 Current use cases:
 
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries with approved local entries for preview and confirmation flows.
-- `SpeechRecognitionHintsUseCase` converts the same loaded `DictionaryEntry` values into bounded, de-duplicated ASR contextual strings.
+- `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
 - `CandidateApprovalUseCase` marks selected candidates as approved and unselected candidates as rejected.
 - `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
 - `LearningApprovalUseCase` combines candidate selection review and approved-entry persistence so UI only supplies selected indexes.
