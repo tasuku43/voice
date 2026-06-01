@@ -57,6 +57,7 @@ REQUIRED_SNIPPETS = [
     "Local Context Model Status...",
     "last rebuild time",
     "source text counts",
+    "stale-source warnings",
     "without rebuilding",
     "Train Dictionary From Sources...",
     "Codex / Claude local sessions",

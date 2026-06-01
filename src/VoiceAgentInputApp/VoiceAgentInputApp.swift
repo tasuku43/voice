@@ -1396,6 +1396,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let scannedTextLine = scannedTextCount.map { "Scanned \($0) local source texts." } ?? "Stored source texts: \(totalSourceTexts)."
         let generatedCount = generatedCandidateCount ?? model.generatedCandidateCount
         let sourceCountLine = sourceCounts.isEmpty ? "Source text counts: none." : "Source text counts: \(sourceCounts)."
+        let warnings = LocalContextModelStatusUseCase()
+            .warnings(model: model, configuredRepositoryPath: try? loadSettings().repositoryPath)
+        let warningText = warnings.isEmpty ? "Status warnings: none." : "Status warnings: \(warnings.joined(separator: " "))"
 
         return """
         Last rebuild time: \(rebuiltText).
@@ -1404,6 +1407,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         \(sourceCountLine)
         Generated candidates: \(generatedCount).
         Runtime model entries: \(model.entries.count).
+        \(warningText)
         """
     }
 

@@ -48,13 +48,13 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 - `VoiceAgentInputApp.recordVoiceInput()` uses Quick Paste as the daily path and keeps Learning Preview optional.
 - `AgentHistoryLearningModeUseCase` reads bounded local learning sources and generates candidates without network IO.
 - `LocalContextModelDataUseCase.rebuildModel(...)` persists a local model document from learning results.
-- `Local Context Model Status...` shows the saved model's last rebuild time, source kinds, source text counts, generated candidates, and runtime entry count without rebuilding.
+- `Local Context Model Status...` shows the saved model's last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
 - `DictionaryEntryLoadingUseCase` loads saved `LocalContextModel.postSTTEntries` into the hotkey runtime.
 - `SpeechRecognitionHintsUseCase` turns runtime dictionary entries into STT contextual strings.
 - Privacy validators reject direct networking/cloud snippets in the current Swift app sources.
 
 ## Remaining Shape Work
 
-- Local context model status/rebuild/export/import/delete UI is implemented, and the model stores source kinds plus last rebuild time; add stale-model warnings when learning-source settings change after the last rebuild.
+- Local context model status/rebuild/export/import/delete UI is implemented, and the model stores source kinds plus last rebuild time; add source freshness checks based on content modification times after the last rebuild.
 - Decide which optional curation surfaces stay visible by default after the model education flow is stronger.
 - Add local Foundation Model protocols only after deterministic model education and runtime transforms are not enough.

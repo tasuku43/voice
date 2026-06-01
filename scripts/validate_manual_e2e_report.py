@@ -59,7 +59,7 @@ REQUIRED_EVIDENCE_LABELS = [
     "Trusted local reviewer command does not run during Quick Paste",
     "Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured",
     "Rebuild Local Context Model works without candidate approval and shows rebuild metadata",
-    "Local Context Model Status shows last rebuild metadata without rebuilding",
+    "Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding",
     "Train Dictionary From Sources presents selectable local sources",
     "Learn From Agent History presents bounded Codex/Claude candidates",
     "History-derived project identifier affects later rule-based normalization",

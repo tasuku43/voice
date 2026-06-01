@@ -985,6 +985,53 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(decoded.sourceKinds.isEmpty)
     }
 
+    func testLocalContextModelStatusWarnsWhenModelHasNeverBeenRebuilt() {
+        let warnings = LocalContextModelStatusUseCase()
+            .warnings(model: LocalContextModel(), configuredRepositoryPath: nil)
+
+        XCTAssertEqual(warnings, ["Local context model has not been rebuilt yet."])
+    }
+
+    func testLocalContextModelStatusWarnsWhenConfiguredRepositoryIsMissingFromModel() {
+        let model = LocalContextModel(
+            lastRebuiltAt: Date(timeIntervalSince1970: 1_800),
+            sourceKinds: ["agentHistory"]
+        )
+
+        let warnings = LocalContextModelStatusUseCase()
+            .warnings(model: model, configuredRepositoryPath: "/tmp/repo")
+
+        XCTAssertEqual(warnings, [
+            "Repository folder is configured, but repository vocabulary is not in the saved model. Rebuild to include it."
+        ])
+    }
+
+    func testLocalContextModelStatusWarnsWhenModelContainsRepositoryWithoutConfiguredRepository() {
+        let model = LocalContextModel(
+            lastRebuiltAt: Date(timeIntervalSince1970: 1_800),
+            sourceKinds: ["repositoryVocabulary"]
+        )
+
+        let warnings = LocalContextModelStatusUseCase()
+            .warnings(model: model, configuredRepositoryPath: nil)
+
+        XCTAssertEqual(warnings, [
+            "Saved model includes repository vocabulary, but no repository folder is configured. Rebuild if this source should no longer be used."
+        ])
+    }
+
+    func testLocalContextModelStatusDoesNotWarnWhenConfiguredSourcesMatch() {
+        let model = LocalContextModel(
+            lastRebuiltAt: Date(timeIntervalSince1970: 1_800),
+            sourceKinds: ["agentHistory", "repositoryVocabulary"]
+        )
+
+        let warnings = LocalContextModelStatusUseCase()
+            .warnings(model: model, configuredRepositoryPath: "  /tmp/repo  ")
+
+        XCTAssertTrue(warnings.isEmpty)
+    }
+
     func testJSONLocalContextModelRepositoryRoundTripAndDelete() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }

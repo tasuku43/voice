@@ -111,7 +111,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Trusted local reviewer command does not run during Quick Paste: pass/fail/not applicable
 - Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured: pass/fail
 - Rebuild Local Context Model works without candidate approval and shows rebuild metadata: pass/fail
-- Local Context Model Status shows last rebuild metadata without rebuilding: pass/fail
+- Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding: pass/fail
 - Train Dictionary From Sources presents selectable local sources: pass/fail
 - Learn From Agent History presents bounded Codex/Claude candidates: pass/fail
 - History-derived project identifier affects later rule-based normalization: pass/fail

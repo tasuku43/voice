@@ -2,7 +2,7 @@
 
 ## Core
 
-- Add stale-model warnings when learning-source settings change after the last rebuild.
+- Add source freshness checks based on content modification times after the last rebuild.
 - Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.
 - Add confidence accumulation for repeated corrections.

@@ -130,7 +130,7 @@ LocalContextModelDataUseCase.deleteLocalContextModel() throws
 ```
 
 These operations apply to the saved local context model document used for STT recognition hints and post-STT transforms. The app exposes export/import/delete separately from approved dictionary controls.
-The app also exposes a status action that reads the saved model and shows last rebuild time, source kinds, source text counts, generated candidates, and runtime entry count without rebuilding.
+The app also exposes a status action that reads the saved model and shows last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
 
 Voice input history:
 

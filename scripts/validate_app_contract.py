@@ -38,6 +38,8 @@ REQUIRED_SOURCE_SNIPPETS = [
     "showLocalContextModelStatus",
     "Local context model status",
     "Last rebuild time",
+    "Status warnings",
+    "LocalContextModelStatusUseCase",
     "Rebuild Local Context Model...",
     "rebuildLocalContextModelFromSources",
     "showLocalContextModelRebuiltAlert",
