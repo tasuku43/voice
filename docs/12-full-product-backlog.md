@@ -2,7 +2,7 @@
 
 ## Core
 
-- Add a local context model status panel for inspecting last rebuild metadata without rebuilding.
+- Add stale-model warnings when learning-source settings change after the last rebuild.
 - Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.
 - Add confidence accumulation for repeated corrections.

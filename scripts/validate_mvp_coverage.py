@@ -201,6 +201,10 @@ REQUIRED_COVERAGE = {
             "parsedStructuredJSON",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+            "Local Context Model Status...",
+            "showLocalContextModelStatus",
+            "Local context model status",
+            "Last rebuild time",
             "Rebuild Local Context Model...",
             "rebuildLocalContextModelFromSources",
             "showLocalContextModelRebuiltAlert",
@@ -325,6 +329,7 @@ REQUIRED_COVERAGE = {
             "dateDecodingStrategy = .iso8601",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+            "Local Context Model Status...",
             "Export Local Dictionary...",
             "Import Local Dictionary...",
             "Export Local Context Model...",
@@ -469,7 +474,7 @@ REQUIRED_COVERAGE = {
             "Spec trim audit",
             "Preview/edit UI is an optional curation surface",
             "Any requirement that the default hotkey path show a preview before insertion",
-            "Local context model rebuild/export/import/delete UI is implemented",
+            "Local context model status/rebuild/export/import/delete UI is implemented",
             "last rebuild time",
             "local Foundation Model adapter",
         ],

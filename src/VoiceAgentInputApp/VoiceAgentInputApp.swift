@@ -99,6 +99,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Open Input Monitoring Settings...", action: #selector(openInputMonitoringSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Local Context Model Status...", action: #selector(showLocalContextModelStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Train Dictionary From Sources...", action: #selector(trainDictionaryFromSources), keyEquivalent: "t"))
         menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
@@ -1172,6 +1173,22 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
+    @objc private func showLocalContextModelStatus() {
+        do {
+            let model = try LocalContextModelDataUseCase(
+                repository: localContextModelRepository()
+            ).exportModel()
+
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = "Local context model status"
+            alert.informativeText = localContextModelStatusText(model: model)
+            alert.runModal()
+        } catch {
+            presentError(error)
+        }
+    }
+
     @objc private func openLocalDataFolder() {
         do {
             let url = try LocalLearningDictionaryStore.defaultDirectoryURL()
@@ -1356,16 +1373,38 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.alertStyle = .informational
         alert.messageText = "Local context model rebuilt"
-        let rebuiltText = model.lastRebuiltAt.map(Self.localContextModelDateFormatter.string(from:)) ?? "unknown"
+        alert.informativeText = localContextModelStatusText(
+            model: model,
+            scannedTextCount: result.scannedTextCount,
+            generatedCandidateCount: result.candidates.count
+        )
+        alert.runModal()
+    }
+
+    private func localContextModelStatusText(
+        model: LocalContextModel,
+        scannedTextCount: Int? = nil,
+        generatedCandidateCount: Int? = nil
+    ) -> String {
+        let rebuiltText = model.lastRebuiltAt.map(Self.localContextModelDateFormatter.string(from:)) ?? "never"
         let sourceText = model.sourceKinds.isEmpty ? "none" : model.sourceKinds.joined(separator: ", ")
-        alert.informativeText = """
-        Last rebuilt: \(rebuiltText).
-        Sources: \(sourceText).
-        Scanned \(result.scannedTextCount) local source texts.
-        Added \(result.candidates.count) generated candidates to the local context model.
+        let totalSourceTexts = model.sourceTextCounts.values.reduce(0, +)
+        let sourceCounts = model.sourceTextCounts
+            .sorted { $0.key < $1.key }
+            .map { "\($0.key): \($0.value)" }
+            .joined(separator: ", ")
+        let scannedTextLine = scannedTextCount.map { "Scanned \($0) local source texts." } ?? "Stored source texts: \(totalSourceTexts)."
+        let generatedCount = generatedCandidateCount ?? model.generatedCandidateCount
+        let sourceCountLine = sourceCounts.isEmpty ? "Source text counts: none." : "Source text counts: \(sourceCounts)."
+
+        return """
+        Last rebuild time: \(rebuiltText).
+        Source kinds: \(sourceText).
+        \(scannedTextLine)
+        \(sourceCountLine)
+        Generated candidates: \(generatedCount).
         Runtime model entries: \(model.entries.count).
         """
-        alert.runModal()
     }
 
     private static let localContextModelDateFormatter: ISO8601DateFormatter = {
