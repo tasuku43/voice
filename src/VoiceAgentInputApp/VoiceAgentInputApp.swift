@@ -28,6 +28,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var inputLevelTimer: Timer?
     private var hasDetectedVoiceInput = false
     private var shouldStopRecordingWhenReady = false
+    private var recordingStartedAt: Date?
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
     private let historyHotkeyMonitor = AppKitKeyboardShortcutMonitor()
     private var diagnosticHotkeyMonitors: [AppKitKeyboardShortcutMonitor] = []
@@ -98,6 +99,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Open Input Monitoring Settings...", action: #selector(openInputMonitoringSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Train Dictionary From Sources...", action: #selector(trainDictionaryFromSources), keyEquivalent: "t"))
         menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
         menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
@@ -238,7 +240,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 await MainActor.run {
                     self.activeAudioRecorder = audioRecorder
                     self.hasDetectedVoiceInput = false
-                    self.showRecordingFeedback()
+                    self.recordingStartedAt = Date()
+                    self.showRecordingFeedback(triggerMode: settings.voiceInputTriggerMode)
                     self.startInputLevelMonitoring()
                     self.debugLogger.log("recordVoiceInput recording started; waiting for user stop")
                     if self.shouldStopRecordingWhenReady {
@@ -273,6 +276,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.stopInputLevelMonitoring()
                     self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
+                    self.recordingStartedAt = nil
                     self.isRecording = false
                     self.shouldStopRecordingWhenReady = false
                     self.debugLogger.log(
@@ -302,6 +306,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.stopInputLevelMonitoring()
                     self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
+                    self.recordingStartedAt = nil
                     self.isRecording = false
                     self.shouldStopRecordingWhenReady = false
                     self.debugLogger.log("recordVoiceInput failed: \(error)")
@@ -509,8 +514,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func showRecordingFeedback() {
-        let controller = RecordingFeedbackWindowController { [weak self] in
+    private func showRecordingFeedback(triggerMode: VoiceInputTriggerMode) {
+        let controller = RecordingFeedbackWindowController(triggerMode: triggerMode) { [weak self] in
             Task { @MainActor in
                 self?.recordVoiceInput()
             }
@@ -518,7 +523,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         recordingFeedbackWindowController = controller
         controller.showWindow(nil)
         controller.window?.makeKeyAndOrderFront(nil)
-        controller.update(level: nil, hasDetectedVoice: false)
+        controller.update(level: nil, hasDetectedVoice: false, elapsedSeconds: 0)
     }
 
     private func closeRecordingFeedback() {
@@ -550,7 +555,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
         recordingFeedbackWindowController?.update(
             level: level,
-            hasDetectedVoice: hasDetectedVoiceInput
+            hasDetectedVoice: hasDetectedVoiceInput,
+            elapsedSeconds: recordingStartedAt.map { Date().timeIntervalSince($0) } ?? 0
         )
     }
 
@@ -762,7 +768,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 return
             }
 
-            let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 420, height: 28), pullsDown: false)
+            let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 520, height: 28), pullsDown: false)
             for entry in entries {
                 let title = entry.prompt.count > 80
                     ? String(entry.prompt.prefix(77)) + "..."
@@ -817,7 +823,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let settingsUseCase = try settingsUseCase()
             let settings = try settingsUseCase.loadSettings()
 
-            let modePicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 220, height: 28), pullsDown: false)
+            let modePicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
             for mode in VoiceInputMode.allCases {
                 let item = NSMenuItem(title: mode.displayName, action: nil, keyEquivalent: "")
                 item.representedObject = mode.rawValue
@@ -852,7 +858,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let settingsUseCase = try settingsUseCase()
             let settings = try settingsUseCase.loadSettings()
 
-            let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 180, height: 28), pullsDown: false)
+            let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
             for key in Self.supportedVoiceInputHotkeyKeys {
                 let item = NSMenuItem(title: KeyboardShortcut.displayName(forKey: key), action: nil, keyEquivalent: "")
                 item.representedObject = key
@@ -860,7 +866,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
             keyPicker.selectItem(withTitle: KeyboardShortcut.displayName(forKey: settings.voiceInputShortcut.key))
 
-            let triggerPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 180, height: 28), pullsDown: false)
+            let triggerPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
             for triggerMode in VoiceInputTriggerMode.allCases {
                 let item = NSMenuItem(title: triggerMode.displayName, action: nil, keyEquivalent: "")
                 item.representedObject = triggerMode.rawValue
@@ -887,13 +893,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             modifierStack.alignment = .centerY
             modifierStack.spacing = 8
 
-            let stack = NSStackView()
-            stack.orientation = .vertical
-            stack.alignment = .leading
-            stack.spacing = 8
-            stack.addArrangedSubview(labelledControl(label: "Key", control: keyPicker))
-            stack.addArrangedSubview(labelledControl(label: "Trigger", control: triggerPicker))
-            stack.addArrangedSubview(labelledView(label: "Modifiers", view: modifierStack))
+            let stack = AppLayout.formStack()
+            stack.addArrangedSubview(AppLayout.formRow(label: "Key", view: keyPicker))
+            stack.addArrangedSubview(AppLayout.formRow(label: "Trigger", view: triggerPicker))
+            stack.addArrangedSubview(AppLayout.formRow(label: "Modifiers", view: modifierStack))
 
             let alert = NSAlert()
             alert.messageText = "Hotkey settings"
@@ -949,16 +952,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let settingsUseCase = try settingsUseCase()
             let settings = try settingsUseCase.loadSettings()
 
-            let durationField = NSTextField(
-                string: String(format: "%.0f", settings.effectiveRecordingDurationSeconds)
+            let durationField = AppLayout.textField(
+                String(format: "%.0f", settings.effectiveRecordingDurationSeconds)
             )
-            let localeField = NSTextField(string: settings.effectiveSpeechLocaleIdentifier)
-            let stack = NSStackView()
-            stack.orientation = .vertical
-            stack.alignment = .leading
-            stack.spacing = 8
-            stack.addArrangedSubview(labelledControl(label: "Recording seconds", control: durationField))
-            stack.addArrangedSubview(labelledControl(label: "Speech locale", control: localeField))
+            let localeField = AppLayout.textField(settings.effectiveSpeechLocaleIdentifier)
+            let stack = AppLayout.formStack()
+            stack.addArrangedSubview(AppLayout.formRow(label: "Recording seconds", view: durationField))
+            stack.addArrangedSubview(AppLayout.formRow(label: "Speech locale", view: localeField))
 
             let alert = NSAlert()
             alert.messageText = "Recording settings"
@@ -985,14 +985,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         do {
             let settingsUseCase = try settingsUseCase()
             let settings = try settingsUseCase.loadSettings()
-            let reviewerCommandField = NSTextField(string: settings.learningReviewerCommandPath ?? "")
-            let reviewerArgumentsField = NSTextField(string: settings.learningReviewerCommandArguments.joined(separator: "\n"))
-            let stack = NSStackView()
-            stack.orientation = .vertical
-            stack.alignment = .leading
-            stack.spacing = 8
-            stack.addArrangedSubview(labelledControl(label: "Reviewer command", control: reviewerCommandField))
-            stack.addArrangedSubview(labelledControl(label: "Arguments", control: reviewerArgumentsField))
+            let reviewerCommandField = AppLayout.textField(settings.learningReviewerCommandPath ?? "")
+            let reviewerArguments = AppLayout.multilineTextView(
+                settings.learningReviewerCommandArguments.joined(separator: "\n")
+            )
+            let stack = AppLayout.formStack()
+            stack.addArrangedSubview(AppLayout.formRow(label: "Reviewer command", view: reviewerCommandField))
+            stack.addArrangedSubview(AppLayout.formRow(label: "Arguments", view: reviewerArguments.scrollView))
 
             let alert = NSAlert()
             alert.messageText = "Learning settings"
@@ -1006,7 +1005,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             if response == .alertFirstButtonReturn {
                 try settingsUseCase.saveLearningReviewerCommand(
                     path: reviewerCommandField.stringValue,
-                    arguments: reviewerArgumentsField.stringValue
+                    arguments: reviewerArguments.textView.string
                         .components(separatedBy: .newlines)
                 )
             } else if response == .alertSecondButtonReturn {
@@ -1069,25 +1068,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
     }
 
-    private func labelledControl(label: String, control: NSControl) -> NSView {
-        labelledView(label: label, view: control)
-    }
-
-    private func labelledView(label: String, view: NSView) -> NSView {
-        let row = NSStackView()
-        row.orientation = .horizontal
-        row.alignment = .centerY
-        row.spacing = 8
-
-        let labelField = NSTextField(labelWithString: label)
-        labelField.frame.size.width = 130
-        view.frame.size.width = 180
-
-        row.addArrangedSubview(labelField)
-        row.addArrangedSubview(view)
-        return row
-    }
-
     @objc private func exportLocalDictionary() {
         do {
             let entries = try LocalLearningDataUseCase(
@@ -1146,37 +1126,136 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     @objc private func learnFromAgentHistory() {
         do {
-            let historyProvider = LocalAgentHistoryTextProvider()
-            let existingEntries = try loadDictionaryEntries()
-            let learningScope = try loadSettings().preferredLearningScope
-            let learningSources = try configuredLearningSources(historyProvider: historyProvider)
-            let result = try AgentHistoryLearningModeUseCase(
-                learningSources: learningSources,
-                dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
-            ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
-            let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
-            debugLogger.log("learnFromAgentHistory scanned \(historyProvider.historyFileURLs().count) local files, loaded \(result.scannedTextCount) source texts, skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
-            guard !result.candidates.isEmpty else {
-                let alert = NSAlert()
-                alert.alertStyle = .informational
-                alert.messageText = "No dictionary candidates found"
-                alert.informativeText = "No new repeated developer terms were found in the bounded local Codex/Claude history scan."
-                alert.runModal()
-                return
-            }
-
-            try CandidateApprovalDialogController()
-                .approveCandidatesIfRequested(result.candidates, maximumVisibleCandidates: 24)
+            try runDictionaryTraining(
+                selection: LearningSourceSelection(includeAgentHistory: true),
+                emptyMessage: "No new repeated developer terms were found in the bounded local Codex/Claude history scan."
+            )
         } catch {
             presentError(error)
         }
     }
 
+    @objc private func trainDictionaryFromSources() {
+        do {
+            guard let selection = try promptForLearningSourceSelection() else {
+                return
+            }
+            guard !selection.isEmpty else {
+                showNoLearningSourceSelectedAlert()
+                return
+            }
+            try runDictionaryTraining(
+                selection: selection,
+                emptyMessage: "No new dictionary candidates were found in the selected local learning sources."
+            )
+        } catch {
+            presentError(error)
+        }
+    }
+
+    private func promptForLearningSourceSelection() throws -> LearningSourceSelection? {
+        let repositoryURL = configuredRepositoryURL()
+        let agentHistoryCheckbox = NSButton(
+            checkboxWithTitle: "Codex / Claude local sessions",
+            target: nil,
+            action: nil
+        )
+        agentHistoryCheckbox.state = .on
+
+        let repositoryCheckbox = NSButton(
+            checkboxWithTitle: "Git repository vocabulary",
+            target: nil,
+            action: nil
+        )
+        repositoryCheckbox.state = repositoryURL == nil ? .off : .on
+        repositoryCheckbox.isEnabled = repositoryURL != nil
+
+        let repositoryLabel = NSTextField(labelWithString: repositoryURL?.path ?? "No repository folder configured")
+        repositoryLabel.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+        repositoryLabel.textColor = repositoryURL == nil ? .secondaryLabelColor : .labelColor
+        repositoryLabel.lineBreakMode = .byTruncatingMiddle
+        repositoryLabel.maximumNumberOfLines = 1
+        repositoryLabel.preferredMaxLayoutWidth = AppLayout.accessoryWidth
+        repositoryLabel.translatesAutoresizingMaskIntoConstraints = false
+        repositoryLabel.widthAnchor.constraint(equalToConstant: AppLayout.accessoryWidth).isActive = true
+
+        let stack = AppLayout.formStack()
+        stack.addArrangedSubview(agentHistoryCheckbox)
+        stack.addArrangedSubview(repositoryCheckbox)
+        stack.addArrangedSubview(repositoryLabel)
+
+        let alert = NSAlert()
+        alert.messageText = "Train dictionary from sources"
+        alert.informativeText = "Selected local sources are scanned for developer terms. Nothing is uploaded; candidates are saved only after approval."
+        alert.accessoryView = stack
+        alert.addButton(withTitle: "Train")
+        if repositoryURL == nil {
+            alert.addButton(withTitle: "Set Repository Folder")
+        }
+        alert.addButton(withTitle: "Cancel")
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            return LearningSourceSelection(
+                includeAgentHistory: agentHistoryCheckbox.state == .on,
+                includeRepositoryVocabulary: repositoryCheckbox.state == .on && repositoryURL != nil
+            )
+        }
+        if repositoryURL == nil, response == .alertSecondButtonReturn {
+            setRepositoryFolder()
+        }
+        return nil
+    }
+
+    private func showNoLearningSourceSelectedAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = "No learning sources selected"
+        alert.informativeText = "Choose at least one local source to scan."
+        alert.runModal()
+    }
+
+    private func runDictionaryTraining(
+        selection: LearningSourceSelection,
+        emptyMessage: String
+    ) throws {
+        let historyProvider = LocalAgentHistoryTextProvider()
+        let existingEntries = try loadDictionaryEntries()
+        let learningScope = try loadSettings().preferredLearningScope
+        let learningSources = try configuredLearningSources(
+            selection: selection,
+            historyProvider: historyProvider
+        )
+
+        let result = try AgentHistoryLearningModeUseCase(
+            learningSources: learningSources,
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
+        let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
+        debugLogger.log("dictionary training scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
+
+        guard !result.candidates.isEmpty else {
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = "No dictionary candidates found"
+            alert.informativeText = emptyMessage
+            alert.runModal()
+            return
+        }
+
+        try CandidateApprovalDialogController()
+            .approveCandidatesIfRequested(result.candidates, maximumVisibleCandidates: 24)
+    }
+
     private func configuredLearningSources(
+        selection: LearningSourceSelection,
         historyProvider: LocalAgentHistoryTextProvider
     ) throws -> [any LearningSource] {
-        var sources: [any LearningSource] = [historyProvider]
-        if let repositoryURL = configuredRepositoryURL() {
+        var sources: [any LearningSource] = []
+        if selection.includeAgentHistory {
+            sources.append(historyProvider)
+        }
+        if selection.includeRepositoryVocabulary, let repositoryURL = configuredRepositoryURL() {
             let provider = GitRepositoryContextProvider()
             sources.append(RepositoryVocabularyLearningSource(
                 startingURL: repositoryURL,

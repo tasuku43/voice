@@ -18,9 +18,22 @@ REQUIRED_COVERAGE = {
             "debug.log",
         ],
         "src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift": [
-            "Connecting microphone...",
+            "Getting ready",
+            "RecordingWaveformView",
+        ],
+        "src/VoiceAgentInputCore/App/RecordingFeedbackPresentation.swift": [
+            "RecordingFeedbackPresentationUseCase",
             "Listening",
-            "RecordingStatusView",
+            "Release shortcut to paste",
+            "Press shortcut again to paste",
+            "elapsedText",
+            "meterLevels",
+        ],
+        "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
+            "testRecordingFeedbackPresentationGuidesPressAndHoldStopToPaste",
+            "testRecordingFeedbackPresentationShowsQuietToggleGuidanceAfterVoiceWasDetected",
+            "testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger",
+            "testVoiceInputHotkeyUseCaseSupportsPressHoldAndToggleTriggers",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "AppKitKeyboardShortcutMonitor()",
@@ -32,10 +45,6 @@ REQUIRED_COVERAGE = {
             "Open Voice Input Permissions...",
             "Open Privacy Settings...",
             "Privacy_Accessibility",
-        ],
-        "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
-            "testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger",
-            "testVoiceInputHotkeyUseCaseSupportsPressHoldAndToggleTriggers",
         ],
     },
     "record and transcribe": {
@@ -130,9 +139,15 @@ REQUIRED_COVERAGE = {
             "LearningText",
             "CorrectionCandidateLearningSource",
         ],
+        "src/VoiceAgentInputCore/App/LearningSourceSelection.swift": [
+            "LearningSourceSelection",
+            "selectedKinds",
+            "includeRepositoryVocabulary",
+        ],
         "src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift": [
             "AgentHistoryLearningModeUseCase",
             "learningSources",
+            "sourceTextCounts",
             "dictionaryLearningUseCase.candidates",
             "skippedExistingCandidateCount",
         ],
@@ -155,6 +170,11 @@ REQUIRED_COVERAGE = {
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "Learn From Agent History...",
+            "Train Dictionary From Sources...",
+            "promptForLearningSourceSelection",
+            "runDictionaryTraining",
+            "Codex / Claude local sessions",
+            "Git repository vocabulary",
             "Learning Settings...",
             "LocalAgentHistoryTextProvider",
             "generateCandidates(scope:",
@@ -212,6 +232,8 @@ REQUIRED_COVERAGE = {
             "testLocalAgentHistoryTextProviderSkipsStructuredJSONWithoutUserText",
             "testLocalAgentHistoryTextProviderPrefersRecentlyModifiedClaudeProjectFiles",
             "testAgentHistoryLearningModeUseCaseLoadsHistoryAndGeneratesCandidates",
+            "testLearningSourceSelectionReportsSelectedKinds",
+            "testAgentHistoryLearningModeReportsSourceTextCounts",
             "testAgentHistoryLearningModeSkipsExistingDictionaryEntries",
             "testAgentHistoryLearningModeCanGenerateRepositoryScopedCandidates",
             "testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources",

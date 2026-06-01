@@ -54,6 +54,11 @@ ALLOWED_WRITE_SNIPPETS = {
         ".appendingPathComponent(\"debug.log\")",
         "try line.write(to: logFileURL, atomically: true, encoding: .utf8)",
     ],
+    "src/VoiceAgentInputApp/AppUILayoutSmoke.swift": [
+        ".appendingPathComponent(\".build\")",
+        ".appendingPathComponent(\"ui-layout-smoke\")",
+        "try? data.write(to: outputDirectory.appendingPathComponent(\"\\(name).png\"), options: .atomic)",
+    ],
     "src/VoiceAgentInputCore/Infra/JSONAppSettingsRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],

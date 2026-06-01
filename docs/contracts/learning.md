@@ -15,6 +15,8 @@
 ## Allowed
 - Generate dictionary candidates from user edits.
 - Generate dictionary candidates from local learning sources after explicit user action.
+- Let the user choose local learning sources before training the dictionary.
+- Report source-level scan counts so the app can explain what was used.
 - Keep default Quick Paste outside candidate review and approval; `VoiceInputModeDecisionUseCase` inserts the corrected prompt with no learning candidates.
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across history learning and edit learning.
@@ -44,6 +46,7 @@
 - `src/VoiceAgentInputCore/App/CandidateApprovalUseCase.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift`
 - `src/VoiceAgentInputCore/App/LearningSource.swift`
+- `src/VoiceAgentInputCore/App/LearningSourceSelection.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift`
 - `src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift`

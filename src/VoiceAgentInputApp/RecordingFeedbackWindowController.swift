@@ -1,16 +1,24 @@
 import AppKit
 import ApplicationServices
+import VoiceAgentInputCore
 
 @MainActor
 final class RecordingFeedbackWindowController: NSWindowController {
-    private let statusLabel = NSTextField(labelWithString: "Connecting")
-    private let statusView = RecordingStatusView()
+    private let titleLabel = NSTextField(labelWithString: "Getting ready")
+    private let guidanceLabel = NSTextField(labelWithString: "Release shortcut to paste")
+    private let elapsedLabel = NSTextField(labelWithString: "0:00")
+    private let statusDotView = RecordingStatusDotView()
+    private let waveformView = RecordingWaveformView()
     private let stopAction: () -> Void
+    private let triggerMode: VoiceInputTriggerMode
+    private let presentationUseCase = RecordingFeedbackPresentationUseCase()
+    private var lastAnchorRefresh = Date.distantPast
 
-    init(stopAction: @escaping () -> Void) {
+    init(triggerMode: VoiceInputTriggerMode, stopAction: @escaping () -> Void) {
+        self.triggerMode = triggerMode
         self.stopAction = stopAction
         let window = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 132, height: 34),
+            contentRect: NSRect(x: 0, y: 0, width: 376, height: 68),
             styleMask: [.nonactivatingPanel, .hudWindow],
             backing: .buffered,
             defer: false
@@ -31,68 +39,121 @@ final class RecordingFeedbackWindowController: NSWindowController {
         nil
     }
 
-    func update(level: Float?, hasDetectedVoice: Bool) {
-        let state = RecordingFeedbackState(level: level, hasDetectedVoice: hasDetectedVoice)
-        statusLabel.stringValue = state.displayTitle
-        statusLabel.toolTip = state.accessibilityTitle
-        window?.contentView?.toolTip = state.accessibilityTitle
-        window?.contentView?.setAccessibilityLabel(state.accessibilityTitle)
-        statusView.state = state
+    func update(level: Float?, hasDetectedVoice: Bool, elapsedSeconds: TimeInterval) {
+        let presentation = presentationUseCase.presentation(
+            level: level,
+            hasDetectedVoice: hasDetectedVoice,
+            elapsedSeconds: elapsedSeconds,
+            triggerMode: triggerMode
+        )
+        titleLabel.stringValue = presentation.title
+        guidanceLabel.stringValue = presentation.guidance
+        elapsedLabel.stringValue = presentation.elapsedText
+        elapsedLabel.toolTip = presentation.accessibilityLabel
+        window?.contentView?.toolTip = presentation.accessibilityLabel
+        window?.contentView?.setAccessibilityLabel(presentation.accessibilityLabel)
+        statusDotView.phase = presentation.phase
+        waveformView.phase = presentation.phase
+        waveformView.levels = presentation.meterLevels.map { CGFloat($0) }
+        refreshAnchorIfNeeded()
     }
 
     private func buildContentView() -> NSView {
-        let container = NSVisualEffectView()
-        container.material = .hudWindow
-        container.blendingMode = .behindWindow
-        container.state = .active
-        container.wantsLayer = true
-        container.layer?.cornerRadius = 17
-        container.layer?.masksToBounds = true
+        let container = RecordingFeedbackContainerView()
+        container.translatesAutoresizingMaskIntoConstraints = false
 
-        let stack = NSStackView()
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.spacing = 7
-        stack.translatesAutoresizingMaskIntoConstraints = false
+        let contentStack = NSStackView()
+        contentStack.orientation = .horizontal
+        contentStack.alignment = .centerY
+        contentStack.spacing = 10
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
 
-        statusLabel.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        statusLabel.textColor = .secondaryLabelColor
-        statusLabel.lineBreakMode = .byTruncatingTail
+        statusDotView.translatesAutoresizingMaskIntoConstraints = false
+        statusDotView.widthAnchor.constraint(equalToConstant: 12).isActive = true
+        statusDotView.heightAnchor.constraint(equalToConstant: 12).isActive = true
 
-        statusView.translatesAutoresizingMaskIntoConstraints = false
-        statusView.widthAnchor.constraint(equalToConstant: 20).isActive = true
-        statusView.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        waveformView.translatesAutoresizingMaskIntoConstraints = false
+        waveformView.widthAnchor.constraint(equalToConstant: 76).isActive = true
+        waveformView.heightAnchor.constraint(equalToConstant: 36).isActive = true
 
-        let stopButton = NSButton(title: "", target: self, action: #selector(stop))
-        stopButton.bezelStyle = .circular
-        stopButton.controlSize = .mini
-        stopButton.contentTintColor = .systemRed
-        stopButton.toolTip = "Stop voice input"
-        stopButton.setAccessibilityLabel("Stop voice input")
+        let textStack = NSStackView()
+        textStack.orientation = .vertical
+        textStack.alignment = .leading
+        textStack.spacing = 1
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+        textStack.widthAnchor.constraint(greaterThanOrEqualToConstant: 178).isActive = true
+        textStack.heightAnchor.constraint(equalToConstant: 34).isActive = true
+
+        titleLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
+        titleLabel.textColor = .labelColor
+        titleLabel.lineBreakMode = .byTruncatingTail
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        titleLabel.heightAnchor.constraint(equalToConstant: 18).isActive = true
+
+        guidanceLabel.font = NSFont.systemFont(ofSize: 11, weight: .regular)
+        guidanceLabel.textColor = .secondaryLabelColor
+        guidanceLabel.lineBreakMode = .byTruncatingTail
+        guidanceLabel.translatesAutoresizingMaskIntoConstraints = false
+        guidanceLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        guidanceLabel.heightAnchor.constraint(equalToConstant: 15).isActive = true
+
+        textStack.addArrangedSubview(titleLabel)
+        textStack.addArrangedSubview(guidanceLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.widthAnchor.constraint(equalTo: textStack.widthAnchor),
+            guidanceLabel.widthAnchor.constraint(equalTo: textStack.widthAnchor)
+        ])
+
+        elapsedLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+        elapsedLabel.alignment = .center
+        elapsedLabel.textColor = .secondaryLabelColor
+        elapsedLabel.wantsLayer = true
+        elapsedLabel.layer?.cornerRadius = 7
+        elapsedLabel.layer?.backgroundColor = NSColor.controlBackgroundColor.withAlphaComponent(0.55).cgColor
+        elapsedLabel.translatesAutoresizingMaskIntoConstraints = false
+        elapsedLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 38).isActive = true
+        elapsedLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+
+        let stopButton = RecordingStopButton(target: self, action: #selector(stop))
         stopButton.translatesAutoresizingMaskIntoConstraints = false
-        stopButton.widthAnchor.constraint(equalToConstant: 18).isActive = true
-        stopButton.heightAnchor.constraint(equalToConstant: 18).isActive = true
+        stopButton.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        stopButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
 
-        stack.addArrangedSubview(statusView)
-        stack.addArrangedSubview(statusLabel)
-        stack.addArrangedSubview(stopButton)
-        container.addSubview(stack)
+        contentStack.addArrangedSubview(statusDotView)
+        contentStack.addArrangedSubview(waveformView)
+        contentStack.addArrangedSubview(textStack)
+        contentStack.addArrangedSubview(elapsedLabel)
+        contentStack.addArrangedSubview(stopButton)
+        container.addSubview(contentStack)
 
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 10),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -10),
-            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
+            contentStack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 13),
+            contentStack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
+            contentStack.centerYAnchor.constraint(equalTo: container.centerYAnchor)
         ])
 
         return container
     }
 
-    private func positionNearFocusedInput() {
-        guard let window, let screen = NSScreen.main else {
+    private func refreshAnchorIfNeeded() {
+        guard Date().timeIntervalSince(lastAnchorRefresh) > 0.35 else {
             return
         }
+        lastAnchorRefresh = Date()
+        positionNearFocusedInput()
+    }
+
+    private func positionNearFocusedInput() {
+        guard let window else {
+            return
+        }
+        let screen = Self.screen(for: window) ?? NSScreen.main
+        guard let visibleFrame = screen?.visibleFrame else {
+            return
+        }
+
         if let focusedAnchor = Self.focusedInputAnchor() {
-            let visibleFrame = screen.visibleFrame
             let origin: NSPoint
             switch focusedAnchor.kind {
             case .caret:
@@ -113,12 +174,19 @@ final class RecordingFeedbackWindowController: NSWindowController {
         }
 
         let mouseLocation = NSEvent.mouseLocation
-        let visibleFrame = screen.visibleFrame
         let origin = NSPoint(
-            x: min(max(mouseLocation.x + 12, visibleFrame.minX + 8), visibleFrame.maxX - window.frame.width - 8),
-            y: min(max(mouseLocation.y + 12, visibleFrame.minY + 8), visibleFrame.maxY - window.frame.height - 8)
+            x: min(max(mouseLocation.x + 14, visibleFrame.minX + 8), visibleFrame.maxX - window.frame.width - 8),
+            y: min(max(mouseLocation.y + 14, visibleFrame.minY + 8), visibleFrame.maxY - window.frame.height - 8)
         )
         window.setFrameOrigin(origin)
+    }
+
+    private static func screen(for window: NSWindow) -> NSScreen? {
+        if let screen = window.screen {
+            return screen
+        }
+        let mouseLocation = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(mouseLocation) }
     }
 
     private static func originNextToCaret(
@@ -126,15 +194,15 @@ final class RecordingFeedbackWindowController: NSWindowController {
         windowSize: CGSize,
         visibleFrame: CGRect
     ) -> NSPoint {
-        let gap: CGFloat = 4
+        let gap: CGFloat = 10
         let rightX = caretFrame.maxX + gap
         let leftX = caretFrame.minX - windowSize.width - gap
-        let unclampedX = rightX + windowSize.width <= visibleFrame.maxX - 6 ? rightX : leftX
+        let unclampedX = rightX + windowSize.width <= visibleFrame.maxX - 8 ? rightX : leftX
         return NSPoint(
-            x: min(max(unclampedX, visibleFrame.minX + 6), visibleFrame.maxX - windowSize.width - 6),
+            x: min(max(unclampedX, visibleFrame.minX + 8), visibleFrame.maxX - windowSize.width - 8),
             y: min(
-                max(caretFrame.midY - windowSize.height / 2, visibleFrame.minY + 6),
-                visibleFrame.maxY - windowSize.height - 6
+                max(caretFrame.midY - windowSize.height / 2, visibleFrame.minY + 8),
+                visibleFrame.maxY - windowSize.height - 8
             )
         )
     }
@@ -144,9 +212,12 @@ final class RecordingFeedbackWindowController: NSWindowController {
         windowSize: CGSize,
         visibleFrame: CGRect
     ) -> NSPoint {
-        NSPoint(
+        let aboveY = elementFrame.maxY + 8
+        let belowY = elementFrame.minY - windowSize.height - 8
+        let unclampedY = aboveY + windowSize.height <= visibleFrame.maxY - 8 ? aboveY : belowY
+        return NSPoint(
             x: min(max(elementFrame.minX, visibleFrame.minX + 8), visibleFrame.maxX - windowSize.width - 8),
-            y: min(max(elementFrame.maxY + 6, visibleFrame.minY + 8), visibleFrame.maxY - windowSize.height - 8)
+            y: min(max(unclampedY, visibleFrame.minY + 8), visibleFrame.maxY - windowSize.height - 8)
         )
     }
 
@@ -257,125 +328,128 @@ private struct RecordingFeedbackAnchor {
     }
 }
 
-private enum RecordingFeedbackState: Equatable {
-    case connecting
-    case listening(level: CGFloat)
-    case paused
-
-    init(level: Float?, hasDetectedVoice: Bool) {
-        guard let level else {
-            self = .connecting
-            return
-        }
-        if level > 0.08 {
-            self = .listening(level: CGFloat(level))
-        } else if hasDetectedVoice {
-            self = .paused
-        } else {
-            self = .listening(level: CGFloat(level))
-        }
+private final class RecordingFeedbackContainerView: NSVisualEffectView {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        material = .hudWindow
+        blendingMode = .behindWindow
+        state = .active
+        wantsLayer = true
+        layer?.cornerRadius = 18
+        layer?.masksToBounds = true
+        setAccessibilityRole(.group)
     }
 
-    var title: String {
-        switch self {
-        case .connecting:
-            "Connecting microphone..."
-        case .listening:
-            "Listening"
-        case .paused:
-            "Input paused"
-        }
+    required init?(coder: NSCoder) {
+        nil
     }
 
-    var displayTitle: String {
-        switch self {
-        case .connecting:
-            "Connecting"
-        case .listening:
-            "Listening"
-        case .paused:
-            "Paused"
-        }
-    }
-
-    var accessibilityTitle: String {
-        title
+    override func updateLayer() {
+        super.updateLayer()
+        layer?.borderWidth = 1
+        layer?.borderColor = NSColor.separatorColor.withAlphaComponent(0.45).cgColor
     }
 }
 
-private final class RecordingStatusView: NSView {
-    var state: RecordingFeedbackState = .connecting {
+private final class RecordingStatusDotView: NSView {
+    var phase: RecordingFeedbackPhase = .connecting {
         didSet { needsDisplay = true }
     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-
-        let iconRect = bounds.insetBy(dx: 4, dy: 2)
-        let strokeColor: NSColor
-        let fillColor: NSColor
-        switch state {
+        let color: NSColor
+        switch phase {
         case .connecting:
-            strokeColor = .tertiaryLabelColor
-            fillColor = .clear
-        case let .listening(level):
-            strokeColor = .systemBlue
-            fillColor = level > 0.08 ? NSColor.systemBlue.withAlphaComponent(0.18) : .clear
-        case .paused:
-            strokeColor = .secondaryLabelColor
-            fillColor = .quaternaryLabelColor
+            color = .systemOrange
+        case .listening:
+            color = .systemGreen
+        case .quiet:
+            color = .systemYellow
         }
 
-        if case .connecting = state {
-            drawWaitingDots(in: iconRect, color: strokeColor)
+        color.withAlphaComponent(0.18).setFill()
+        NSBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).fill()
+        color.setFill()
+        NSBezierPath(ovalIn: bounds.insetBy(dx: 3.5, dy: 3.5)).fill()
+    }
+}
+
+private final class RecordingWaveformView: NSView {
+    var phase: RecordingFeedbackPhase = .connecting {
+        didSet { needsDisplay = true }
+    }
+    var levels: [CGFloat] = Array(repeating: 0.18, count: 10) {
+        didSet { needsDisplay = true }
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        guard !levels.isEmpty else {
             return
         }
 
-        fillColor.setFill()
-        strokeColor.setStroke()
-        let micBody = NSBezierPath(
-            roundedRect: NSRect(x: iconRect.midX - 3.5, y: iconRect.midY - 5, width: 7, height: 11),
-            xRadius: 3.5,
-            yRadius: 3.5
-        )
-        micBody.lineWidth = 1.5
-        micBody.fill()
-        micBody.stroke()
+        let color: NSColor
+        switch phase {
+        case .connecting:
+            color = .tertiaryLabelColor
+        case .listening:
+            color = .controlAccentColor
+        case .quiet:
+            color = .secondaryLabelColor
+        }
 
-        let stem = NSBezierPath()
-        stem.lineWidth = 1.5
-        stem.move(to: NSPoint(x: iconRect.midX, y: iconRect.minY + 2))
-        stem.line(to: NSPoint(x: iconRect.midX, y: iconRect.midY - 6))
-        stem.move(to: NSPoint(x: iconRect.midX - 4, y: iconRect.minY + 2))
-        stem.line(to: NSPoint(x: iconRect.midX + 4, y: iconRect.minY + 2))
-        stem.stroke()
-
-        if case .paused = state {
-            strokeColor.setStroke()
-            let pause = NSBezierPath()
-            pause.lineWidth = 1.7
-            pause.move(to: NSPoint(x: iconRect.maxX - 4.5, y: iconRect.midY - 4))
-            pause.line(to: NSPoint(x: iconRect.maxX - 4.5, y: iconRect.midY + 4))
-            pause.move(to: NSPoint(x: iconRect.maxX - 1.5, y: iconRect.midY - 4))
-            pause.line(to: NSPoint(x: iconRect.maxX - 1.5, y: iconRect.midY + 4))
-            pause.stroke()
+        let barWidth: CGFloat = 4
+        let spacing = (bounds.width - barWidth * CGFloat(levels.count)) / CGFloat(max(1, levels.count - 1))
+        for (index, rawLevel) in levels.enumerated() {
+            let level = min(max(rawLevel, 0.08), 1)
+            let height = max(6, bounds.height * level)
+            let x = CGFloat(index) * (barWidth + spacing)
+            let rect = NSRect(
+                x: x,
+                y: bounds.midY - height / 2,
+                width: barWidth,
+                height: height
+            )
+            color.withAlphaComponent(0.36 + level * 0.52).setFill()
+            NSBezierPath(roundedRect: rect, xRadius: 2, yRadius: 2).fill()
         }
     }
+}
 
-    private func drawWaitingDots(in rect: NSRect, color: NSColor) {
-        let dotSize: CGFloat = 3.5
-        let spacing: CGFloat = 3.5
-        let totalWidth = dotSize * 3 + spacing * 2
-        let startX = rect.midX - totalWidth / 2
-        for index in 0..<3 {
-            color.withAlphaComponent(0.35 + CGFloat(index) * 0.22).setFill()
-            let dotRect = NSRect(
-                x: startX + CGFloat(index) * (dotSize + spacing),
-                y: rect.midY - dotSize / 2,
-                width: dotSize,
-                height: dotSize
-            )
-            NSBezierPath(ovalIn: dotRect).fill()
-        }
+private final class RecordingStopButton: NSButton {
+    init(target: AnyObject?, action: Selector) {
+        super.init(frame: .zero)
+        title = ""
+        self.target = target
+        self.action = action
+        bezelStyle = .regularSquare
+        isBordered = false
+        wantsLayer = true
+        layer?.cornerRadius = 14
+        toolTip = "Stop voice input and paste"
+        setAccessibilityLabel("Stop voice input and paste")
+    }
+
+    required init?(coder: NSCoder) {
+        nil
+    }
+
+    override func updateLayer() {
+        super.updateLayer()
+        layer?.backgroundColor = NSColor.systemRed.withAlphaComponent(isHighlighted ? 0.22 : 0.14).cgColor
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        NSColor.systemRed.setFill()
+        let side: CGFloat = 9
+        let rect = NSRect(
+            x: bounds.midX - side / 2,
+            y: bounds.midY - side / 2,
+            width: side,
+            height: side
+        )
+        NSBezierPath(roundedRect: rect, xRadius: 2, yRadius: 2).fill()
     }
 }

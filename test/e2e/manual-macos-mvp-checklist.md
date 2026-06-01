@@ -56,19 +56,20 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 1. Focus the target text app.
 2. Trigger voice input with Control-Option-Space or choose `Quick Paste Voice Input` while mode is `Quick Paste`.
-3. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
-4. Verify recording does not start again while already recording.
-5. Release the push-to-talk shortcut or stop recording and verify that this explicit stop acts as the confirmation for paste.
-6. Verify no raw/corrected preview window appears in `Quick Paste`.
-7. Verify no dictionary candidate approval UI appears in `Quick Paste`.
-8. Verify the pasted or copied prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
-9. Verify the debug log contains `mode=quickPaste` for the completed recording.
-10. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=quickPaste` summary for the report.
-11. If Accessibility is trusted, verify the prompt is pasted into the focused target.
-12. If Accessibility is not trusted, verify the app copies the prompt and asks the user to press Command-V.
-13. Verify the prompt is not automatically submitted.
-14. Switch to `Toggle Recording` in `Hotkey Settings...`, start with Control-Option-Space, press Control-Option-Space again, and verify the toggle stop acts as explicit paste confirmation.
-15. Restore `Press and Hold` in `Hotkey Settings...`.
+3. Verify the cursor-adjacent recording HUD appears near the focused input when Accessibility can locate the caret, shows elapsed time, shows live input-level movement while speaking, and says `Release shortcut to paste` in press-and-hold mode.
+4. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
+5. Verify recording does not start again while already recording.
+6. Release the push-to-talk shortcut or stop recording and verify that this explicit stop acts as the confirmation for paste.
+7. Verify no raw/corrected preview window appears in `Quick Paste`.
+8. Verify no dictionary candidate approval UI appears in `Quick Paste`.
+9. Verify the pasted or copied prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
+10. Verify the debug log contains `mode=quickPaste` for the completed recording.
+11. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=quickPaste` summary for the report.
+12. If Accessibility is trusted, verify the prompt is pasted into the focused target.
+13. If Accessibility is not trusted, verify the app copies the prompt and asks the user to press Command-V.
+14. Verify the prompt is not automatically submitted.
+15. Switch to `Toggle Recording` in `Hotkey Settings...`, start with Control-Option-Space, verify the HUD says `Press shortcut again to paste`, press Control-Option-Space again, and verify the toggle stop acts as explicit paste confirmation.
+16. Restore `Press and Hold` in `Hotkey Settings...`.
 
 ## Learning Preview Voice Input
 
@@ -96,8 +97,9 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation in `Learning Preview`.
 7. Verify the trusted local reviewer command does not run during `Quick Paste`.
 8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
-9. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
-10. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
+9. Choose `Train Dictionary From Sources...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify candidates are shown only after explicit approval.
+10. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
+11. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
 
 ## Local Data Controls
 

@@ -4,7 +4,7 @@
 
 - Invoke recording from a configurable macOS global hotkey.
 - Support both press-and-hold recording and toggle recording from the voice-input hotkey.
-- Show a compact recording status near the focused input when possible.
+- Show a compact recording HUD near the focused input when possible, including connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and the correct stop-to-paste guidance for press-and-hold or toggle hotkeys.
 - Transcribe microphone input.
 - Apply dictionary-based normalization.
 - Support daily `Quick Paste` mode and quality-building `Learning Preview` mode.

@@ -46,6 +46,7 @@ final class PreviewWindowController: NSWindowController {
         container.orientation = .vertical
         container.spacing = 12
         container.edgeInsets = NSEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        container.translatesAutoresizingMaskIntoConstraints = false
 
         let rawLabel = NSTextField(labelWithString: "Raw transcript")
         let rawText = textBox(preview.rawTranscript, editable: false, highlights: rawHighlights())
@@ -81,7 +82,15 @@ final class PreviewWindowController: NSWindowController {
         rawText.heightAnchor.constraint(equalToConstant: 90).isActive = true
         correctedScrollView.heightAnchor.constraint(equalToConstant: 170).isActive = true
 
-        return container
+        let root = NSView()
+        root.addSubview(container)
+        NSLayoutConstraint.activate([
+            container.leadingAnchor.constraint(equalTo: root.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: root.trailingAnchor),
+            container.topAnchor.constraint(equalTo: root.topAnchor),
+            container.bottomAnchor.constraint(equalTo: root.bottomAnchor)
+        ])
+        return root
     }
 
     private func textBox(_ string: String, editable: Bool, highlights: [String]) -> NSScrollView {
@@ -90,11 +99,13 @@ final class PreviewWindowController: NSWindowController {
         textView.isEditable = editable
         textView.font = NSFont.systemFont(ofSize: 14)
         textView.isRichText = false
+        textView.textContainer?.widthTracksTextView = true
 
         let scrollView = NSScrollView()
         scrollView.hasVerticalScroller = true
         scrollView.documentView = textView
         scrollView.borderType = .bezelBorder
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }
 

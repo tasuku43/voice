@@ -2,15 +2,18 @@ import Foundation
 
 public struct AgentHistoryLearningModeResult: Codable, Equatable, Sendable {
     public var scannedTextCount: Int
+    public var sourceTextCounts: [String: Int]
     public var candidates: [CorrectionCandidate]
     public var skippedExistingCandidateCount: Int
 
     public init(
         scannedTextCount: Int,
+        sourceTextCounts: [String: Int] = [:],
         candidates: [CorrectionCandidate],
         skippedExistingCandidateCount: Int = 0
     ) {
         self.scannedTextCount = scannedTextCount
+        self.sourceTextCounts = sourceTextCounts
         self.candidates = candidates
         self.skippedExistingCandidateCount = skippedExistingCandidateCount
     }
@@ -42,7 +45,12 @@ public struct AgentHistoryLearningModeUseCase {
         scope: DictionaryScope = .user,
         existingEntries: [DictionaryEntry] = []
     ) throws -> AgentHistoryLearningModeResult {
-        let learningTexts = try learningSources.flatMap { try $0.learningTexts() }
+        var sourceTextCounts: [String: Int] = [:]
+        let learningTexts = try learningSources.flatMap { source -> [LearningText] in
+            let texts = try source.learningTexts()
+            sourceTextCounts[source.sourceKind.rawValue, default: 0] += texts.count
+            return texts
+        }
         let textCandidates = dictionaryLearningUseCase.candidates(
             from: learningTexts.map(\.text),
             scope: scope
@@ -59,6 +67,7 @@ public struct AgentHistoryLearningModeUseCase {
         }
         return AgentHistoryLearningModeResult(
             scannedTextCount: learningTexts.count,
+            sourceTextCounts: sourceTextCounts,
             candidates: freshCandidates,
             skippedExistingCandidateCount: candidates.count - freshCandidates.count
         )

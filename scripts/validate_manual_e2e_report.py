@@ -58,6 +58,7 @@ REQUIRED_EVIDENCE_LABELS = [
     "Optional trusted local reviewer command runs only after preview confirmation in Learning Preview",
     "Trusted local reviewer command does not run during Quick Paste",
     "Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured",
+    "Train Dictionary From Sources presents selectable local sources",
     "Learn From Agent History presents bounded Codex/Claude candidates",
     "History-derived project identifier affects later rule-based normalization",
     "Raw transcripts are not written to Application Support by default",

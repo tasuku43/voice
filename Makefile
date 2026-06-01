@@ -17,6 +17,7 @@ check: xcode-test-env
 	swift test $(SWIFT_PACKAGE_FLAGS)
 	python3 scripts/smoke_demo_command.py .
 	swift build $(SWIFT_PACKAGE_FLAGS) --product voice-agent-input-app
+	python3 scripts/smoke_app_ui_layout.py .
 	python3 scripts/build_app_bundle.py .
 	python3 scripts/smoke_launch_app_bundle.py .
 	python3 scripts/validate_required_files.py .

@@ -79,9 +79,14 @@ REQUIRED_SNIPPETS = {
         "public struct LearningText",
         "public protocol CorrectionCandidateLearningSource",
     ],
+    "src/VoiceAgentInputCore/App/LearningSourceSelection.swift": [
+        "public struct LearningSourceSelection",
+        "selectedKinds",
+    ],
     "src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift": [
         "public struct AgentHistoryLearningModeUseCase",
         "learningSources",
+        "sourceTextCounts",
         "dictionaryLearningUseCase.candidates",
         "skippedExistingCandidateCount",
     ],
@@ -117,15 +122,23 @@ REQUIRED_SNIPPETS = {
     ],
     "src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift": [
         "final class RecordingFeedbackWindowController",
-        "Connecting microphone...",
+        "Getting ready",
+        "RecordingWaveformView",
+    ],
+    "src/VoiceAgentInputCore/App/RecordingFeedbackPresentation.swift": [
+        "RecordingFeedbackPresentationUseCase",
         "Listening",
-        "RecordingStatusView",
+        "Release shortcut to paste",
+        "Press shortcut again to paste",
+        "meterLevels",
+        "elapsedText",
     ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
         "learningCandidateReviewer()",
         "Learn From Agent History...",
+        "Train Dictionary From Sources...",
         "AgentHistoryLearningModeUseCase",
     ],
     "src/VoiceAgentInputApp/PreviewWindowController.swift": [

@@ -717,6 +717,43 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.candidates.allSatisfy { $0.suggestedScope == .repository })
     }
 
+    func testLearningSourceSelectionReportsSelectedKinds() {
+        XCTAssertEqual(
+            LearningSourceSelection(includeAgentHistory: true, includeRepositoryVocabulary: true).selectedKinds,
+            [.agentHistory, .repositoryVocabulary]
+        )
+        XCTAssertEqual(
+            LearningSourceSelection(includeAgentHistory: false, includeRepositoryVocabulary: true).selectedKinds,
+            [.repositoryVocabulary]
+        )
+        XCTAssertTrue(
+            LearningSourceSelection(includeAgentHistory: false, includeRepositoryVocabulary: false).isEmpty
+        )
+    }
+
+    func testAgentHistoryLearningModeReportsSourceTextCounts() throws {
+        let provider = StubAgentHistoryTextProvider(texts: [
+            "SwiftUI renders JSON previews.",
+            "SwiftUI loads JSON fixtures."
+        ])
+        let repositorySource = RepositoryVocabularyLearningSource(
+            startingURL: URL(fileURLWithPath: "/tmp/VoiceAgentInput"),
+            repositoryContextProvider: StubRepositoryContextProvider(
+                context: RepositoryContext(rootPath: "/tmp/VoiceAgentInput", branchName: "feature/context")
+            ),
+            repositoryVocabularyFilePathProvider: StubRepositoryVocabularyFilePathProvider(filePaths: ["Package.swift"])
+        )
+
+        let result = try AgentHistoryLearningModeUseCase(
+            learningSources: [provider, repositorySource],
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates()
+
+        XCTAssertEqual(result.scannedTextCount, 3)
+        XCTAssertEqual(result.sourceTextCounts["agentHistory"], 2)
+        XCTAssertEqual(result.sourceTextCounts["repositoryVocabulary"], 1)
+    }
+
     func testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings() {
         let entries = [
             DictionaryEntry(
@@ -1572,6 +1609,38 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             useCase.action(triggerMode: .toggleRecording, event: .released, isRecording: true),
             .none
         )
+    }
+
+    func testRecordingFeedbackPresentationGuidesPressAndHoldStopToPaste() {
+        let presentation = RecordingFeedbackPresentationUseCase().presentation(
+            level: 0.22,
+            hasDetectedVoice: true,
+            elapsedSeconds: 5.4,
+            triggerMode: .pressAndHold
+        )
+
+        XCTAssertEqual(presentation.phase, .listening)
+        XCTAssertEqual(presentation.title, "Listening")
+        XCTAssertEqual(presentation.guidance, "Release shortcut to paste")
+        XCTAssertEqual(presentation.elapsedText, "0:05")
+        XCTAssertEqual(presentation.meterLevels.count, 10)
+        XCTAssertTrue(presentation.meterLevels.allSatisfy { $0 >= 0 && $0 <= 1 })
+        XCTAssertTrue(presentation.accessibilityLabel.contains("Release shortcut to paste"))
+    }
+
+    func testRecordingFeedbackPresentationShowsQuietToggleGuidanceAfterVoiceWasDetected() {
+        let presentation = RecordingFeedbackPresentationUseCase().presentation(
+            level: 0.01,
+            hasDetectedVoice: true,
+            elapsedSeconds: 67.9,
+            triggerMode: .toggleRecording
+        )
+
+        XCTAssertEqual(presentation.phase, .quiet)
+        XCTAssertEqual(presentation.title, "Quiet")
+        XCTAssertEqual(presentation.guidance, "Press shortcut again to paste")
+        XCTAssertEqual(presentation.elapsedText, "1:07")
+        XCTAssertTrue(presentation.accessibilityLabel.contains("Press shortcut again to paste"))
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
