@@ -39,6 +39,21 @@ REQUIRED_SNIPPETS = {
         "recognitionHints",
         "public struct LocalContextModelBuildUseCase",
     ],
+    "src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift": [
+        "public struct LocalContextModelDocument",
+        "schemaVersion",
+        "LocalContextModelDocumentCodec",
+    ],
+    "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
+        "public protocol LocalContextModelRepository",
+        "public struct LocalContextModelDataUseCase",
+        "deleteLocalContextModel",
+    ],
+    "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
+        "public struct JSONLocalContextModelRepository",
+        "LocalContextModelRepository",
+        "saveModel",
+    ],
     "src/VoiceAgentInputCore/App/DictionaryContextLoadingUseCase.swift": [
         "public struct DictionaryContextLoadingUseCase",
         "RepositoryVocabularyFilePathProvider",

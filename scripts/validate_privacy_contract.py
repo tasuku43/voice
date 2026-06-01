@@ -40,6 +40,10 @@ REQUIRED_SOURCE_SNIPPETS = {
         "exportApprovedEntries",
         "deleteAllLocalLearningData",
     ],
+    "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
+        "exportModel",
+        "deleteLocalContextModel",
+    ],
 }
 
 ALLOWED_WRITE_SNIPPETS = {
@@ -63,6 +67,9 @@ ALLOWED_WRITE_SNIPPETS = {
         "try data.write(to: fileURL, options: [.atomic])",
     ],
     "src/VoiceAgentInputCore/Infra/JSONDictionaryRepository.swift": [
+        "try data.write(to: fileURL, options: [.atomic])",
+    ],
+    "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],
     "src/VoiceAgentInputCore/Infra/JSONVoiceInputHistoryRepository.swift": [

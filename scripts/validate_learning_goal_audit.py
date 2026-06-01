@@ -93,6 +93,16 @@ REQUIRED_SNIPPETS = {
         "recognitionHints",
         "LocalContextModelBuildUseCase",
     ],
+    "src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift": [
+        "public struct LocalContextModelDocument",
+        "schemaVersion",
+        "LocalContextModelDocumentCodec",
+    ],
+    "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
+        "public protocol LocalContextModelRepository",
+        "LocalContextModelDataUseCase",
+        "deleteLocalContextModel",
+    ],
     "src/VoiceAgentInputCore/Domain/DictionaryEntry.swift": [
         "recognitionHints",
         "defaultRecognitionHints",
@@ -145,6 +155,8 @@ REQUIRED_SNIPPETS = {
         "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
         "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
         "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
+        "testLocalContextModelDocumentCodecRoundTrip",
+        "testJSONLocalContextModelRepositoryRoundTripAndDelete",
         "testLearningSourceSelectionReportsSelectedKinds",
         "testAgentHistoryLearningModeReportsSourceTextCounts",
         "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",

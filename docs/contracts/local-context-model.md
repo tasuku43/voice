@@ -16,7 +16,7 @@
 
 The local context model is not an LLM. In the MVP it is structured local data: canonical terms, spoken forms, ASR-friendly recognition hints, source counts, scopes, and deterministic transform metadata.
 
-The current implementation starts with `LocalContextModel` and `LocalContextModelBuildUseCase`, which combine seed entries, approved entries, and optionally generated learning candidates into one in-memory model. A separate persistence document shape is still future work.
+The current implementation starts with `LocalContextModel` and `LocalContextModelBuildUseCase`, which combine seed entries, approved entries, and optionally generated learning candidates into one model. `LocalContextModelDocumentCodec` stores that model in a versioned JSON document, and `JSONLocalContextModelRepository` is the local filesystem adapter.
 
 ## Allowed
 - Merge built-in vocabulary and local learned context.
@@ -42,11 +42,14 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 ## Read First
 - `src/VoiceAgentInputCore/Domain/DictionaryEntry.swift`
 - `src/VoiceAgentInputCore/App/LocalContextModel.swift`
+- `src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift`
+- `src/VoiceAgentInputCore/App/LocalContextModelRepository.swift`
 - `src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift`
 - `src/VoiceAgentInputCore/App/DictionaryEntryLoadingUseCase.swift`
 - `src/VoiceAgentInputCore/App/LearningSource.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift`
 - `src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift`
+- `src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift`
 - `docs/contracts/learning.md`
 - `docs/contracts/speech-to-text.md`
 - `docs/contracts/normalization.md`
@@ -67,11 +70,14 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings`
 - `swift test --filter UseCaseAndRepositoryTests/testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources`
+- `swift test --filter UseCaseAndRepositoryTests/testLocalContextModelDocumentCodecRoundTrip`
+- `swift test --filter UseCaseAndRepositoryTests/testJSONLocalContextModelRepositoryRoundTripAndDelete`
 - Future: context-model fixture evals for each learning-source adapter.
 - `make check`
 
 ## Done
 - The model can feed both STT recognition hints and post-STT transforms.
+- The model has a versioned local JSON document shape.
 - Source adapters remain bounded and local.
 - Local Foundation Model use, if present, is optional and network-free.
 - The default hotkey path can run without LLM conversion.

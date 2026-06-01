@@ -93,6 +93,21 @@ REQUIRED_COVERAGE = {
             "recognitionHints",
             "LocalContextModelBuildUseCase",
         ],
+        "src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift": [
+            "LocalContextModelDocument",
+            "schemaVersion",
+            "LocalContextModelDocumentCodec",
+        ],
+        "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
+            "LocalContextModelRepository",
+            "LocalContextModelDataUseCase",
+            "deleteLocalContextModel",
+        ],
+        "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
+            "JSONLocalContextModelRepository",
+            "saveModel",
+            "loadModel",
+        ],
         "src/VoiceAgentInputCore/Domain/DictionaryEntry.swift": [
             "recognitionHints",
             "defaultRecognitionHints",
@@ -104,6 +119,8 @@ REQUIRED_COVERAGE = {
             "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
             "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
             "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
+            "testLocalContextModelDocumentCodecRoundTrip",
+            "testJSONLocalContextModelRepositoryRoundTripAndDelete",
             "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",

@@ -895,6 +895,60 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 1)
     }
 
+    func testLocalContextModelDocumentCodecRoundTrip() throws {
+        let model = LocalContextModel(
+            entries: [
+                DictionaryEntry(
+                    spokenForms: ["ぷろじぇくとぼいす"],
+                    canonical: "ProjectVoice",
+                    recognitionHints: ["ProjectVoice"],
+                    kind: .projectTerm,
+                    scope: .user,
+                    confidence: 0.9,
+                    autoApply: true
+                )
+            ],
+            sourceTextCounts: ["agentHistory": 2],
+            generatedCandidateCount: 1
+        )
+
+        let data = try LocalContextModelDocumentCodec().encode(model)
+        let decoded = try LocalContextModelDocumentCodec().decode(data)
+
+        XCTAssertEqual(decoded, model)
+        XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"schemaVersion\" : 1") == true)
+    }
+
+    func testJSONLocalContextModelRepositoryRoundTripAndDelete() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let repository = JSONLocalContextModelRepository(
+            fileURL: directory.appendingPathComponent("local-context-model.json")
+        )
+        let model = LocalContextModel(
+            entries: [
+                DictionaryEntry(
+                    spokenForms: ["すいふとゆーあい"],
+                    canonical: "SwiftUI",
+                    kind: .framework,
+                    scope: .user,
+                    confidence: 0.8,
+                    autoApply: true
+                )
+            ],
+            sourceTextCounts: ["agentHistory": 2],
+            generatedCandidateCount: 1
+        )
+
+        XCTAssertEqual(try repository.loadModel(), LocalContextModel())
+
+        try LocalContextModelDataUseCase(repository: repository).importModel(model)
+        XCTAssertEqual(try LocalContextModelDataUseCase(repository: repository).exportModel(), model)
+
+        try LocalContextModelDataUseCase(repository: repository).deleteLocalContextModel()
+        XCTAssertEqual(try repository.loadModel(), LocalContextModel())
+    }
+
     func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
         let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
         let useCase = VoiceInputFlowUseCase(
