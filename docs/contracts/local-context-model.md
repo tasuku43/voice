@@ -16,6 +16,8 @@
 
 The local context model is not an LLM. In the MVP it is structured local data: canonical terms, spoken forms, ASR-friendly recognition hints, source counts, scopes, and deterministic transform metadata.
 
+The current implementation starts with `LocalContextModel` and `LocalContextModelBuildUseCase`, which combine seed entries, approved entries, and optionally generated learning candidates into one in-memory model. A separate persistence document shape is still future work.
+
 ## Allowed
 - Merge built-in vocabulary and local learned context.
 - Produce bounded `SpeechRecognitionHints` before STT.
@@ -39,6 +41,7 @@ The local context model is not an LLM. In the MVP it is structured local data: c
 
 ## Read First
 - `src/VoiceAgentInputCore/Domain/DictionaryEntry.swift`
+- `src/VoiceAgentInputCore/App/LocalContextModel.swift`
 - `src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift`
 - `src/VoiceAgentInputCore/App/DictionaryEntryLoadingUseCase.swift`
 - `src/VoiceAgentInputCore/App/LearningSource.swift`

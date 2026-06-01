@@ -22,6 +22,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Capture/STT orchestration is represented by `VoiceInputPipeline`.
 - Post-STT text processing is represented by `PromptProcessingPipeline`.
 - Dictionary replacement and refinement also expose `PromptTextTransform` for simple `String -> String` composition.
+- Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`.
 - Future local Foundation Model fallback formatting is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`.
 - Candidate selection persistence moved toward `LearningApprovalUseCase`, leaving the UI to collect selected indexes.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
@@ -54,6 +55,7 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 - `PromptNormalizer`
 - `PromptRefiner`
 - `PromptTextTransform`
+- `LocalContextModel`
 - `VoiceInputPipeline`
 - `PromptProcessingPipeline`
 - `DictionaryContextLoadingUseCase`

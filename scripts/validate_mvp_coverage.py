@@ -87,6 +87,12 @@ REQUIRED_COVERAGE = {
             "entry.recognitionHints",
             "DictionaryEntry",
         ],
+        "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
+            "public struct LocalContextModel",
+            "postSTTEntries",
+            "recognitionHints",
+            "LocalContextModelBuildUseCase",
+        ],
         "src/VoiceAgentInputCore/Domain/DictionaryEntry.swift": [
             "recognitionHints",
             "defaultRecognitionHints",
@@ -96,6 +102,8 @@ REQUIRED_COVERAGE = {
             "testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings",
             "testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms",
             "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
+            "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
+            "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
             "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",

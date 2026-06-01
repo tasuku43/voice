@@ -829,6 +829,72 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(hints.contextualStrings, ["Canonical", "one"])
     }
 
+    func testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries() {
+        let approvedEntry = DictionaryEntry(
+            spokenForms: ["ぷろじぇくとぼいす"],
+            canonical: "ProjectVoice",
+            recognitionHints: ["ProjectVoice", "プロジェクトボイス"],
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let learningResult = AgentHistoryLearningModeResult(
+            scannedTextCount: 2,
+            sourceTextCounts: ["agentHistory": 2],
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "すいふとゆーあい",
+                    correctedPhrase: "SwiftUI",
+                    confidence: 0.8,
+                    occurrenceCount: 2,
+                    reason: "Found 2 uses in local agent history.",
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ]
+        )
+
+        let model = LocalContextModelBuildUseCase(
+            seedEntries: [],
+            approvedEntries: [approvedEntry]
+        ).build(learningResult: learningResult)
+
+        XCTAssertEqual(model.sourceTextCounts["agentHistory"], 2)
+        XCTAssertEqual(model.generatedCandidateCount, 1)
+        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["ProjectVoice", "SwiftUI"])
+        XCTAssertEqual(
+            model.recognitionHints().contextualStrings,
+            ["ProjectVoice", "プロジェクトボイス", "SwiftUI", "すいふとゆーあい"]
+        )
+    }
+
+    func testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries() {
+        let learningResult = AgentHistoryLearningModeResult(
+            scannedTextCount: 1,
+            sourceTextCounts: ["agentHistory": 1],
+            candidates: [
+                CorrectionCandidate(
+                    rawPhrase: "じぇいそん",
+                    correctedPhrase: "JSON",
+                    confidence: 0.7,
+                    occurrenceCount: 1,
+                    reason: "Found in local agent history.",
+                    suggestedScope: .user,
+                    autoApplyAllowed: true
+                )
+            ]
+        )
+
+        let model = LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [])
+            .build(learningResult: learningResult, includeGeneratedCandidates: false)
+
+        XCTAssertTrue(model.postSTTEntries.isEmpty)
+        XCTAssertTrue(model.recognitionHints().contextualStrings.isEmpty)
+        XCTAssertEqual(model.generatedCandidateCount, 1)
+        XCTAssertEqual(model.sourceTextCounts["agentHistory"], 1)
+    }
+
     func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
         let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
         let useCase = VoiceInputFlowUseCase(

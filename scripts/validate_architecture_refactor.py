@@ -33,6 +33,12 @@ REQUIRED_SNIPPETS = {
         "normalizer.normalize",
         "refiner.refine",
     ],
+    "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
+        "public struct LocalContextModel",
+        "postSTTEntries",
+        "recognitionHints",
+        "public struct LocalContextModelBuildUseCase",
+    ],
     "src/VoiceAgentInputCore/App/DictionaryContextLoadingUseCase.swift": [
         "public struct DictionaryContextLoadingUseCase",
         "RepositoryVocabularyFilePathProvider",

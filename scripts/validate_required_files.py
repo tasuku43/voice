@@ -49,6 +49,7 @@ required = [
     'src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift',
     'src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift',
     'src/VoiceAgentInputCore/App/PromptTextTransform.swift',
+    'src/VoiceAgentInputCore/App/LocalContextModel.swift',
     'src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift',
     'src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift',
     'src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift',
