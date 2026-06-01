@@ -1,5 +1,7 @@
 # Preview And Approval Contract
 
+Preview and approval are optional curation surfaces. They help inspect and improve the local context model, but they are not the primary hotkey dictation path.
+
 ## Inputs
 - Raw transcript.
 - Corrected or refined prompt.
@@ -37,5 +39,5 @@
 - `make check`
 
 ## Done
-- Paste requires explicit confirmation.
+- Paste requires explicit confirmation when this optional workflow is used.
 - Candidate approval remains user-driven.

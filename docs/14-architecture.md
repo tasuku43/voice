@@ -138,6 +138,7 @@ The UI must call app use cases and avoid embedding core logic.
 Short component contracts live in `docs/contracts/`:
 
 - speech-to-text,
+- local-context-model,
 - normalization,
 - prompt-refinement,
 - voice-input-pipeline,
@@ -145,7 +146,7 @@ Short component contracts live in `docs/contracts/`:
 - learning,
 - output.
 
-Focused future Codex prompts live in `docs/codex-sessions/` so a session can improve one component without rereading the whole repository.
+Focused future Codex prompts live in `docs/codex-sessions/` so a session can improve one component without rereading the whole repository. The local context model session is the preferred starting point for work that changes how learning sources become recognition hints or post-STT transforms.
 
 ## Anti-patterns
 

@@ -1,7 +1,8 @@
 # Output Contract
 
 ## Inputs
-- User-confirmed final prompt.
+- Corrected transcript from the voice input pipeline.
+- Optional user-confirmed final prompt from a preview workflow.
 - Output target settings or adapter.
 
 ## Outputs
@@ -34,5 +35,5 @@
 - `make check`
 
 ## Done
-- Output inserts text only after explicit confirmation.
+- Output inserts text only after the user invokes or stops the voice input action, or after explicit confirmation in an optional preview workflow.
 - Automatic submit remains rejected.

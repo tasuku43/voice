@@ -408,6 +408,19 @@ REQUIRED_COVERAGE = {
             "optional local Foundation Model fallback",
             "PromptTextTransform.transform(String) async throws -> String",
         ],
+        "docs/contracts/local-context-model.md": [
+            "Local Context Model Contract",
+            "Recognition hints for STT adapters",
+            "Post-STT transform entries",
+            "local Foundation Model",
+            "Network IO",
+        ],
+        "docs/codex-sessions/local-context-model-session.md": [
+            "Purpose:",
+            "local context model",
+            "STT recognition hints",
+            "post-STT transforms",
+        ],
         "docs/codex-sessions/prompt-refinement-session.md": [
             "Purpose",
             "Tests",

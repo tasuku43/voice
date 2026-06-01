@@ -3,8 +3,10 @@
 ## Phase 1: core engine
 
 - Dictionary model.
+- Local context model shape.
 - Scope precedence.
 - Normalization pipeline.
+- Recognition hint generation.
 - Candidate extraction.
 - JSON persistence.
 - Unit tests and evals.
@@ -17,13 +19,14 @@
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
 - Recording settings. App shell can set local recording duration and Speech locale for later recordings.
 - Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
-- Confirm-before-paste flow.
+- Focused cursor insertion or copy fallback.
+- Optional confirm-before-paste preview flow.
 
 ## Phase 3: input loop
 
 - Global hotkey. Initial AppKit global/local monitor done for Control-Option-Space.
 - Pasteboard insertion. Done for text-only adapter and wired into the app shell.
-- Accessibility paste insertion. Initial adapter sends Command-V only after explicit confirmation; copy fallback is used if Accessibility access is not granted.
+- Accessibility paste insertion. Initial adapter sends Command-V for the user-invoked voice input action; copy fallback is used if Accessibility access is not granted.
 - Explicit no-submit behavior.
 
 ## Phase 4: real audio and STT
@@ -34,11 +37,15 @@
 - Availability guards.
 - Mock engine retained for tests.
 
-## Phase 5: learning loop
+## Phase 5: model education loop
 
-- Editable prompt preview.
-- Diff extraction.
-- Candidate approval UI. App-shell approval dialog supports per-candidate selection.
+- Learning source selection.
+- Local Codex / Claude Code history source.
+- Git repository vocabulary source.
+- Local context model rebuild.
+- Optional editable prompt preview.
+- Optional diff extraction.
+- Optional candidate approval UI. App-shell approval dialog supports per-candidate selection.
 - Local dictionary persistence. JSON-backed Application Support store done.
 - Local learning data controls. App-shell menu can export, import, inspect, and delete approved local dictionary entries.
 
@@ -48,3 +55,10 @@
 - Bounded vocabulary extraction. Tracked file names from `git ls-files` are filtered by extension and capped before becoming repository-scoped entries.
 - Repository-scoped suggestions. Repository name, branch, and tracked file-name entries are mixed into app preview dictionaries.
 - Manual repository folder setting. App shell can store a local repository path for bundled/Finder launches.
+
+## Phase 7: local Foundation Model fallback
+
+- Local Foundation Model adapter protocol.
+- Model education assistance only after explicit enablement.
+- Optional last-resort conversion stage outside the default hotkey path.
+- No network IO, no cloud STT, and no transcript upload.

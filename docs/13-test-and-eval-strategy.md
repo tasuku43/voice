@@ -18,6 +18,8 @@ Cover orchestration:
 
 - normalize raw transcript,
 - learn from final edited prompt,
+- build context from local learning sources,
+- generate STT recognition hints from learned context,
 - persist approved entries through repository adapters.
 
 ### Infra tests
@@ -38,13 +40,13 @@ Cover the real executable path where practical:
 - stable correction behavior.
 - `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.
 - `make check` smoke-launches `.build/VoiceAgentInput.app` long enough to catch immediate startup crashes.
-- `make check` runs the app executable with `--ui-layout-smoke`, renders representative Preview, candidate approval, learning settings, and recording HUD layouts to `.build/ui-layout-smoke/`, and fails on ambiguous or empty view frames.
+- `make check` runs the app executable with `--ui-layout-smoke`, renders representative optional Preview, candidate approval, learning settings, and recording HUD layouts to `.build/ui-layout-smoke/`, and fails on ambiguous or empty view frames.
 - `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms, edit-derived learning eval coverage, and history-derived learning eval coverage.
 - `make check` validates architecture boundaries: Domain and App stay free of UI/macOS framework dependencies while framework-specific adapters remain in Infra.
-- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, Quick Paste as the default fast path, Learning Preview for editable learning, candidate approval, local dictionary data controls, and absence of obvious network calls.
+- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, optional Learning Preview curation, local learning source controls, local dictionary data controls, and absence of obvious network calls.
 - `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local learning data controls.
 - `make check` validates MVP coverage snippets across source, tests, docs, and manual E2E artifacts so the main success criteria remain represented.
-- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, Quick Paste without preview/candidate approval UI, Learning Preview candidate approval, local learning, repository vocabulary, and privacy expectations.
+- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, focused-cursor insertion through the current Quick Paste path, optional Learning Preview candidate approval, local learning, repository vocabulary, and privacy expectations.
 
 ### Evals
 
@@ -73,6 +75,15 @@ History learning eval cases in `evals/history-learning-cases.json` should includ
 - later raw transcript,
 - expected canonical terms after approving history-derived candidates,
 - learning scope.
+
+Local context model eval cases should be added when the model becomes first-class. They should include:
+
+- enabled learning source kinds,
+- extracted canonical terms,
+- expected recognition hints,
+- expected post-STT transform entries,
+- source metadata or scan counts,
+- proof that no raw audio or raw transcript is persisted.
 
 ### Golden snapshots
 

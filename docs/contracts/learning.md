@@ -27,7 +27,7 @@
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
 - Use the configured preferred learning scope for Learning Preview edit-derived candidates. The default preferred scope is user scope even when a repository folder is configured.
 - Score likely voice misrecognitions behind a replaceable detector.
-- Review edit-derived candidates after preview confirmation through an off-transcription-path reviewer, so an LLM-style detector can improve learning without slowing STT or deterministic prompt normalization.
+- Review edit-derived candidates after preview confirmation through an off-transcription-path reviewer, so a local Foundation Model or deterministic detector can improve learning without slowing STT or deterministic prompt normalization.
 - Invoke an explicit local learning-reviewer command when configured; stdin/stdout JSON is limited to candidates and prompt diff text, and the app provides no cloud client.
 - Expose local learning-reviewer command configuration through `Learning Settings...`; blank or disabled means no reviewer command runs.
 - If candidate review fails, confirmation still returns the prompt and unreviewed candidates; optional review must not block paste confirmation.

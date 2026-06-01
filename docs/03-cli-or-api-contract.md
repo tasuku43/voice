@@ -12,13 +12,15 @@ The current shell installs a menu bar item, registers the configured voice-input
 
 The shell also includes a mock preview action for development, Control-Shift-V voice input history recall, local voice input mode settings, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Train Dictionary From Sources...` for selecting Codex/Claude local sessions and Git repository vocabulary, per-candidate learning approval, and export/import/open-folder/delete controls for approved local dictionary entries.
 
+Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the current implementation of that daily path. `Learning Preview`, candidate approval, and reviewer commands are optional curation surfaces for improving local context; they are not the core voice-input experience.
+
 ## Demo CLI
 
 ```bash
 swift run voice-agent-input-demo "くらのコードでタイプスクリプトエラーを直して"
 ```
 
-Default output is a preview JSON object:
+Default output is still a preview JSON object for CI stability and debugging:
 
 ```json
 {
@@ -32,7 +34,7 @@ Default output is a preview JSON object:
 }
 ```
 
-Confirm mode simulates the explicit-confirmation step without submitting:
+Confirm mode simulates the current optional preview confirmation step without submitting:
 
 ```bash
 swift run voice-agent-input-demo --mode confirm --edited "Claude Code で TypeScript error を直して" "くらのコードでタイプスクリプトエラーを直して"
@@ -58,7 +60,7 @@ This output includes both `historyLearning` and `normalization`, so tests and ma
 
 ## Core API
 
-Primary use case:
+Primary text transform use case:
 
 ```swift
 PromptNormalizationUseCase.normalize(rawText: String) -> NormalizationResult
@@ -71,7 +73,7 @@ PromptPreviewUseCase.preview(rawTranscript: String) -> PromptPreview
 PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?) -> ConfirmedPrompt
 ```
 
-`PromptPreview` always requires explicit confirmation before insertion. `ConfirmedPrompt` returns the exact prompt text that a future UI or insertion adapter may paste, but it must not submit automatically.
+`PromptPreview` remains available for optional curation. `ConfirmedPrompt` returns the exact prompt text that a UI or insertion adapter may paste, but it must not submit automatically.
 
 Voice-input orchestration:
 
@@ -80,7 +82,18 @@ VoiceInputFlowUseCase.transcribeAndPreview(mockAudioText: String) async throws -
 VoiceInputFlowUseCase.recordTranscribeAndPreview() async throws -> PromptPreview
 ```
 
-This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters.
+This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Runtime entries also feed `SpeechRecognitionHints` so the local context model can affect recognition before post-STT normalization.
+
+Local context model:
+
+```swift
+SpeechRecognitionHintsUseCase.hints(from entries: [DictionaryEntry]) -> SpeechRecognitionHints
+DictionaryEntryLoadingUseCase.loadEntries(...) throws -> [DictionaryEntry]
+LearningSource.learningTexts() throws -> [LearningText]
+AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLearningModeResult
+```
+
+The current concrete model is represented by dictionary entries, recognition hints, learning source text, and candidate metadata. Future work should make this a first-class `LocalContextModel` document that can be rebuilt from enabled local sources, exported, imported, and deleted.
 
 Learning use case:
 
@@ -145,7 +158,7 @@ The macOS menu bar shell exposes recording settings locally through `Recording S
 
 The macOS menu bar shell exposes learning reviewer command configuration through `Learning Settings...`. The command is optional and local-only. When configured, the app sends candidate-review JSON to the command only after preview confirmation; it is not part of speech recognition, dictionary normalization, or prompt refinement. The interactive app uses a short reviewer timeout so optional review cannot become a noticeable paste-confirmation bottleneck.
 
-Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. Runtime voice input stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so approved candidates still become user-scoped entries unless a caller explicitly requests another scope.
+Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so approved candidates still become user-scoped entries unless a caller explicitly requests another scope. As the local context model becomes first-class, repository context should be included through explicit source selection and bounded rebuilds rather than implicit broad scans.
 
 Learning candidate review:
 

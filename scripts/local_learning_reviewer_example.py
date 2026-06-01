@@ -8,7 +8,8 @@ The command must return JSON on stdout:
   {"candidates": [...]}
 
 This sample is intentionally deterministic and local-only. Replace its body with
-a trusted local model call if you want LLM-style candidate review.
+a trusted local Foundation Model call if you want model-assisted candidate
+review without network IO.
 """
 
 import json

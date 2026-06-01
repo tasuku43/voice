@@ -1,5 +1,30 @@
 # Data model
 
+## LocalContextModel
+
+The local context model is the product-level container for environment-adaptive voice input. It is local structured data, not an LLM.
+
+Initial contents:
+
+- built-in developer vocabulary,
+- approved user dictionary entries,
+- repository vocabulary entries,
+- source-derived terms from local agent or chat history,
+- ASR-friendly recognition hints,
+- post-STT spoken-form mappings,
+- source metadata and scan counts,
+- confidence and scope metadata.
+
+The same model should support two runtime uses:
+
+```text
+LocalContextModel
+  -> SpeechRecognitionHints for STT contextualStrings
+  -> DictionaryEntry values for post-STT normalization
+```
+
+Future local Foundation Model output may contribute to this model during education, but the model must remain inspectable and exportable as local data.
+
 ## DictionaryEntry
 
 Represents a reusable mapping from spoken forms to a canonical written form, with ASR-first recognition hints kept separate from post-STT correction forms.

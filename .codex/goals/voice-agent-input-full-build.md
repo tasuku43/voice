@@ -4,12 +4,14 @@ You are working in the `voice-agent-input` repository.
 
 Read these files first:
 
-- `AGENTS.md`
 - `GOALS.md`
 - `README.md`
+- `docs/01-product-brief.md`
 - `docs/13-test-and-eval-strategy.md`
 - `docs/14-architecture.md`
 - `docs/06-implementation-plan.md`
+
+Treat `AGENTS.md` as historical guidance if it conflicts with the current product docs.
 
 Goal for this autonomous run:
 
@@ -19,13 +21,13 @@ The ideal MVP is a macOS-native menu bar app that:
 
 1. accepts a hotkey-triggered voice input flow,
 2. transcribes speech through a replaceable STT adapter,
-3. normalizes coding-agent terminology through deterministic dictionaries,
-4. shows raw transcript and corrected prompt in a preview panel,
-5. lets the user edit before insertion,
-6. pastes only after explicit confirmation,
-7. extracts dictionary candidates from user edits,
-8. stores approved dictionary entries locally,
-9. never uploads audio or transcripts.
+3. builds a local context model from enabled local learning sources,
+4. uses that model as STT recognition hints and deterministic post-STT transforms,
+5. inserts corrected text at the focused cursor or copies it when direct insertion is unavailable,
+6. keeps preview/edit/approval flows as optional curation surfaces,
+7. uses local Foundation Model assistance only for model education or explicit fallback conversion,
+8. never performs network IO for STT, model education, or LLM fallback,
+9. never uploads audio, transcripts, prompts, or learned context.
 
 Current scaffold already contains the core normalization and learning direction. Continue from there.
 
@@ -34,14 +36,15 @@ Implementation priorities:
 1. Strengthen the core domain and tests if needed.
 2. Add a macOS app shell only if the current environment supports it.
 3. If macOS APIs are unavailable, add protocols, mocks, and documented adapter seams instead of blocking.
-4. Implement preview-before-paste before real microphone recording.
-5. Implement deterministic dictionary learning before semantic rewriting.
-6. Keep STT replaceable: Apple Speech first, Whisper optional later.
+4. Make hotkey dictation into the focused cursor the primary path.
+5. Implement deterministic local context learning before semantic rewriting.
+6. Keep STT replaceable: Apple Speech first, local-only Whisper optional later.
 7. Keep privacy defaults local-only.
 
 Required constraints:
 
 - Do not introduce cloud services.
+- Do not introduce network IO in voice input, model education, or fallback conversion.
 - Do not persist raw audio by default.
 - Do not auto-submit prompts.
 - Do not build a full IME.

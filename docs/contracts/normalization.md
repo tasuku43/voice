@@ -17,7 +17,7 @@
 
 ## Forbidden
 - Audio capture or speech recognition.
-- LLM-style rewriting, summarization, preview UI, paste, or persistence.
+- Foundation Model rewriting, summarization, preview UI, paste, or persistence.
 
 ## Read First
 - `src/VoiceAgentInputCore/App/PromptContracts.swift`

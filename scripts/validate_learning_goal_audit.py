@@ -49,6 +49,13 @@ REQUIRED_SNIPPETS = {
         "Persist approved entries only after user approval.",
         "Quick Paste remains a fast rule-based insertion path",
     ],
+    "docs/contracts/local-context-model.md": [
+        "Local Context Model Contract",
+        "Recognition hints for STT adapters",
+        "Post-STT transform entries",
+        "local Foundation Model",
+        "Network IO",
+    ],
     "docs/contracts/learning-reviewer-command.md": [
         "The learning reviewer command is optional.",
         "Do not upload transcripts or candidates.",

@@ -165,6 +165,7 @@ REQUIRED_SNIPPETS = {
 REQUIRED_CONTRACTS = [
     "audio-capture.md",
     "speech-to-text.md",
+    "local-context-model.md",
     "normalization.md",
     "prompt-refinement.md",
     "voice-input-pipeline.md",
@@ -176,6 +177,7 @@ REQUIRED_CONTRACTS = [
 REQUIRED_SESSIONS = [
     "audio-capture-session.md",
     "speech-to-text-session.md",
+    "local-context-model-session.md",
     "normalization-session.md",
     "prompt-refinement-session.md",
     "repository-vocabulary-session.md",
