@@ -6,17 +6,21 @@
 - User final edited text.
 - Bounded local Codex/Claude history text for explicit learning mode.
 - Configured repository vocabulary exposed through a learning-source adapter.
+- Future bounded local source text from GitHub, Slack, Chatwork, or similar adapters.
 
 ## Outputs
 - `CorrectionCandidate`
 - Candidate reason.
 - Approval or rejection state.
+- Local context model entries for recognition hints and post-STT transforms.
 
 ## Allowed
 - Generate dictionary candidates from user edits.
 - Generate dictionary candidates from local learning sources after explicit user action.
 - Let the user choose local learning sources before training the dictionary.
 - Report source-level scan counts so the app can explain what was used.
+- Build local context model data from bounded source adapters.
+- Use local Foundation Model assistance for model education when explicitly enabled and local-only.
 - Keep default Quick Paste outside candidate review and approval; `VoiceInputModeDecisionUseCase` inserts the corrected prompt with no learning candidates.
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across history learning and edit learning.
@@ -35,6 +39,8 @@
 - Prompt refinement.
 - Automatic dangerous dictionary updates.
 - Paste or automatic submit.
+- Network IO.
+- Cloud model calls.
 
 ## Read First
 - `src/VoiceAgentInputCore/Domain/CandidateExtractor.swift`
@@ -70,6 +76,8 @@
 - Rejected and dangerous candidates are not auto-applied.
 - Approved entries are stored locally.
 - Agent history reads stay behind an app-level provider and infra adapter.
+- Learning-source adapters remain bounded and local.
+- Learned context can feed both STT recognition hints and deterministic post-STT transforms.
 - Candidate review runs after user confirmation and preserves dangerous substitution guardrails.
 - Quick Paste remains a fast rule-based insertion path with no learning reviewer or candidate approval dialog.
 - Learning Preview edit learning uses the configured preferred learning scope.

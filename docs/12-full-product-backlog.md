@@ -2,6 +2,9 @@
 
 ## Core
 
+- Define the local context model document shape.
+- Generate recognition hints from learned context.
+- Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.
 - Add confidence accumulation for repeated corrections.
 - Add repository-scoped candidate promotion rules.
@@ -11,10 +14,10 @@
 ## macOS app
 
 - Menu bar app shell.
-- Floating preview panel.
-- Keyboard shortcuts for paste/cancel/toggle.
-- Candidate approval UI.
-- Settings screen for privacy and retention.
+- Cursor-adjacent recording HUD.
+- Settings screen for hotkey, STT locale, learning sources, local data, and optional fallback conversion.
+- Optional floating preview panel.
+- Optional candidate approval UI.
 
 ## Input and insertion
 
@@ -23,27 +26,34 @@
 - Pasteboard insertion.
 - Accessibility insertion fallback.
 - Permission onboarding.
+- Copy fallback when direct insertion is unavailable.
 
 ## Speech
 
 - Audio recorder abstraction.
 - Apple Speech adapter.
 - Availability and locale checks.
-- WhisperKit fallback investigation.
+- Local-only WhisperKit fallback investigation.
+- Local Foundation Model conversion fallback investigation.
 
 ## Context
 
+- Codex / Claude Code local history adapter.
 - Focused app detection.
 - Terminal working directory detection.
 - Git root and branch detection.
 - Repository vocabulary extraction.
+- GitHub learning-source adapter.
+- Slack learning-source adapter.
+- Chatwork learning-source adapter.
 - Bounded scanning and ignore rules.
 
 ## Persistence
 
 - JSON dictionary storage.
+- Local context model storage.
 - SQLite migration if needed.
-- Export/import UI.
+- Export/import UI for learned context.
 - Delete local learning data.
 
 ## Evals
@@ -52,3 +62,5 @@
 - Add dangerous command cases.
 - Add project-specific symbol cases.
 - Add mixed Japanese-English prompts.
+- Add learning-source adapter fixtures.
+- Add recognition-hint generation fixtures.

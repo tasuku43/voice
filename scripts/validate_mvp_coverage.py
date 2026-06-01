@@ -193,11 +193,12 @@ REQUIRED_COVERAGE = {
         ],
         "docs/17-learning-goal-audit.md": [
             "Learning Goal Audit",
-            "Keep ordinary prompt conversion mostly rule-based and fast.",
+            "Keep ordinary hotkey dictation mostly rule-based and fast.",
             "interactiveLearningReviewerTimeoutSeconds",
             "testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails",
             "testBundledLocalLearningReviewerExampleFollowsCommandContract",
             "testLocalCommandLearningCandidateReviewerDoesNotAutoApplyInjectedCandidates",
+            "local Foundation Models only",
             "Remaining Evidence Needed",
         ],
         "scripts/local_learning_reviewer_example.py": [
@@ -402,8 +403,9 @@ REQUIRED_COVERAGE = {
             "VoiceInputPipelineResult",
             "PromptProcessingPipeline",
             "Stage data",
-            "PromptNormalizer.normalizeText",
-            "PromptRefiner.refineText",
+            "built-in vocabulary transform",
+            "personal context model transform",
+            "optional local Foundation Model fallback",
             "PromptTextTransform.transform(String) async throws -> String",
         ],
         "docs/codex-sessions/prompt-refinement-session.md": [

@@ -6,18 +6,21 @@
 - Scope precedence is respected.
 - Multiple spoken forms can map to one canonical form.
 - Corrections include explainability metadata.
+- Learned local context improves both STT recognition hints and post-STT transforms.
 
 ## Reliability
 
 - Normalization is deterministic.
 - Dangerous command substitutions are not auto-applied.
 - The app never submits text automatically.
+- The default hotkey path does not require network IO.
+- LLM-backed conversion is local-only and remains an optional fallback.
 
 ## Agent usability
 
-- Output should be clearer for coding agents than the raw transcript.
+- Output should be clearer for coding agents, work chat, and IDE fields than the raw transcript.
 - Developer terms should be canonicalized consistently.
-- Repository-specific vocabulary should eventually improve prompts without overfitting globally.
+- Repository-specific and history-derived vocabulary should improve dictation without overfitting globally.
 
 ## Output contract stability
 
@@ -28,6 +31,7 @@
 
 - Normalization should be effectively instantaneous for normal prompt lengths.
 - Repository scanning should be bounded by file count, bytes, and timeout.
+- Model education can be slower than hotkey input, but hotkey dictation should stay fast enough for repeated use.
 
 ## Regression prevention
 
@@ -36,19 +40,18 @@
 - Fixture-driven normalization eval cases cover realistic utterances.
 - Fixture-driven learning eval cases cover approved edit-derived dictionary growth and later rule-based reuse.
 - Fixture-driven history learning eval cases cover approved history-derived dictionary growth and later rule-based reuse.
+- Future evals should cover context-model extraction from each learning source adapter and the recognition hints generated from that model.
 
 ## Human usability
 
 Minimum acceptable behavior:
 
-- Default daily input uses `Quick Paste`.
-- In `Quick Paste`, user stop or key release confirms paste without opening learning UI.
-- In `Learning Preview`, user can inspect raw and corrected text before paste.
-- In `Learning Preview`, user can cancel safely.
-- In `Learning Preview`, user can reject bad dictionary candidates.
+- User presses a hotkey, speaks, and receives corrected text at the focused cursor.
+- If direct paste is unavailable, the user receives copied text and clear fallback guidance.
+- Local learning sources can be enabled, rebuilt, and cleared without exposing audio or transcripts to the network.
 
 Stretch goals:
 
 - Low-latency recording and transcription.
-- Repo-aware suggestions.
-- Dictionary review UI.
+- GitHub, Slack, and Chatwork learning-source adapters.
+- Optional preview and dictionary review UI for users who want manual curation.

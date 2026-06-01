@@ -14,13 +14,15 @@
 
 ## Allowed
 - Remove filler words, format, or lightly summarize after normalization.
-- Be swapped for a local LLM implementation later.
+- Be swapped for a local Foundation Model implementation later.
+- Run only as an explicit fallback or model-education helper unless the product boundary changes.
 
 ## Forbidden
 - Speech recognition.
 - Dictionary correction.
 - Persistence, paste, automatic submit, or command execution.
-- Cloud calls unless a future explicit local-first decision changes the product boundary.
+- Network IO.
+- Cloud LLM calls.
 
 ## Read First
 - `src/VoiceAgentInputCore/App/PromptContracts.swift`
@@ -40,3 +42,4 @@
 ## Done
 - `NoOpPromptRefiner` remains the default.
 - Refinement cannot paste, submit, or persist data.
+- Any LLM-backed implementation is local-only and outside the default hotkey path.

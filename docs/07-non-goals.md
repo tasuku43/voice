@@ -14,6 +14,7 @@ MVP explicitly excludes:
 - automatic command execution,
 - cloud STT,
 - uploading transcripts,
-- LLM-based rewriting as the primary correction mechanism.
+- network-backed LLM calls,
+- LLM-based rewriting as the primary hotkey correction mechanism.
 
-These may be revisited only after the local dictionary-learning loop proves useful.
+These may be revisited only after the local context-model loop proves useful. Local Foundation Model support remains in scope only as model-education assistance or an explicit last-resort conversion fallback.

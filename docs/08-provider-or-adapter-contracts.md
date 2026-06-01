@@ -101,6 +101,12 @@ Current use cases:
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
 - Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.
 
+Product direction:
+
+- The dictionary repository is one storage mechanism for the broader local context model.
+- Learned context should be usable before STT as recognition hints and after STT as deterministic transforms.
+- Preview and approval flows are optional curation surfaces, not the core hotkey input path.
+
 Future adapter:
 
 - SQLite-backed repository if candidate history becomes large.
@@ -130,7 +136,7 @@ Future adapters:
 
 Rules:
 
-- Insert only after explicit confirmation.
+- Insert only after the user invokes or stops the voice input action.
 - Never press Enter or submit the target app automatically.
 - Consume `ConfirmedPrompt.promptToInsert`; ignore candidate data for insertion.
 - Reject insertion if `ConfirmedPrompt.shouldSubmitAutomatically` is true.
@@ -177,8 +183,19 @@ Current providers:
 - `LearningSource` is the app-level interface for local learning inputs. `LocalAgentHistoryTextProvider` reads bounded local Codex and Claude history text, while repository vocabulary is another learning source.
 - `LocalCommandLearningCandidateReviewer` invokes a user-configured local command through stdin/stdout JSON after preview confirmation. It is an infra adapter for candidate review only, not speech recognition or prompt transformation. The interactive app passes a short timeout and falls back to unreviewed candidates if optional review fails.
 
+Direction:
+
+- Learning-source adapters educate a local context model from bounded local data.
+- GitHub, Slack, and Chatwork adapters should follow the same adapter boundary before they are added.
+- Any adapter that would require network IO is outside the MVP unless the product boundary is explicitly changed.
+- Local Foundation Model adapters may support model education or optional fallback conversion, but they must not upload prompts, audio, transcripts, or learned context.
+
 Future providers:
 
 - focused app provider,
 - terminal current directory provider,
 - repository vocabulary provider.
+- GitHub learning-source provider,
+- Slack learning-source provider,
+- Chatwork learning-source provider,
+- local Foundation Model provider.

@@ -2,33 +2,34 @@
 
 ## Ideal state
 
-`voice-agent-input` becomes a small, reliable macOS utility for speaking high-quality prompts into coding agents. It learns the user's terminology from edits, extracts project vocabulary from repositories, and safely inserts corrected prompts only after confirmation.
+`voice-agent-input` becomes a small, reliable macOS utility for hotkey voice input that understands a developer's local environment. It learns terminology and context from local sources, improves STT recognition hints and post-STT transforms, and inserts corrected text at the focused cursor.
 
 ## Success criteria
 
 - A user can invoke voice input from any macOS app.
-- The app shows a raw transcript and corrected prompt before insertion.
+- Spoken text is transcribed and inserted at the focused cursor.
 - Common developer terms normalize correctly and explainably.
-- User edits produce dictionary candidates.
-- Approved dictionary entries are reused in later prompts.
+- Local learning sources such as Codex / Claude Code history and Git vocabulary can educate the local context model.
+- Learned context is reused as STT recognition hints and post-STT transforms.
 - Dictionary scope precedence works: session > repository > user > global.
-- The app never uploads audio or transcripts.
+- The app never uploads audio, transcripts, learned context, or fallback conversion text.
+- Any LLM usage is local Foundation Model usage and remains outside the default hotkey path unless explicitly enabled as a fallback.
 - The core behavior is covered by unit tests, use-case tests, and fixture-driven evals.
 
 ## User workflows
 
-1. Speak a Codex instruction in Japanese or mixed Japanese-English.
-2. Review the corrected prompt.
-3. Edit it when needed.
-4. Paste into Codex, Claude Code, Cursor, terminal, Slack, or a browser.
-5. Approve useful dictionary candidates.
-6. Reuse learned terms automatically in future prompts.
+1. Enable local learning sources.
+2. Build or refresh the local context model.
+3. Press a hotkey in Codex, Claude Code, Cursor, terminal, Slack, Chatwork, or a browser.
+4. Speak Japanese or mixed Japanese-English developer text.
+5. Receive corrected text at the focused cursor.
+6. Reuse learned terms automatically in future dictation.
 
 ## Evaluation criteria
 
 - Correctness: corrections are deterministic and traceable.
 - Reliability: no automatic sending or unsafe command execution.
-- Agent usability: prompts become clearer for coding agents.
+- Agent usability: spoken developer text becomes accurate enough for coding agents and work chat.
 - Contract stability: output and data models remain test-covered.
 - Human usability: preview is fast and low-friction.
 - Privacy: local-only by default.
@@ -38,17 +39,19 @@
 - `make check` succeeds.
 - Tests cover the core dictionary and learning behavior.
 - Fixtures include realistic Japanese developer utterances.
+- Local context model behavior is covered as both recognition hints and post-STT transforms.
 - Architecture boundaries remain clear.
 - New adapters can be added without rewriting domain logic.
 
 ## Deferred extensions
 
 - Apple SpeechAnalyzer / SpeechTranscriber adapter.
-- WhisperKit fallback.
+- Local-only WhisperKit fallback.
+- Local Foundation Model education and conversion fallback.
 - SwiftUI/AppKit menu bar shell.
 - Global hotkey.
 - Pasteboard and Accessibility insertion.
-- Repository context extraction.
+- GitHub, Slack, and Chatwork learning-source adapters.
 - SQLite persistence.
 - Dictionary export/import UI.
 
@@ -58,6 +61,7 @@
 - Meeting recording.
 - System audio capture.
 - Cloud sync.
+- Cloud STT or network LLM calls.
 - Team administration.
 - Automatic prompt submission.
 - Autonomous code execution.

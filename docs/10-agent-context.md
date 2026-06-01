@@ -4,12 +4,15 @@ The visible product discussion established these decisions:
 
 - Target platform is Mac.
 - The product should be native rather than Electron/Tauri for the main app.
-- The differentiator is dictionary learning for coding-agent prompt input.
-- The first strong use case is speaking into Codex, Claude Code, Cursor, and terminal coding agents.
-- macOS Dictation is not the direct competitor; the app adds developer-term correction and prompt normalization after STT.
-- The MVP should avoid real-time character-by-character insertion. The current product split is `Quick Paste` for daily stop-to-paste input and `Learning Preview` for preview-before-paste dictionary growth.
-- The core should be built before STT or UI polish.
+- The differentiator is environment-adaptive voice input, not a preview-first prompt approval flow.
+- The first strong use case is speaking into Codex, Claude Code, Cursor, terminal coding agents, IDEs, Slack, Chatwork, and browser text fields.
+- macOS Dictation is not the direct competitor; the app adds a local context model that improves STT hints and deterministic post-STT transforms.
+- The product has a model education layer and a voice input app layer.
+- The normal hotkey path should be fast, local, and mostly deterministic.
+- LLM use means local Foundation Model use only. It belongs mainly in model education and may appear in voice input only as an explicit last-resort fallback.
+- The MVP should avoid real-time character-by-character insertion.
+- The core should be built before UI polish.
 
 Important product phrase:
 
-> A growing voice input dictionary for coding-agent prompts.
+> Fully local, environment-adaptive voice input for developers.
