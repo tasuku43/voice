@@ -23,9 +23,9 @@ protocol AudioRecorder {
 Implementations:
 
 - `MockAudioRecorder` for tests and UI development.
-- `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file, reads it into `RecordedAudio`, and deletes the temporary file immediately.
+- `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file and returns that URL in `RecordedAudio` so STT adapters can avoid a second audio write.
 - `MockSpeechEngine` for tests and UI development.
-- `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`; its temporary audio file is created through `TemporaryRecordedAudioFileStore` and deleted after success or failure.
+- `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`; it uses recorder-provided temporary file URLs directly when available, otherwise creates a temporary file through `TemporaryRecordedAudioFileStore`. Temporary audio is deleted after success or failure.
 - `AppleSpeechEngine` accepts `SpeechRecognitionHints` and maps them to `SFSpeechRecognitionRequest.contextualStrings` so loaded dictionary entries can help ASR before post-STT normalization.
 - `WhisperSpeechEngine` optional fallback later.
 

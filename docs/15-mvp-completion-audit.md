@@ -35,7 +35,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Export/import/open/delete local learning data | local learning data tests, `Open Local Data Folder...`, app contract validation | Implemented, needs manual menu confirmation |
 | Repository-scoped vocabulary | git context tests, repository vocabulary tests, app contract validation | Implemented, needs manual folder selection confirmation |
 | Component-level future work boundaries | `docs/contracts/`, `docs/codex-sessions/`, `PromptRefiner`, `VoiceInputPipeline`, pipeline tests, MVP coverage validation | Verified structurally |
-| Do not persist raw audio | AVFoundation cleanup implementation, `TemporaryRecordedAudioFileStore` tests, privacy contract validation | Verified for current adapters |
+| Do not persist raw audio | AVFoundation temporary URL handoff, Apple Speech cleanup tests, `TemporaryRecordedAudioFileStore` fallback tests, privacy contract validation | Verified for current adapters |
 | Do not upload audio or transcripts | on-device Apple Speech default and privacy contract validation against direct networking/cloud snippets | Verified for current source |
 | Do not persist raw transcripts by default | no transcript persistence adapter exists; manual E2E privacy checklist covers Application Support inspection | Implemented by absence, needs manual filesystem confirmation |
 | Do not auto-submit | insertion tests and manual E2E checklist | Verified at use-case/adapter level, needs target-app manual confirmation |

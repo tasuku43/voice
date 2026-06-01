@@ -264,7 +264,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     normalizationContext: NormalizationContext(entries: entries),
                     recordedAudioHandler: { [debugLogger] audio in
                         debugLogger.log(
-                            "recordVoiceInput recorded audio duration=\(String(format: "%.2f", audio.durationSeconds))s bytes=\(audio.data.count) format=\(audio.formatDescription)"
+                            "recordVoiceInput recorded audio duration=\(String(format: "%.2f", audio.durationSeconds))s bytes=\(audio.byteCount) format=\(audio.formatDescription)"
                         )
                     }
                 )

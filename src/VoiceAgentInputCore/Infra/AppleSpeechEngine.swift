@@ -23,46 +23,72 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
     }
 
     public func transcribe(audio: RecordedAudio) async throws -> Transcript {
+        try await withRecognitionAudioFile(for: audio) { url in
+            let recognizer = try recognizer()
+            return try await transcribeFile(at: url, recognizer: recognizer)
+        }
+    }
+
+    func withRecognitionAudioFile<T>(
+        for audio: RecordedAudio,
+        operation: (URL) async throws -> T
+    ) async throws -> T {
+        if let url = audio.temporaryFileURL {
+            defer {
+                if audio.shouldDeleteTemporaryFile {
+                    try? FileManager.default.removeItem(at: url)
+                }
+            }
+            return try await operation(url)
+        }
+
+        return try await TemporaryRecordedAudioFileStore(
+            directoryURL: temporaryDirectory
+        ).withRecordedAudioFile(audio) { url in
+            try await operation(url)
+        }
+    }
+
+    private func recognizer() throws -> SFSpeechRecognizer {
         guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: localeIdentifier)) else {
             throw AppleSpeechEngineError.recognizerUnavailable(localeIdentifier: localeIdentifier)
         }
         guard recognizer.isAvailable else {
             throw AppleSpeechEngineError.recognizerUnavailable(localeIdentifier: localeIdentifier)
         }
+        return recognizer
+    }
 
-        return try await TemporaryRecordedAudioFileStore(
-            directoryURL: temporaryDirectory
-        ).withRecordedAudioFile(audio) { url in
-            try await withCheckedThrowingContinuation { continuation in
-                let box = SpeechResultBox(continuation: continuation)
-                let request = self.recognitionRequest(url: url)
+    private func transcribeFile(at url: URL, recognizer: SFSpeechRecognizer) async throws -> Transcript {
+        try await withCheckedThrowingContinuation { continuation in
+            let box = SpeechResultBox(continuation: continuation)
+            let request = self.recognitionRequest(url: url)
 
-                recognizer.recognitionTask(with: request) { result, error in
-                    if let result {
-                        let snapshot = result.bestTranscription.formattedString
-                        self.recognitionSnapshotHandler?(snapshot, result.isFinal)
-                        box.storeLatest(snapshot, localeIdentifier: self.localeIdentifier)
-                    }
-
-                    if let error {
-                        let mappedError = AppleSpeechEngineError.map(error)
-                        if case .noSpeechDetected = mappedError,
-                           box.resumeWithLatestTranscriptIfAvailable(localeIdentifier: self.localeIdentifier) {
-                            return
-                        }
-                        box.resume(throwing: mappedError)
-                        return
-                    }
-
-                    guard let result, result.isFinal else {
-                        return
-                    }
-
-                    box.resume(returning: box.transcript(
-                        preferredFinalText: result.bestTranscription.formattedString,
-                        localeIdentifier: self.localeIdentifier
-                    ))
+            recognizer.recognitionTask(with: request) { result, error in
+                if let result {
+                    let snapshot = result.bestTranscription.formattedString
+                    self.recognitionSnapshotHandler?(snapshot, result.isFinal)
+                    box.storeLatest(snapshot, localeIdentifier: self.localeIdentifier)
                 }
+
+                if let error {
+                    let mappedError = AppleSpeechEngineError.map(error)
+                    if case .noSpeechDetected = mappedError,
+                       box.resumeWithLatestTranscriptIfAvailable(localeIdentifier: self.localeIdentifier) {
+                        return
+                    }
+                    box.resume(throwing: mappedError)
+                    return
+                }
+
+                guard let result, result.isFinal else {
+                    return
+                }
+
+                box.resume(returning: box.transcript(
+                    preferredFinalText: result.bestTranscription.formattedString,
+                    localeIdentifier: self.localeIdentifier
+                ))
             }
         }
     }

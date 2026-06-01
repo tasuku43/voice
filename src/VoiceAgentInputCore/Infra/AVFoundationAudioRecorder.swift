@@ -78,13 +78,17 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
         }
 
         do {
-            let data = try Data(contentsOf: recordingURL)
+            let byteCount = try FileManager.default
+                .attributesOfItem(atPath: recordingURL.path)[.size] as? NSNumber
             let audio = RecordedAudio(
-                data: data,
+                data: Data(),
                 formatDescription: "caf/aac; sampleRate=16000; channels=1",
-                durationSeconds: recordingStartDate.map { Date().timeIntervalSince($0) } ?? 0
+                durationSeconds: recordingStartDate.map { Date().timeIntervalSince($0) } ?? 0,
+                temporaryFileURL: recordingURL,
+                shouldDeleteTemporaryFile: true,
+                byteCount: byteCount?.intValue
             )
-            cleanup()
+            cleanup(removeTemporaryFile: false)
             continuation?.resume(returning: audio)
             continuation = nil
         } catch {
@@ -93,16 +97,16 @@ public final class AVFoundationAudioRecorder: NSObject, AudioRecorder, AVAudioRe
     }
 
     private func finishWithError(_ error: Error) {
-        cleanup()
+        cleanup(removeTemporaryFile: true)
         continuation?.resume(throwing: error)
         continuation = nil
     }
 
-    private func cleanup() {
+    private func cleanup(removeTemporaryFile: Bool) {
         recorder?.stop()
         recorder = nil
         recordingStartDate = nil
-        if let recordingURL {
+        if removeTemporaryFile, let recordingURL {
             try? FileManager.default.removeItem(at: recordingURL)
         }
         recordingURL = nil

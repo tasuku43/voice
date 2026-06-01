@@ -7,14 +7,15 @@
 
 ## Outputs
 - `RecordedAudio`
-- Audio bytes, format description, and duration.
+- Audio data or a temporary recording URL, format description, duration, and byte count.
 
 ## Allowed
 - Capture one microphone recording.
 - Keep recording until the user explicitly stops by key release, toggle press, or Stop action.
 - Expose microphone input level for recording feedback.
 - Use a temporary file while recording.
-- Remove temporary audio after reading it.
+- Return the temporary recording URL when the downstream STT adapter can consume it directly.
+- Remove temporary audio after the owning adapter finishes with it.
 
 ## Forbidden
 - Speech recognition.
@@ -36,7 +37,7 @@
 
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview`
-- `swift test --filter UseCaseAndRepositoryTests/testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation`
+- `swift test --filter UseCaseAndRepositoryTests/testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation`
 - `make check`
 
 ## Done

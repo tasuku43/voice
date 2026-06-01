@@ -866,6 +866,50 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(request.contextualStrings, ["ProjectVoice", "Claude Code"])
     }
 
+    func testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let recordingURL = directory.appendingPathComponent("recording.caf")
+        try Data("audio".utf8).write(to: recordingURL, options: .atomic)
+        let engine = AppleSpeechEngine()
+        let audio = RecordedAudio(
+            data: Data(),
+            formatDescription: "caf/aac",
+            durationSeconds: 1,
+            temporaryFileURL: recordingURL,
+            shouldDeleteTemporaryFile: true,
+            byteCount: 5
+        )
+
+        let usedURL = try await engine.withRecognitionAudioFile(for: audio) { url in
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            return url
+        }
+
+        XCTAssertEqual(usedURL, recordingURL)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: recordingURL.path))
+    }
+
+    func testAppleSpeechEngineStillMaterializesDataBackedAudioTemporarily() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let engine = AppleSpeechEngine(temporaryDirectory: directory)
+        let audio = RecordedAudio(
+            data: Data("audio".utf8),
+            formatDescription: "caf/aac",
+            durationSeconds: 1
+        )
+
+        let usedURL = try await engine.withRecognitionAudioFile(for: audio) { url in
+            XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+            XCTAssertEqual(try Data(contentsOf: url), Data("audio".utf8))
+            return url
+        }
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: usedURL.path))
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+    }
+
     func testAppleSpeechEngineMapsNoSpeechDetectedError() {
         let error = NSError(
             domain: "kAFAssistantErrorDomain",

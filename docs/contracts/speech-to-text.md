@@ -14,6 +14,7 @@
 - Report recognition availability or transcription failure.
 - Pass domain vocabulary hints to Apple Speech through `SFSpeechRecognitionRequest.contextualStrings`.
 - Prefer ASR-friendly `recognitionHints` over post-STT `spokenForms` when building contextual strings.
+- Consume recorder-provided temporary audio file URLs directly, deleting temporary audio after recognition completes.
 
 ## Forbidden
 - Dictionary correction.
@@ -35,6 +36,7 @@
 
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview`
+- `swift test --filter UseCaseAndRepositoryTests/testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation`
 - `make check`
 
 ## Done
