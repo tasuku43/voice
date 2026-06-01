@@ -8,7 +8,6 @@ APP_DIR = ROOT / "src" / "VoiceAgentInputApp"
 MAIN = APP_DIR / "main.swift"
 ENTRYPOINT = APP_DIR / "VoiceAgentInputApp.swift"
 PREVIEW = APP_DIR / "PreviewWindowController.swift"
-CANDIDATE_APPROVAL = APP_DIR / "CandidateApprovalDialogController.swift"
 
 MAIN_REQUIRED = [
     "NSApplication.shared",
@@ -20,7 +19,6 @@ ENTRYPOINT_REQUIRED = [
     "installMenuBarItem",
     "recordVoiceInput",
     "openPreview(preview:",
-    "PromptEditLearningUseCase(",
 ]
 
 ENTRYPOINT_FORBIDDEN = [
@@ -29,6 +27,7 @@ ENTRYPOINT_FORBIDDEN = [
     "Corrected prompt",
     "Approve dictionary candidates?",
     "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
+    "CandidateApprovalDialogController",
 ]
 
 PREVIEW_REQUIRED = [
@@ -38,23 +37,14 @@ PREVIEW_REQUIRED = [
     "highlightedString",
     "NSColor.systemYellow.withAlphaComponent(0.24)",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
-    "CandidateApprovalDialogController()",
-    "candidateApprovalDialog.approveCandidatesIfRequested",
 ]
 
 PREVIEW_FORBIDDEN = [
+    "PromptEditLearningUseCase(",
     "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "Approve dictionary candidates?",
-]
-
-CANDIDATE_APPROVAL_REQUIRED = [
-    "final class CandidateApprovalDialogController",
-    "Approve dictionary candidates?",
-    "Save Selected",
-    "Dangerous command candidates are not selected by default.",
-    "candidateDetailText",
-    "Confidence",
-    "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
+    "CandidateApprovalDialogController",
+    "approveCandidatesIfRequested",
 ]
 
 
@@ -70,13 +60,10 @@ def main() -> None:
         fail(f"missing app delegate: {ENTRYPOINT}")
     if not PREVIEW.exists():
         fail(f"missing preview controller: {PREVIEW}")
-    if not CANDIDATE_APPROVAL.exists():
-        fail(f"missing candidate approval dialog controller: {CANDIDATE_APPROVAL}")
 
     main_source = MAIN.read_text()
     entrypoint = ENTRYPOINT.read_text()
     preview = PREVIEW.read_text()
-    candidate_approval = CANDIDATE_APPROVAL.read_text()
 
     missing_main = [
         snippet for snippet in MAIN_REQUIRED
@@ -112,13 +99,6 @@ def main() -> None:
     ]
     if forbidden_preview:
         fail("preview controller contains candidate approval snippets: " + ", ".join(forbidden_preview))
-
-    missing_candidate_approval = [
-        snippet for snippet in CANDIDATE_APPROVAL_REQUIRED
-        if snippet not in candidate_approval
-    ]
-    if missing_candidate_approval:
-        fail("candidate approval dialog missing snippets: " + ", ".join(missing_candidate_approval))
 
     print("app UI split ok")
 

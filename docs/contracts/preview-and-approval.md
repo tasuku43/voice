@@ -1,35 +1,33 @@
-# Preview And Approval Contract
+# Preview Fallback Contract
 
-Preview and approval are optional curation surfaces. They help inspect and improve the local context model, but they are not the primary hotkey dictation path.
+Preview fallback is an optional safety surface when direct paste cannot be completed. It helps inspect and edit the corrected prompt, but it is not the primary hotkey dictation path and does not train the local context model.
 
 ## Inputs
 - Raw transcript.
 - Corrected or refined prompt.
-- Corrections and candidate suggestions.
+- Corrections.
 
 ## Outputs
 - `ConfirmedPrompt`
 - Final edited text.
-- Candidate approval choices.
 
 ## Allowed
 - Show raw and corrected text.
 - Accept user edits.
-- Ask for candidate approval.
 
 ## Forbidden
 - Speech recognition.
 - Dictionary correction itself.
 - LLM refinement itself.
 - Automatic submit or command execution.
+- Candidate approval UI.
 
 ## Read First
 - `src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift`
 - `src/VoiceAgentInputApp/PreviewWindowController.swift`
-- `src/VoiceAgentInputApp/CandidateApprovalDialogController.swift`
 
 ## May Touch
-- Preview window UI, candidate approval UI, and preview use case.
+- Preview window UI and preview use case.
 
 ## Avoid Touching
 - Speech and repository vocabulary adapters.
@@ -40,4 +38,4 @@ Preview and approval are optional curation surfaces. They help inspect and impro
 
 ## Done
 - Paste requires explicit confirmation when this optional workflow is used.
-- Candidate approval remains user-driven.
+- Preview fallback does not open candidate approval.

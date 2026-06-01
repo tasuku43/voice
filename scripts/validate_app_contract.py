@@ -60,15 +60,9 @@ REQUIRED_SOURCE_SNIPPETS = [
     "let result = try await voiceInputPipeline.run()",
     "mode=quickPaste",
     "promptToInsert: result.preview.correctedPrompt",
-    "suggestedLearningScope: learningScope",
-    "suggestedScope: suggestedLearningScope",
     "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
-    "approveCandidatesIfRequested(confirmed.candidates)",
-    "candidateDetailText",
-    "Confidence",
-    "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "Export Local Dictionary...",
     "Import Local Dictionary...",
     "Export Local Context Model...",
@@ -125,16 +119,28 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "promptToInsert: result.preview.correctedPrompt",
         "recordVoiceInput paste failed",
     )
-    if "PromptEditLearningUseCase(" in quick_paste_to_fallback:
-        fail("Quick Paste recording flow must not construct edit-learning before paste fallback")
+    forbidden_quick_paste = [
+        "PromptEditLearningUseCase(",
+        "CandidateApprovalDialogController(",
+        "approveCandidatesIfRequested",
+    ]
+    found_quick_paste = [snippet for snippet in forbidden_quick_paste if snippet in quick_paste_to_fallback]
+    if found_quick_paste:
+        fail("Quick Paste recording flow must not enter candidate learning or approval before paste fallback: " + ", ".join(found_quick_paste))
 
     open_preview = source_between(
         source,
         "private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase)",
         "private func insertConfirmedPrompt",
     )
-    if "PromptEditLearningUseCase(" not in open_preview:
-        fail("Edit learning must stay attached to the editable preview path")
+    forbidden_preview = [
+        "PromptEditLearningUseCase(",
+        "CandidateApprovalDialogController(",
+        "approveCandidatesIfRequested",
+    ]
+    found_preview = [snippet for snippet in forbidden_preview if snippet in open_preview]
+    if found_preview:
+        fail("Preview fallback must not enter candidate learning or approval: " + ", ".join(found_preview))
 
 
 def validate_quick_paste_label(source: str) -> None:

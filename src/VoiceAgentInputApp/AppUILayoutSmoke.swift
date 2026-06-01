@@ -33,33 +33,6 @@ enum AppUILayoutSmoke {
         failures.append(contentsOf: auditWindow(feedbackController.window, name: "recording-feedback"))
         renderWindow(feedbackController.window, name: "recording-feedback", outputDirectory: outputDirectory)
 
-        let candidates = [
-            CorrectionCandidate(
-                rawPhrase: "とても長い誤認識候補のテキストがここに入って横幅を超えそうなケース",
-                correctedPhrase: "VeryLongDeveloperTermNameUsedByCodingAgentsAndRepositoryVocabulary",
-                confidence: 0.93,
-                reason: "Likely voice misrecognition from a long Japanese-English mixed developer instruction.",
-                suggestedScope: .user,
-                dangerous: false
-            ),
-            CorrectionCandidate(
-                rawPhrase: "rm dash rf",
-                correctedPhrase: "rm -rf",
-                confidence: 0.91,
-                reason: "Dangerous command candidates must remain readable and unchecked.",
-                suggestedScope: .user,
-                dangerous: true
-            )
-        ]
-        let accessory = CandidateApprovalDialogController().makeAccessoryView(candidates: candidates)
-        failures.append(contentsOf: auditView(accessory.view, name: "candidate-approval"))
-        renderView(
-            accessory.view,
-            size: NSSize(width: 560, height: accessory.view.fittingSize.height),
-            name: "candidate-approval",
-            outputDirectory: outputDirectory
-        )
-
         let hotkeyStack = AppLayout.formStack()
         let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
         keyPicker.addItems(withTitles: ["Space", "A", "B", "C"])

@@ -545,14 +545,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
-        let learningScope = (try? loadSettings().preferredLearningScope) ?? .user
         let controller = PreviewWindowController(
             preview: preview,
             previewUseCase: previewUseCase,
-            editLearningUseCase: PromptEditLearningUseCase(
-                previewUseCase: previewUseCase
-            ),
-            suggestedLearningScope: learningScope,
             onConfirmedPaste: { [weak self] confirmed in
                 self?.recordVoiceInputHistory(
                     prompt: confirmed.promptToInsert
@@ -570,14 +565,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
             try insertion.insert(confirmed, explicitConfirmation: true)
             recordVoiceInputHistory(prompt: confirmed.promptToInsert)
-            try CandidateApprovalDialogController().approveCandidatesIfRequested(confirmed.candidates)
         } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
             try PromptInsertionUseCase(
                 insertionController: PasteboardTextInsertionController()
             ).insert(confirmed, explicitConfirmation: true)
             recordVoiceInputHistory(prompt: confirmed.promptToInsert)
             showAccessibilityFallbackAlert()
-            try CandidateApprovalDialogController().approveCandidatesIfRequested(confirmed.candidates)
         }
     }
 

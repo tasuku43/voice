@@ -167,13 +167,6 @@ REQUIRED_SNIPPETS = {
         "final class PreviewWindowController",
         "Raw transcript",
         "Corrected prompt",
-        "CandidateApprovalDialogController()",
-    ],
-    "src/VoiceAgentInputApp/CandidateApprovalDialogController.swift": [
-        "final class CandidateApprovalDialogController",
-        "candidateDetailText",
-        "Confidence",
-        "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     ],
     "docs/16-architecture-refactor-summary.md": [
         "Responsibility Moves",
@@ -214,6 +207,13 @@ FORBIDDEN_SNIPPETS = {
         "Raw transcript",
         "Corrected prompt",
         "Approve dictionary candidates?",
+        "CandidateApprovalDialogController",
+    ],
+    "src/VoiceAgentInputApp/PreviewWindowController.swift": [
+        "Approve dictionary candidates?",
+        "CandidateApprovalDialogController",
+        "approveCandidatesIfRequested",
+        "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     ],
     "src/VoiceAgentInputCore/App/PromptContracts.swift": [
         "import AppKit",

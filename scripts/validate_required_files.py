@@ -67,7 +67,6 @@ required = [
     'src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift',
     'src/VoiceAgentInputApp/VoiceAgentInputApp.swift',
     'src/VoiceAgentInputApp/PreviewWindowController.swift',
-    'src/VoiceAgentInputApp/CandidateApprovalDialogController.swift',
     '.codex/goals/voice-agent-input-full-build.md',
     'evals/normalization-cases.json',
     'evals/learning-cases.json',

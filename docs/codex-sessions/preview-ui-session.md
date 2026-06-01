@@ -1,15 +1,14 @@
 # Preview UI Session
 
-Purpose: improve raw/corrected/refined prompt preview and user approval UX.
+Purpose: improve raw/corrected/refined prompt fallback preview UX.
 
 Read:
 - `docs/contracts/preview-and-approval.md`
 - `src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift`
 - `src/VoiceAgentInputApp/PreviewWindowController.swift`
-- `src/VoiceAgentInputApp/CandidateApprovalDialogController.swift`
 
 May touch:
-- Preview UI, candidate approval UI, and preview use-case tests.
+- Preview UI and preview use-case tests.
 
 Avoid:
 - Speech engines, normalization algorithms, output internals.

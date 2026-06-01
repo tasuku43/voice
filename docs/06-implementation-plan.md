@@ -45,7 +45,6 @@
 - Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering candidate approval.
 - Optional editable prompt preview.
 - Optional diff extraction.
-- Optional candidate approval UI. App-shell approval dialog supports per-candidate selection.
 - Local dictionary persistence. JSON-backed Application Support store done.
 - Local learning data controls. App-shell menu can export, import, inspect, and delete approved local dictionary entries.
 

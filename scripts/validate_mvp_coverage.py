@@ -274,13 +274,6 @@ REQUIRED_COVERAGE = {
             "firstEquivalentIndex",
             "updatedAt",
         ],
-        "src/VoiceAgentInputApp/CandidateApprovalDialogController.swift": [
-            "Approve dictionary candidates?",
-            "Save Selected",
-            "candidateDetailText",
-            "Confidence",
-            "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
-        ],
     },
     "local learning data controls": {
         "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
@@ -483,7 +476,7 @@ REQUIRED_COVERAGE = {
         "scripts/validate_app_ui_split.py": [
             "ENTRYPOINT_FORBIDDEN",
             "PREVIEW_REQUIRED",
-            "CANDIDATE_APPROVAL_REQUIRED",
+            "PREVIEW_FORBIDDEN",
             "app UI split ok",
         ],
         "scripts/validate_architecture_refactor.py": [

@@ -15,7 +15,6 @@
 - Cursor-adjacent recording HUD.
 - Settings screen for hotkey, STT locale, learning sources, local data, and optional fallback conversion.
 - Optional floating preview panel.
-- Optional candidate approval UI.
 
 ## Input and insertion
 

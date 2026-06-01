@@ -5,23 +5,16 @@ import VoiceAgentInputCore
 final class PreviewWindowController: NSWindowController {
     private let preview: PromptPreview
     private let previewUseCase: PromptPreviewUseCase
-    private let editLearningUseCase: PromptEditLearningUseCase
-    private let suggestedLearningScope: DictionaryScope
-    private let candidateApprovalDialog = CandidateApprovalDialogController()
     private let correctedTextView = NSTextView()
     private let onConfirmedPaste: (ConfirmedPrompt) -> Void
 
     init(
         preview: PromptPreview,
         previewUseCase: PromptPreviewUseCase,
-        editLearningUseCase: PromptEditLearningUseCase? = nil,
-        suggestedLearningScope: DictionaryScope = .user,
         onConfirmedPaste: @escaping (ConfirmedPrompt) -> Void = { _ in }
     ) {
         self.preview = preview
         self.previewUseCase = previewUseCase
-        self.editLearningUseCase = editLearningUseCase ?? PromptEditLearningUseCase(previewUseCase: previewUseCase)
-        self.suggestedLearningScope = suggestedLearningScope
         self.onConfirmedPaste = onConfirmedPaste
 
         let window = NSWindow(
@@ -149,10 +142,9 @@ final class PreviewWindowController: NSWindowController {
     @objc private func confirm() {
         Task { @MainActor in
             do {
-                let confirmed = try await editLearningUseCase.confirm(
+                let confirmed = previewUseCase.confirm(
                     preview: preview,
-                    finalEditedPrompt: correctedTextView.string,
-                    suggestedScope: suggestedLearningScope
+                    finalEditedPrompt: correctedTextView.string
                 )
                 try insertConfirmedPrompt(confirmed)
                 onConfirmedPaste(confirmed)
@@ -168,13 +160,11 @@ final class PreviewWindowController: NSWindowController {
         do {
                 let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
                 try insertion.insert(confirmed, explicitConfirmation: true)
-                try candidateApprovalDialog.approveCandidatesIfRequested(confirmed.candidates)
         } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
             try PromptInsertionUseCase(
                 insertionController: PasteboardTextInsertionController()
             ).insert(confirmed, explicitConfirmation: true)
             showAccessibilityFallbackAlert()
-            try candidateApprovalDialog.approveCandidatesIfRequested(confirmed.candidates)
         }
     }
 

@@ -111,8 +111,7 @@ Future SwiftUI/AppKit app:
 - cursor-adjacent recording HUD,
 - focused cursor insertion,
 - settings for hotkey, STT locale, learning sources, and local data controls,
-- optional preview panel,
-- optional candidate approval UI.
+- optional preview fallback panel.
 
 The UI must call app use cases and avoid embedding core logic.
 

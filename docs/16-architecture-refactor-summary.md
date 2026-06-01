@@ -12,7 +12,7 @@ VoiceAgentInputApp/main.swift
     -> Infra adapters through protocols
 ```
 
-Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, preview window, and paste-entry user actions. `main.swift` only starts `NSApplication` and installs `VoiceAgentInputApp` as the delegate. `PreviewWindowController` is isolated from the app delegate, and `CandidateApprovalDialogController` is isolated from the preview window, so focused AppKit work can stay inside one boundary at a time.
+Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, preview window, and paste-entry user actions. `main.swift` only starts `NSApplication` and installs `VoiceAgentInputApp` as the delegate. `PreviewWindowController` is isolated from the app delegate, so focused AppKit work can stay inside one boundary at a time.
 
 ## Responsibility Moves
 
@@ -27,7 +27,6 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Candidate selection persistence moved toward `LearningApprovalUseCase`, leaving the UI to collect selected indexes.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Preview window rendering moved into `PreviewWindowController.swift`.
-- Candidate approval dialog presentation moved out of `PreviewWindowController.swift` into `CandidateApprovalDialogController.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
 - Local dictionary import/export JSON encoding moved into `LocalLearningDataDocumentCodec`.
 - Repository path and recording setting updates moved into `AppSettingsUseCase`.
@@ -40,7 +39,6 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - macOS permission status display and privacy-settings shortcut.
 - Recording settings dialog.
 - Preview window rendering and user edits in `PreviewWindowController.swift`.
-- Candidate approval dialog presentation in `CandidateApprovalDialogController.swift`.
 - Export/import/delete/open local learning menu actions.
 - Error presentation.
 
@@ -107,7 +105,7 @@ Future Codex session prompts:
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
 - `PreviewWindowController.swift` still contains insertion fallback UI.
 - The prompt-refinement layer remains deterministic by default; local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
-- Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, candidate approval UI, local data menus, and privacy filesystem checks.
+- Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, local data menus, and privacy filesystem checks.
 
 ## Next Recommended Session
 
