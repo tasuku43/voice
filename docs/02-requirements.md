@@ -2,7 +2,8 @@
 
 ## Functional requirements
 
-- Invoke recording from a macOS global push-to-talk hotkey.
+- Invoke recording from a configurable macOS global hotkey.
+- Support both press-and-hold recording and toggle recording from the voice-input hotkey.
 - Show a compact recording status near the focused input when possible.
 - Transcribe microphone input.
 - Apply dictionary-based normalization.
@@ -10,7 +11,7 @@
 - In `Quick Paste`, insert the corrected prompt directly after the user's stop/release confirmation.
 - In `Learning Preview`, show raw transcript and corrected prompt.
 - In `Learning Preview`, allow editing before insertion so edits can generate learning candidates.
-- Paste only after explicit confirmation, including a key-release stop-to-paste flow.
+- Paste only after explicit confirmation, including key-release or toggle-stop confirmation flows.
 - Recall recent voice inputs from a local history shortcut and paste the selected prompt.
 - Extract correction candidates from user edits.
 - Store approved dictionary entries locally.

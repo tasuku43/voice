@@ -1420,13 +1420,17 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         try repository.saveSettings(AppSettings(
             repositoryPath: "/tmp/repo",
             recordingDurationSeconds: 6,
-            speechLocaleIdentifier: "en-US"
+            speechLocaleIdentifier: "en-US",
+            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
+            voiceInputTriggerMode: .toggleRecording
         ))
 
         XCTAssertEqual(try repository.loadSettings(), AppSettings(
             repositoryPath: "/tmp/repo",
             recordingDurationSeconds: 6,
-            speechLocaleIdentifier: "en-US"
+            speechLocaleIdentifier: "en-US",
+            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
+            voiceInputTriggerMode: .toggleRecording
         ))
     }
 
@@ -1442,6 +1446,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertNil(settings.learningReviewerCommandPath)
         XCTAssertEqual(settings.learningReviewerCommandArguments, [])
         XCTAssertEqual(settings.voiceInputMode, .quickPaste)
+        XCTAssertEqual(settings.voiceInputShortcut, .defaultVoiceInput)
+        XCTAssertEqual(settings.voiceInputTriggerMode, .pressAndHold)
     }
 
     func testAppSettingsEffectiveValuesClampUnsafeInput() {
@@ -1485,6 +1491,43 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let modeSettings = try useCase.saveVoiceInputMode(.learningPreview)
         XCTAssertEqual(modeSettings.voiceInputMode, .learningPreview)
         XCTAssertEqual(try repository.loadSettings().voiceInputMode, .learningPreview)
+
+        let hotkeySettings = try useCase.saveVoiceInputHotkey(
+            shortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
+            triggerMode: .toggleRecording
+        )
+        XCTAssertEqual(hotkeySettings.voiceInputShortcut, KeyboardShortcut(key: "s", modifiers: [.control, .shift]))
+        XCTAssertEqual(hotkeySettings.voiceInputTriggerMode, .toggleRecording)
+        XCTAssertEqual(try repository.loadSettings().voiceInputTriggerMode, .toggleRecording)
+    }
+
+    func testVoiceInputHotkeyUseCaseSupportsPressHoldAndToggleTriggers() {
+        let useCase = VoiceInputHotkeyUseCase()
+
+        XCTAssertEqual(
+            useCase.action(triggerMode: .pressAndHold, event: .pressed, isRecording: false),
+            .startRecording
+        )
+        XCTAssertEqual(
+            useCase.action(triggerMode: .pressAndHold, event: .released, isRecording: true),
+            .stopRecording
+        )
+        XCTAssertEqual(
+            useCase.action(triggerMode: .pressAndHold, event: .pressed, isRecording: true),
+            .none
+        )
+        XCTAssertEqual(
+            useCase.action(triggerMode: .toggleRecording, event: .pressed, isRecording: false),
+            .startRecording
+        )
+        XCTAssertEqual(
+            useCase.action(triggerMode: .toggleRecording, event: .pressed, isRecording: true),
+            .stopRecording
+        )
+        XCTAssertEqual(
+            useCase.action(triggerMode: .toggleRecording, event: .released, isRecording: true),
+            .none
+        )
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {

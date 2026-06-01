@@ -8,10 +8,16 @@ import VoiceAgentInputCore
 @MainActor
 final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private static let interactiveLearningReviewerTimeoutSeconds: TimeInterval = 0.5
+    private static let supportedVoiceInputHotkeyKeys = [
+        "space",
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+        "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+    ]
 
     private let debugLogger = AppDebugLogger()
     private var statusItem: NSStatusItem?
     private var recordMenuItem: NSMenuItem?
+    private var hotkeyMenuItem: NSMenuItem?
     private var launchRecordButton: NSButton?
     private var launchWindowController: NSWindowController?
     private var debugWindowController: NSWindowController?
@@ -77,7 +83,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(recordItem)
         menu.addItem(NSMenuItem(title: "Show Push-to-Talk Button", action: #selector(showPushToTalkButton), keyEquivalent: "b"))
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
-        menu.addItem(NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: ""))
+        let hotkeyItem = NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: "")
+        menu.addItem(hotkeyItem)
+        menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
         menu.addItem(NSMenuItem(title: "Start Hotkey Diagnostics", action: #selector(startHotkeyDiagnostics), keyEquivalent: ""))
         menu.addItem(historyItem)
         menu.addItem(NSMenuItem(title: "History Hotkey: Control-Shift-V", action: nil, keyEquivalent: ""))
@@ -101,7 +109,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         statusItem = item
         recordMenuItem = recordItem
+        hotkeyMenuItem = hotkeyItem
         updateRecordingState()
+        updateHotkeyMenuTitle()
         debugLogger.log("installMenuBarItem finished; button=\(item.button == nil ? "nil" : "present")")
     }
 
@@ -348,6 +358,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         pushToTalkWindowController?.setRecording(isRecording)
     }
 
+    private func updateHotkeyMenuTitle(settings: AppSettings? = nil) {
+        let currentSettings = settings ?? ((try? loadSettings()) ?? AppSettings())
+        hotkeyMenuItem?.title = "Hotkey: \(currentSettings.voiceInputShortcut.displayName) (\(currentSettings.voiceInputTriggerMode.displayName))"
+    }
+
     @objc private func showPushToTalkButton() {
         if let pushToTalkWindowController {
             pushToTalkWindowController.showWindow(nil)
@@ -409,20 +424,25 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         AppKitKeyboardShortcutMonitor.debugLogger = debugLogger
         hotkeyMonitor.stop()
         historyHotkeyMonitor.stop()
+        let settings = (try? loadSettings()) ?? AppSettings()
+        updateHotkeyMenuTitle(settings: settings)
 
-        debugLogger.log("registering voice input hotkey Control-Option-Space reason=\(reason)")
-        hotkeyMonitor.start(
-            shortcut: .defaultVoiceInput,
-            onTrigger: { [weak self] in
+        debugLogger.log("registering voice input hotkey \(settings.voiceInputShortcut.displayName) triggerMode=\(settings.voiceInputTriggerMode.rawValue) reason=\(reason)")
+        let releaseHandler: (() -> Void)? = settings.voiceInputTriggerMode == .pressAndHold
+            ? { [weak self] in
                 Task { @MainActor in
-                    self?.startVoiceInputFromShortcut()
-                }
-            },
-            onRelease: { [weak self] in
-                Task { @MainActor in
-                    self?.stopVoiceInputFromShortcut()
+                    self?.handleVoiceInputHotkey(event: .released)
                 }
             }
+            : nil
+        hotkeyMonitor.start(
+            shortcut: settings.voiceInputShortcut,
+            onTrigger: { [weak self] in
+                Task { @MainActor in
+                    self?.handleVoiceInputHotkey(event: .pressed)
+                }
+            },
+            onRelease: releaseHandler
         )
         debugLogger.log("registering voice input history hotkey Control-Shift-V reason=\(reason)")
         historyHotkeyMonitor.start(shortcut: .defaultVoiceInputHistory) { [weak self] in
@@ -430,6 +450,25 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 self?.debugLogger.log("voice input history hotkey triggered")
                 self?.showVoiceInputHistory()
             }
+        }
+    }
+
+    private func handleVoiceInputHotkey(event: VoiceInputHotkeyEvent) {
+        let settings = (try? loadSettings()) ?? AppSettings()
+        let action = VoiceInputHotkeyUseCase().action(
+            triggerMode: settings.voiceInputTriggerMode,
+            event: event,
+            isRecording: isRecording
+        )
+        debugLogger.log("voice input hotkey event=\(event) triggerMode=\(settings.voiceInputTriggerMode.rawValue) action=\(action)")
+
+        switch action {
+        case .startRecording:
+            startVoiceInputFromShortcut()
+        case .stopRecording:
+            stopVoiceInputFromShortcut()
+        case .none:
+            break
         }
     }
 
@@ -808,6 +847,103 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
+    @objc private func showHotkeySettings() {
+        do {
+            let settingsUseCase = try settingsUseCase()
+            let settings = try settingsUseCase.loadSettings()
+
+            let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 180, height: 28), pullsDown: false)
+            for key in Self.supportedVoiceInputHotkeyKeys {
+                let item = NSMenuItem(title: KeyboardShortcut.displayName(forKey: key), action: nil, keyEquivalent: "")
+                item.representedObject = key
+                keyPicker.menu?.addItem(item)
+            }
+            keyPicker.selectItem(withTitle: KeyboardShortcut.displayName(forKey: settings.voiceInputShortcut.key))
+
+            let triggerPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 180, height: 28), pullsDown: false)
+            for triggerMode in VoiceInputTriggerMode.allCases {
+                let item = NSMenuItem(title: triggerMode.displayName, action: nil, keyEquivalent: "")
+                item.representedObject = triggerMode.rawValue
+                triggerPicker.menu?.addItem(item)
+            }
+            triggerPicker.selectItem(withTitle: settings.voiceInputTriggerMode.displayName)
+
+            let controlCheckbox = NSButton(checkboxWithTitle: "Control", target: nil, action: nil)
+            let optionCheckbox = NSButton(checkboxWithTitle: "Option", target: nil, action: nil)
+            let shiftCheckbox = NSButton(checkboxWithTitle: "Shift", target: nil, action: nil)
+            let commandCheckbox = NSButton(checkboxWithTitle: "Command", target: nil, action: nil)
+            controlCheckbox.state = settings.voiceInputShortcut.modifiers.contains(.control) ? .on : .off
+            optionCheckbox.state = settings.voiceInputShortcut.modifiers.contains(.option) ? .on : .off
+            shiftCheckbox.state = settings.voiceInputShortcut.modifiers.contains(.shift) ? .on : .off
+            commandCheckbox.state = settings.voiceInputShortcut.modifiers.contains(.command) ? .on : .off
+
+            let modifierStack = NSStackView(views: [
+                controlCheckbox,
+                optionCheckbox,
+                shiftCheckbox,
+                commandCheckbox
+            ])
+            modifierStack.orientation = .horizontal
+            modifierStack.alignment = .centerY
+            modifierStack.spacing = 8
+
+            let stack = NSStackView()
+            stack.orientation = .vertical
+            stack.alignment = .leading
+            stack.spacing = 8
+            stack.addArrangedSubview(labelledControl(label: "Key", control: keyPicker))
+            stack.addArrangedSubview(labelledControl(label: "Trigger", control: triggerPicker))
+            stack.addArrangedSubview(labelledView(label: "Modifiers", view: modifierStack))
+
+            let alert = NSAlert()
+            alert.messageText = "Hotkey settings"
+            alert.informativeText = "Press and Hold records until key release. Toggle Recording starts on the first press and stops on the next press or the Stop button."
+            alert.accessoryView = stack
+            alert.addButton(withTitle: "Save")
+            alert.addButton(withTitle: "Cancel")
+
+            guard
+                alert.runModal() == .alertFirstButtonReturn,
+                let key = keyPicker.selectedItem?.representedObject as? String,
+                let triggerRawValue = triggerPicker.selectedItem?.representedObject as? String,
+                let triggerMode = VoiceInputTriggerMode(rawValue: triggerRawValue)
+            else {
+                return
+            }
+
+            var modifiers: KeyboardShortcut.Modifiers = []
+            if controlCheckbox.state == .on {
+                modifiers.insert(.control)
+            }
+            if optionCheckbox.state == .on {
+                modifiers.insert(.option)
+            }
+            if shiftCheckbox.state == .on {
+                modifiers.insert(.shift)
+            }
+            if commandCheckbox.state == .on {
+                modifiers.insert(.command)
+            }
+            guard !modifiers.isEmpty else {
+                let modifierAlert = NSAlert()
+                modifierAlert.alertStyle = .warning
+                modifierAlert.messageText = "Choose at least one modifier"
+                modifierAlert.informativeText = "Global voice input hotkeys should include Control, Option, Shift, or Command."
+                modifierAlert.runModal()
+                return
+            }
+
+            let saved = try settingsUseCase.saveVoiceInputHotkey(
+                shortcut: KeyboardShortcut(key: key, modifiers: modifiers),
+                triggerMode: triggerMode
+            )
+            updateHotkeyMenuTitle(settings: saved)
+            registerHotkeys(reason: "hotkey settings changed")
+        } catch {
+            presentError(error)
+        }
+    }
+
     @objc private func showRecordingSettings() {
         do {
             let settingsUseCase = try settingsUseCase()
@@ -934,6 +1070,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func labelledControl(label: String, control: NSControl) -> NSView {
+        labelledView(label: label, view: control)
+    }
+
+    private func labelledView(label: String, view: NSView) -> NSView {
         let row = NSStackView()
         row.orientation = .horizontal
         row.alignment = .centerY
@@ -941,10 +1081,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         let labelField = NSTextField(labelWithString: label)
         labelField.frame.size.width = 130
-        control.frame.size.width = 180
+        view.frame.size.width = 180
 
         row.addArrangedSubview(labelField)
-        row.addArrangedSubview(control)
+        row.addArrangedSubview(view)
         return row
     }
 
@@ -1393,12 +1533,58 @@ private final class AppKitKeyboardShortcutMonitor: KeyboardShortcutMonitor {
 
     private static func carbonKeyCode(for key: String) -> Int? {
         switch key.lowercased() {
+        case "a":
+            kVK_ANSI_A
+        case "b":
+            kVK_ANSI_B
+        case "c":
+            kVK_ANSI_C
         case "s":
             kVK_ANSI_S
         case "d":
             kVK_ANSI_D
+        case "e":
+            kVK_ANSI_E
+        case "f":
+            kVK_ANSI_F
+        case "g":
+            kVK_ANSI_G
+        case "h":
+            kVK_ANSI_H
+        case "i":
+            kVK_ANSI_I
+        case "j":
+            kVK_ANSI_J
+        case "k":
+            kVK_ANSI_K
+        case "l":
+            kVK_ANSI_L
+        case "m":
+            kVK_ANSI_M
+        case "n":
+            kVK_ANSI_N
+        case "o":
+            kVK_ANSI_O
+        case "p":
+            kVK_ANSI_P
+        case "q":
+            kVK_ANSI_Q
+        case "r":
+            kVK_ANSI_R
+        case "t":
+            kVK_ANSI_T
+        case "u":
+            kVK_ANSI_U
         case "v":
             kVK_ANSI_V
+        case "w":
+            kVK_ANSI_W
+        case "x":
+            kVK_ANSI_X
+        case "y":
+            kVK_ANSI_Y
+        case "z":
+            kVK_ANSI_Z
         case "space":
             kVK_Space
         default:

@@ -62,4 +62,16 @@ public struct AppSettingsUseCase {
         try repository.saveSettings(settings)
         return settings
     }
+
+    @discardableResult
+    public func saveVoiceInputHotkey(
+        shortcut: KeyboardShortcut,
+        triggerMode: VoiceInputTriggerMode
+    ) throws -> AppSettings {
+        var settings = try repository.loadSettings()
+        settings.voiceInputShortcut = shortcut
+        settings.voiceInputTriggerMode = triggerMode
+        try repository.saveSettings(settings)
+        return settings
+    }
 }

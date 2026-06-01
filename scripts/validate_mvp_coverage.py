@@ -25,6 +25,9 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "AppKitKeyboardShortcutMonitor()",
             "Control-Option-Space",
+            "Hotkey Settings...",
+            "VoiceInputHotkeyUseCase().action",
+            "Toggle Recording",
             "recordVoiceInput",
             "Open Voice Input Permissions...",
             "Open Privacy Settings...",
@@ -32,6 +35,7 @@ REQUIRED_COVERAGE = {
         ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
             "testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger",
+            "testVoiceInputHotkeyUseCaseSupportsPressHoldAndToggleTriggers",
         ],
     },
     "record and transcribe": {

@@ -11,6 +11,11 @@ INFO_PLIST = ROOT / "src" / "VoiceAgentInputApp" / "Info.plist"
 REQUIRED_SOURCE_SNIPPETS = [
     "AppKitKeyboardShortcutMonitor()",
     "Control-Option-Space",
+    "Hotkey Settings...",
+    "showHotkeySettings",
+    "saveVoiceInputHotkey",
+    "VoiceInputHotkeyUseCase().action",
+    "Toggle Recording",
     "Recording Settings...",
     "Quick Paste Voice Input",
     "Record Learning Preview",

@@ -50,6 +50,11 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Default mode is Quick Paste: pass/fail
 - Learning Preview mode saved and reloaded: pass/fail
 - Mode switched back to Quick Paste before daily flow: pass/fail
+- `Hotkey Settings...` opened: pass/fail
+- Custom voice input hotkey saved and menu label updated: pass/fail
+- Custom voice input hotkey starts recording: pass/fail
+- Toggle Recording mode starts and stops from the same hotkey: pass/fail
+- Default Control-Option-Space Press and Hold restored before mode flows: pass/fail
 - Notes:
 
 ## Mock Preview Safety Evidence
@@ -69,6 +74,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Recording reentry is blocked while recording: pass/fail
 - Speech transcription completes: pass/fail
 - Push-to-talk release or stop explicitly confirms paste: pass/fail
+- Toggle hotkey stop explicitly confirms paste: pass/fail
 - No raw/corrected preview window appears in Quick Paste: pass/fail
 - No dictionary candidate approval UI appears in Quick Paste: pass/fail
 - Pasted or copied prompt contains expected developer terms: pass/fail

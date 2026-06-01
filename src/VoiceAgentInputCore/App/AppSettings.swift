@@ -18,11 +18,14 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public static let defaultRecordingDurationSeconds: TimeInterval = 4
     public static let defaultSpeechLocaleIdentifier = "ja-JP"
     public static let defaultVoiceInputMode = VoiceInputMode.quickPaste
+    public static let defaultVoiceInputTriggerMode = VoiceInputTriggerMode.pressAndHold
 
     public var repositoryPath: String?
     public var recordingDurationSeconds: TimeInterval
     public var speechLocaleIdentifier: String
     public var voiceInputMode: VoiceInputMode
+    public var voiceInputShortcut: KeyboardShortcut
+    public var voiceInputTriggerMode: VoiceInputTriggerMode
     public var learningReviewerCommandPath: String?
     public var learningReviewerCommandArguments: [String]
 
@@ -31,6 +34,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         recordingDurationSeconds: TimeInterval = Self.defaultRecordingDurationSeconds,
         speechLocaleIdentifier: String = Self.defaultSpeechLocaleIdentifier,
         voiceInputMode: VoiceInputMode = Self.defaultVoiceInputMode,
+        voiceInputShortcut: KeyboardShortcut = .defaultVoiceInput,
+        voiceInputTriggerMode: VoiceInputTriggerMode = Self.defaultVoiceInputTriggerMode,
         learningReviewerCommandPath: String? = nil,
         learningReviewerCommandArguments: [String] = []
     ) {
@@ -38,6 +43,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.recordingDurationSeconds = recordingDurationSeconds
         self.speechLocaleIdentifier = speechLocaleIdentifier
         self.voiceInputMode = voiceInputMode
+        self.voiceInputShortcut = voiceInputShortcut
+        self.voiceInputTriggerMode = voiceInputTriggerMode
         self.learningReviewerCommandPath = learningReviewerCommandPath
         self.learningReviewerCommandArguments = learningReviewerCommandArguments
     }
@@ -60,6 +67,8 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case recordingDurationSeconds
         case speechLocaleIdentifier
         case voiceInputMode
+        case voiceInputShortcut
+        case voiceInputTriggerMode
         case learningReviewerCommandPath
         case learningReviewerCommandArguments
     }
@@ -73,6 +82,10 @@ public struct AppSettings: Codable, Equatable, Sendable {
             ?? Self.defaultSpeechLocaleIdentifier
         voiceInputMode = try container.decodeIfPresent(VoiceInputMode.self, forKey: .voiceInputMode)
             ?? Self.defaultVoiceInputMode
+        voiceInputShortcut = try container.decodeIfPresent(KeyboardShortcut.self, forKey: .voiceInputShortcut)
+            ?? .defaultVoiceInput
+        voiceInputTriggerMode = try container.decodeIfPresent(VoiceInputTriggerMode.self, forKey: .voiceInputTriggerMode)
+            ?? Self.defaultVoiceInputTriggerMode
         learningReviewerCommandPath = try container.decodeIfPresent(String.self, forKey: .learningReviewerCommandPath)
         learningReviewerCommandArguments = try container.decodeIfPresent([String].self, forKey: .learningReviewerCommandArguments)
             ?? []
