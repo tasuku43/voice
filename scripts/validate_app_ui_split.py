@@ -19,7 +19,8 @@ MAIN_REQUIRED = [
 ENTRYPOINT_REQUIRED = [
     "installMenuBarItem",
     "recordVoiceInput",
-    "learningCandidateReviewer()",
+    "openPreview(preview:",
+    "PromptEditLearningUseCase(",
 ]
 
 ENTRYPOINT_FORBIDDEN = [

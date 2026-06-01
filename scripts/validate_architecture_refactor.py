@@ -91,7 +91,6 @@ REQUIRED_SNIPPETS = {
         "public struct AppSettingsUseCase",
         "saveRepositoryPath",
         "saveRecordingSettings",
-        "saveLearningReviewerCommand",
     ],
     "src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift": [
         "public protocol LearningCandidateReviewer",
@@ -135,11 +134,6 @@ REQUIRED_SNIPPETS = {
         ".claude/projects",
         "maximumBytesPerFile",
     ],
-    "src/VoiceAgentInputCore/Infra/LocalCommandLearningCandidateReviewer.swift": [
-        "public struct LocalCommandLearningCandidateReviewer",
-        "LocalCommandLearningReviewRequest",
-        "process.executableURL",
-    ],
     "src/VoiceAgentInputApp/main.swift": [
         "NSApplication.shared",
         "VoiceAgentInputApp()",
@@ -166,7 +160,6 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
-        "learningCandidateReviewer()",
         "Learn From Agent History...",
         "Train Dictionary From Sources...",
         "AgentHistoryLearningModeUseCase",

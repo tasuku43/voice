@@ -32,8 +32,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "Privacy_Accessibility",
     "Open Privacy Settings...",
     "Open Input Monitoring Settings...",
-    "Learning Settings...",
-    "showLearningSettings",
     "Local Context Model Status...",
     "showLocalContextModelStatus",
     "Local context model status",
@@ -47,8 +45,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "trainDictionaryFromSources",
     "Codex / Claude local sessions",
     "Git repository vocabulary",
-    "saveLearningReviewerCommand",
-    "learningReviewerCommandArguments",
     "let audioRecorder = AVFoundationAudioRecorder()",
     "activeAudioRecorder?.stopRecording()",
     "Stop Voice Input",
@@ -67,11 +63,8 @@ REQUIRED_SOURCE_SNIPPETS = [
     "let result = try await voiceInputPipeline.run()",
     "mode=\\(settings.voiceInputMode.rawValue)",
     "VoiceInputModeDecisionUseCase().decide",
-    "learningCandidateReviewer()",
     "suggestedLearningScope: learningScope",
     "suggestedScope: suggestedLearningScope",
-    "LocalCommandLearningCandidateReviewer",
-    "interactiveLearningReviewerTimeoutSeconds",
     "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
@@ -131,8 +124,8 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "@objc private func recordVoiceInput()",
         "private func startVoiceInputFromShortcut()",
     )
-    if "learningCandidateReviewer()" in record_flow:
-        fail("Quick Paste recording flow must not construct the learning reviewer")
+    if "PromptEditLearningUseCase(" in record_flow and "case .quickPaste:" in record_flow:
+        fail("Quick Paste recording flow must not construct edit-learning before paste fallback")
 
     decision_to_fallback = source_between(
         record_flow,
@@ -147,8 +140,8 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase)",
         "private func insertConfirmedPrompt",
     )
-    if "PromptEditLearningUseCase(" not in open_preview or "learningCandidateReviewer()" not in open_preview:
-        fail("Learning reviewer must stay attached to the editable preview path")
+    if "PromptEditLearningUseCase(" not in open_preview:
+        fail("Edit learning must stay attached to the editable preview path")
 
 
 def validate_quick_paste_mode_labels(source: str) -> None:

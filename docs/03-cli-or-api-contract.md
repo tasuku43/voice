@@ -12,7 +12,7 @@ The current shell installs a menu bar item, registers the configured voice-input
 
 The shell also includes a mock preview action for development, Control-Shift-V voice input history recall, local voice input mode settings, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, `Train Dictionary From Sources...` for optional approved dictionary curation, per-candidate learning approval, and export/import/open-folder/delete controls for approved local dictionary entries and local context model data.
 
-Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the current implementation of that daily path. `Learning Preview`, candidate approval, and reviewer commands are optional curation surfaces for improving local context; they are not the core voice-input experience.
+Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the current implementation of that daily path. `Learning Preview` and candidate approval are optional curation surfaces for improving local context; they are not the core voice-input experience.
 
 ## Demo CLI
 
@@ -147,7 +147,7 @@ Voice input mode decision:
 VoiceInputModeDecisionUseCase.decide(mode: VoiceInputMode, preview: PromptPreview) -> VoiceInputModeDecision
 ```
 
-`Quick Paste` returns a `ConfirmedPrompt` containing only `preview.correctedPrompt` and no learning candidates. This keeps the daily path rule-based and avoids the local learning reviewer, candidate extraction review, and candidate approval UI. `Learning Preview` returns the editable preview so user edits can generate candidates and evolve the approved dictionary.
+`Quick Paste` returns a `ConfirmedPrompt` containing only `preview.correctedPrompt` and no learning candidates. This keeps the daily path rule-based and avoids candidate extraction review and candidate approval UI. `Learning Preview` returns the editable preview so user edits can generate candidates and evolve the approved dictionary.
 
 App settings:
 
@@ -158,17 +158,13 @@ AppSettings(
     speechLocaleIdentifier: String,
     voiceInputMode: VoiceInputMode,
     voiceInputShortcut: KeyboardShortcut,
-    voiceInputTriggerMode: VoiceInputTriggerMode,
-    learningReviewerCommandPath: String?,
-    learningReviewerCommandArguments: [String]
+    voiceInputTriggerMode: VoiceInputTriggerMode
 )
 ```
 
-Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, `Quick Paste` voice input mode, Control-Option-Space voice-input hotkey, press-and-hold trigger mode, and no learning reviewer command. Runtime use clamps recording duration to 1...30 seconds, falls back to `ja-JP` when the stored locale is blank, trims reviewer command arguments, and treats a blank reviewer command path as disabled.
+Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, `Quick Paste` voice input mode, Control-Option-Space voice-input hotkey, and press-and-hold trigger mode. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
 
 The macOS menu bar shell exposes recording settings locally through `Recording Settings...` and hotkey settings through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
-
-The macOS menu bar shell exposes learning reviewer command configuration through `Learning Settings...`. The command is optional and local-only. When configured, the app sends candidate-review JSON to the command only after preview confirmation; it is not part of speech recognition, dictionary normalization, or prompt refinement. The interactive app uses a short reviewer timeout so optional review cannot become a noticeable paste-confirmation bottleneck.
 
 Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so approved candidates still become user-scoped entries unless a caller explicitly requests another scope. As the local context model becomes first-class, repository context should be included through explicit source selection and bounded rebuilds rather than implicit broad scans.
 
@@ -176,10 +172,9 @@ Learning candidate review:
 
 ```swift
 PromptEditLearningUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?, suggestedScope: DictionaryScope) async throws -> ConfirmedPrompt
-LocalCommandLearningCandidateReviewer.review(candidates: [CorrectionCandidate], diff: PromptDiff) async throws -> [CorrectionCandidate]
 ```
 
-Candidate review must preserve dangerous-command guardrails. A reviewer may update reasons and confidence, but it must not make a dangerous substitution auto-apply.
+Candidate review must preserve dangerous-command guardrails. Reviewers may update reasons and confidence, but must not make a dangerous substitution auto-apply. Any future LLM-style reviewer must be a local Foundation Model adapter with no network IO.
 
 Permission status use case:
 

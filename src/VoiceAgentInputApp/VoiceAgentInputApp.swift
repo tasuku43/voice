@@ -7,7 +7,6 @@ import VoiceAgentInputCore
 
 @MainActor
 final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
-    private static let interactiveLearningReviewerTimeoutSeconds: TimeInterval = 0.5
     private static let supportedVoiceInputHotkeyKeys = [
         "space",
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
@@ -98,7 +97,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Open Privacy Settings...", action: #selector(openPrivacySettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Input Monitoring Settings...", action: #selector(openInputMonitoringSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
-        menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Local Context Model Status...", action: #selector(showLocalContextModelStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Train Dictionary From Sources...", action: #selector(trainDictionaryFromSources), keyEquivalent: "t"))
@@ -585,8 +583,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             preview: preview,
             previewUseCase: previewUseCase,
             editLearningUseCase: PromptEditLearningUseCase(
-                previewUseCase: previewUseCase,
-                candidateReviewer: learningCandidateReviewer()
+                previewUseCase: previewUseCase
             ),
             suggestedLearningScope: learningScope,
             onConfirmedPaste: { [weak self] confirmed in
@@ -631,22 +628,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         alert.messageText = "Prompt copied"
         alert.informativeText = "Enable Accessibility access for Voice Agent Input in System Settings to paste automatically. For now, press Command-V in the target app."
         alert.runModal()
-    }
-
-    private func learningCandidateReviewer() -> any LearningCandidateReviewer {
-        guard
-            let settings = try? loadSettings(),
-            let path = settings.learningReviewerCommandPath?.trimmingCharacters(in: .whitespacesAndNewlines),
-            !path.isEmpty
-        else {
-            return NoOpLearningCandidateReviewer()
-        }
-        debugLogger.log("learning reviewer command configured path=\(path) arguments=\(settings.learningReviewerCommandArguments)")
-        return LocalCommandLearningCandidateReviewer(
-            executableURL: URL(fileURLWithPath: path),
-            arguments: settings.learningReviewerCommandArguments,
-            timeoutSeconds: Self.interactiveLearningReviewerTimeoutSeconds
-        )
     }
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
@@ -989,41 +970,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     ?? settings.effectiveRecordingDurationSeconds,
                 speechLocaleIdentifier: localeField.stringValue
             )
-        } catch {
-            presentError(error)
-        }
-    }
-
-    @objc private func showLearningSettings() {
-        do {
-            let settingsUseCase = try settingsUseCase()
-            let settings = try settingsUseCase.loadSettings()
-            let reviewerCommandField = AppLayout.textField(settings.learningReviewerCommandPath ?? "")
-            let reviewerArguments = AppLayout.multilineTextView(
-                settings.learningReviewerCommandArguments.joined(separator: "\n")
-            )
-            let stack = AppLayout.formStack()
-            stack.addArrangedSubview(AppLayout.formRow(label: "Reviewer command", view: reviewerCommandField))
-            stack.addArrangedSubview(AppLayout.formRow(label: "Arguments", view: reviewerArguments.scrollView))
-
-            let alert = NSAlert()
-            alert.messageText = "Learning settings"
-            alert.informativeText = "Optional local command used only after preview confirmation to review dictionary candidates. Put one argument per line. Leave command blank to keep learning fully rule-based."
-            alert.accessoryView = stack
-            alert.addButton(withTitle: "Save")
-            alert.addButton(withTitle: "Disable")
-            alert.addButton(withTitle: "Cancel")
-
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                try settingsUseCase.saveLearningReviewerCommand(
-                    path: reviewerCommandField.stringValue,
-                    arguments: reviewerArguments.textView.string
-                        .components(separatedBy: .newlines)
-                )
-            } else if response == .alertSecondButtonReturn {
-                try settingsUseCase.saveLearningReviewerCommand(path: nil)
-            }
         } catch {
             presentError(error)
         }

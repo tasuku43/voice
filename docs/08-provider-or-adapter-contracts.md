@@ -180,9 +180,9 @@ Current providers:
 - `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through `git` commands.
 - `RepositoryVocabularyUseCase` can turn repository name, branch name, and tracked file names into dictionary entries or learning candidates.
 - `RepositoryVocabularyLearningSource` adapts configured repository vocabulary into the explicit learning flow. The macOS shell does not mix repository vocabulary into the hotkey runtime dictionary.
-- `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override and optional local learning-reviewer command path.
+- `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override.
 - `LearningSource` is the app-level interface for local learning inputs. `LocalAgentHistoryTextProvider` reads bounded local Codex and Claude history text, while repository vocabulary is another learning source.
-- `LocalCommandLearningCandidateReviewer` invokes a user-configured local command through stdin/stdout JSON after preview confirmation. It is an infra adapter for candidate review only, not speech recognition or prompt transformation. The interactive app passes a short timeout and falls back to unreviewed candidates if optional review fails.
+- Generic learning-reviewer command execution is out of the MVP. Future model-assisted review must be a local Foundation Model adapter with no network IO.
 
 Direction:
 

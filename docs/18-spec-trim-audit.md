@@ -32,7 +32,7 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 
 - Preview/edit UI is an optional curation surface, not the primary experience.
 - Candidate approve/reject UI is useful for manual curation, but it must not be required for the default voice input path.
-- Learning reviewer commands, detectors, or future Foundation Model reviewers belong off the hotkey STT path.
+- Generic learning reviewer commands are removed; detectors and future local Foundation Model reviewers belong off the hotkey STT path.
 - Repository folders configure learning sources; they should not silently broaden the runtime dictionary without an explicit model rebuild.
 
 ## Drop

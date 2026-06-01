@@ -60,13 +60,6 @@ enum AppUILayoutSmoke {
             outputDirectory: outputDirectory
         )
 
-        let learningArguments = AppLayout.multilineTextView("--mode\nreview\n--json")
-        let learningStack = AppLayout.formStack()
-        learningStack.addArrangedSubview(AppLayout.formRow(label: "Reviewer command", view: AppLayout.textField("/usr/local/bin/local-reviewer")))
-        learningStack.addArrangedSubview(AppLayout.formRow(label: "Arguments", view: learningArguments.scrollView))
-        failures.append(contentsOf: auditView(learningStack, name: "learning-settings"))
-        renderView(learningStack, size: NSSize(width: 560, height: 160), name: "learning-settings", outputDirectory: outputDirectory)
-
         let hotkeyStack = AppLayout.formStack()
         let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
         keyPicker.addItems(withTitles: ["Space", "A", "B", "C"])

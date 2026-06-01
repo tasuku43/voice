@@ -26,8 +26,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
     public var voiceInputMode: VoiceInputMode
     public var voiceInputShortcut: KeyboardShortcut
     public var voiceInputTriggerMode: VoiceInputTriggerMode
-    public var learningReviewerCommandPath: String?
-    public var learningReviewerCommandArguments: [String]
 
     public init(
         repositoryPath: String? = nil,
@@ -35,9 +33,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
         speechLocaleIdentifier: String = Self.defaultSpeechLocaleIdentifier,
         voiceInputMode: VoiceInputMode = Self.defaultVoiceInputMode,
         voiceInputShortcut: KeyboardShortcut = .defaultVoiceInput,
-        voiceInputTriggerMode: VoiceInputTriggerMode = Self.defaultVoiceInputTriggerMode,
-        learningReviewerCommandPath: String? = nil,
-        learningReviewerCommandArguments: [String] = []
+        voiceInputTriggerMode: VoiceInputTriggerMode = Self.defaultVoiceInputTriggerMode
     ) {
         self.repositoryPath = repositoryPath
         self.recordingDurationSeconds = recordingDurationSeconds
@@ -45,8 +41,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.voiceInputMode = voiceInputMode
         self.voiceInputShortcut = voiceInputShortcut
         self.voiceInputTriggerMode = voiceInputTriggerMode
-        self.learningReviewerCommandPath = learningReviewerCommandPath
-        self.learningReviewerCommandArguments = learningReviewerCommandArguments
     }
 
     public var effectiveRecordingDurationSeconds: TimeInterval {
@@ -69,8 +63,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
         case voiceInputMode
         case voiceInputShortcut
         case voiceInputTriggerMode
-        case learningReviewerCommandPath
-        case learningReviewerCommandArguments
     }
 
     public init(from decoder: Decoder) throws {
@@ -86,9 +78,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
             ?? .defaultVoiceInput
         voiceInputTriggerMode = try container.decodeIfPresent(VoiceInputTriggerMode.self, forKey: .voiceInputTriggerMode)
             ?? Self.defaultVoiceInputTriggerMode
-        learningReviewerCommandPath = try container.decodeIfPresent(String.self, forKey: .learningReviewerCommandPath)
-        learningReviewerCommandArguments = try container.decodeIfPresent([String].self, forKey: .learningReviewerCommandArguments)
-            ?? []
     }
 }
 

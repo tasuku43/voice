@@ -55,8 +55,6 @@ REQUIRED_EVIDENCE_LABELS = [
     "Dictionary candidates shown only after preview confirmation when expected",
     "Debug log contains mode=learningPreview for completed recording",
     "Debug log summary includes mode=learningPreview",
-    "Optional trusted local reviewer command runs only after preview confirmation in Learning Preview",
-    "Trusted local reviewer command does not run during Quick Paste",
     "Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured",
     "Rebuild Local Context Model works without candidate approval and shows rebuild metadata",
     "Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding",

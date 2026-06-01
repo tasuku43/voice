@@ -13,9 +13,6 @@ Read:
 - `src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift`
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
-- `src/VoiceAgentInputCore/Infra/LocalCommandLearningCandidateReviewer.swift`
-- `docs/contracts/learning-reviewer-command.md`
-- `scripts/local_learning_reviewer_example.py`
 
 May touch:
 - Candidate extraction, approval, and local learning tests.

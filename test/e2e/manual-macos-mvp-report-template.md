@@ -106,9 +106,6 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Non-dangerous candidate approved: pass/fail
 - Approved candidate reused later: pass/fail
 - Dangerous command candidate not auto-applied by default: pass/fail
-- Learning Settings blank/disabled path keeps learning local and rule-based: pass/fail
-- Optional trusted local reviewer command runs only after preview confirmation in Learning Preview: pass/fail/not applicable
-- Trusted local reviewer command does not run during Quick Paste: pass/fail/not applicable
 - Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured: pass/fail
 - Rebuild Local Context Model works without candidate approval and shows rebuild metadata: pass/fail
 - Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding: pass/fail

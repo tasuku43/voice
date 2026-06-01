@@ -27,9 +27,7 @@
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
 - Use the configured preferred learning scope for Learning Preview edit-derived candidates. The default preferred scope is user scope even when a repository folder is configured.
 - Score likely voice misrecognitions behind a replaceable detector.
-- Review edit-derived candidates after preview confirmation through an off-transcription-path reviewer, so a local Foundation Model or deterministic detector can improve learning without slowing STT or deterministic prompt normalization.
-- Invoke an explicit local learning-reviewer command when configured; stdin/stdout JSON is limited to candidates and prompt diff text, and the app provides no cloud client.
-- Expose local learning-reviewer command configuration through `Learning Settings...`; blank or disabled means no reviewer command runs.
+- Review edit-derived candidates after preview confirmation through an off-transcription-path detector or future local Foundation Model adapter, without slowing STT or deterministic prompt normalization.
 - If candidate review fails, confirmation still returns the prompt and unreviewed candidates; optional review must not block paste confirmation.
 - Persist approved entries only after user approval.
 - Re-approving an equivalent candidate strengthens the existing entry instead of duplicating it.
@@ -57,9 +55,6 @@
 - `src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift`
 - `src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift`
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
-- `src/VoiceAgentInputCore/Infra/LocalCommandLearningCandidateReviewer.swift`
-- `docs/contracts/learning-reviewer-command.md`
-- `scripts/local_learning_reviewer_example.py`
 
 ## May Touch
 - Candidate extraction and learning persistence tests.
@@ -78,7 +73,7 @@
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Learning-source adapters remain bounded and local.
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.
-- Candidate review runs after user confirmation and preserves dangerous substitution guardrails.
+- Candidate review remains off the default hotkey path and preserves dangerous substitution guardrails.
 - Quick Paste remains a fast rule-based insertion path with no learning reviewer or candidate approval dialog.
 - Learning Preview edit learning uses the configured preferred learning scope.
 - Repository vocabulary is available as an explicit learning source and is not mixed into the runtime dictionary by default.
