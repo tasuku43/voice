@@ -24,6 +24,33 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(confirmed.shouldSubmitAutomatically)
     }
 
+    func testVoiceInputModeDecisionKeepsQuickPasteOffTheLearningPath() {
+        let preview = PromptPreview(
+            rawTranscript: "コーデックスで直して",
+            correctedPrompt: "Codex で直して",
+            corrections: []
+        )
+
+        let decision = VoiceInputModeDecisionUseCase().decide(mode: .quickPaste, preview: preview)
+
+        XCTAssertEqual(decision, .quickPaste(ConfirmedPrompt(
+            promptToInsert: "Codex で直して",
+            candidates: []
+        )))
+    }
+
+    func testVoiceInputModeDecisionUsesLearningPreviewForDictionaryGrowth() {
+        let preview = PromptPreview(
+            rawTranscript: "コーデックスで直して",
+            correctedPrompt: "Codex で直して",
+            corrections: []
+        )
+
+        let decision = VoiceInputModeDecisionUseCase().decide(mode: .learningPreview, preview: preview)
+
+        XCTAssertEqual(decision, .learningPreview(preview))
+    }
+
     func testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview() async throws {
         let speechEngine = MockSpeechEngine()
         let useCase = VoiceInputFlowUseCase(
@@ -56,6 +83,26 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
         XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
+    }
+
+    func testVoiceInputFlowReportsRecordedAudioForDebugObservability() async throws {
+        let audio = RecordedAudio(
+            data: Data("くらのコードでタイプスクリプトを確認して".utf8),
+            formatDescription: "mock-text",
+            durationSeconds: 4.2
+        )
+        let capturedAudio = RecordedAudioCapture()
+        let useCase = VoiceInputFlowUseCase(
+            audioRecorder: MockAudioRecorder(audio: audio),
+            microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
+            speechEngine: MockSpeechEngine(),
+            entries: SeedDictionaries.codingAgentEntries,
+            recordedAudioHandler: { capturedAudio.store($0) }
+        )
+
+        _ = try await useCase.recordTranscribeAndPreview()
+
+        XCTAssertEqual(capturedAudio.value, audio)
     }
 
     func testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndPreviewStages() async throws {
@@ -670,6 +717,60 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.candidates.allSatisfy { $0.suggestedScope == .repository })
     }
 
+    func testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings() {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["ぷろじぇくとぼいす", " Project Voice "],
+                canonical: "ProjectVoice",
+                kind: .projectTerm,
+                scope: .repository,
+                confidence: 0.9,
+                autoApply: true
+            ),
+            DictionaryEntry(
+                spokenForms: ["ぷろじぇくとぼいす"],
+                canonical: "ProjectVoice",
+                kind: .projectTerm,
+                scope: .repository,
+                confidence: 0.9,
+                autoApply: true
+            ),
+            DictionaryEntry(
+                spokenForms: ["   "],
+                canonical: "   ",
+                kind: .phrase,
+                scope: .user,
+                confidence: 0.5,
+                autoApply: false
+            )
+        ]
+
+        let hints = SpeechRecognitionHintsUseCase().hints(from: entries)
+
+        XCTAssertEqual(hints.contextualStrings, [
+            "ProjectVoice",
+            "ぷろじぇくとぼいす",
+            "Project Voice"
+        ])
+    }
+
+    func testSpeechRecognitionHintsCanBeBounded() {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["one", "two"],
+                canonical: "Canonical",
+                kind: .phrase,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true
+            )
+        ]
+
+        let hints = SpeechRecognitionHintsUseCase(maximumContextualStrings: 2).hints(from: entries)
+
+        XCTAssertEqual(hints.contextualStrings, ["Canonical", "one"])
+    }
+
     func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
         let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
         let useCase = VoiceInputFlowUseCase(
@@ -712,13 +813,15 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let useCase = PermissionStatusUseCase(
             microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
             speechRecognitionPermissionProvider: MockSpeechRecognitionPermissionProvider(status: .denied),
-            accessibilityPermissionProvider: MockAccessibilityPermissionProvider(status: .notTrusted)
+            accessibilityPermissionProvider: MockAccessibilityPermissionProvider(status: .notTrusted),
+            inputMonitoringPermissionProvider: MockInputMonitoringPermissionProvider(status: .trusted)
         )
 
         XCTAssertEqual(useCase.currentStatus(), PermissionStatusSnapshot(
             microphone: .authorized,
             speechRecognition: .denied,
-            accessibility: .notTrusted
+            accessibility: .notTrusted,
+            inputMonitoring: .trusted
         ))
     }
 
@@ -727,6 +830,19 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertTrue(engine.requiresOnDeviceRecognition)
         XCTAssertEqual(engine.localeIdentifier, "ja-JP")
+        XCTAssertEqual(engine.recognitionHints, SpeechRecognitionHints())
+    }
+
+    func testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest() {
+        let engine = AppleSpeechEngine(
+            recognitionHints: SpeechRecognitionHints(contextualStrings: ["ProjectVoice", "Claude Code"])
+        )
+
+        let request = engine.recognitionRequest(url: URL(fileURLWithPath: "/tmp/audio.caf"))
+
+        XCTAssertTrue(request.shouldReportPartialResults)
+        XCTAssertTrue(request.requiresOnDeviceRecognition)
+        XCTAssertEqual(request.contextualStrings, ["ProjectVoice", "Claude Code"])
     }
 
     func testAppleSpeechEngineMapsNoSpeechDetectedError() {
@@ -859,6 +975,25 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(codex.confidence, 0.93)
         XCTAssertEqual(codex.reason, "Reviewed after user confirmation by an off-path detector.")
         XCTAssertFalse(confirmed.shouldSubmitAutomatically)
+    }
+
+    func testPromptEditLearningUsesRepositoryScopeWhenConfigured() async throws {
+        let previewUseCase = PromptPreviewUseCase(entries: [])
+        let preview = previewUseCase.preview(rawTranscript: "ボイスエージェントインプットを直して")
+        let confirmed = try await PromptEditLearningUseCase(
+            previewUseCase: previewUseCase
+        ).confirm(
+            preview: preview,
+            finalEditedPrompt: "VoiceAgentInput を直して",
+            suggestedScope: .repository
+        )
+
+        let candidate = try XCTUnwrap(confirmed.candidates.first {
+            $0.rawPhrase == "ボイスエージェントインプット"
+                && $0.correctedPhrase == "VoiceAgentInput"
+        })
+        XCTAssertEqual(candidate.suggestedScope, .repository)
+        XCTAssertTrue(candidate.autoApplyAllowed)
     }
 
     func testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails() async throws {
@@ -1247,6 +1382,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(settings, AppSettings(repositoryPath: "/tmp/repo"))
         XCTAssertNil(settings.learningReviewerCommandPath)
         XCTAssertEqual(settings.learningReviewerCommandArguments, [])
+        XCTAssertEqual(settings.voiceInputMode, .quickPaste)
     }
 
     func testAppSettingsEffectiveValuesClampUnsafeInput() {
@@ -1286,6 +1422,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let disabledLearningSettings = try useCase.saveLearningReviewerCommand(path: " ")
         XCTAssertNil(disabledLearningSettings.learningReviewerCommandPath)
         XCTAssertEqual(disabledLearningSettings.learningReviewerCommandArguments, [])
+
+        let modeSettings = try useCase.saveVoiceInputMode(.learningPreview)
+        XCTAssertEqual(modeSettings.voiceInputMode, .learningPreview)
+        XCTAssertEqual(try repository.loadSettings().voiceInputMode, .learningPreview)
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
@@ -1394,19 +1534,67 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(entries.filter { $0.canonical == "Package.swift" }.count, 1)
     }
 
+    func testVoiceInputHistoryRecordsFinalPromptsOnlyAndBoundsStoredEntries() throws {
+        let repository = InMemoryVoiceInputHistoryRepository()
+        let useCase = VoiceInputHistoryUseCase(repository: repository, maximumEntries: 2)
+
+        try useCase.record(prompt: " first prompt ", createdAt: Date(timeIntervalSince1970: 1))
+        try useCase.record(prompt: "second prompt", createdAt: Date(timeIntervalSince1970: 2))
+        try useCase.record(prompt: "first prompt", createdAt: Date(timeIntervalSince1970: 3))
+        try useCase.record(prompt: "third prompt", createdAt: Date(timeIntervalSince1970: 4))
+        try useCase.record(prompt: "   ", createdAt: Date(timeIntervalSince1970: 5))
+
+        let entries = try useCase.recentEntries()
+
+        XCTAssertEqual(entries.map(\.prompt), ["third prompt", "first prompt"])
+    }
+
+    func testJSONVoiceInputHistoryRepositoryRoundTrip() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let store = LocalLearningDictionaryStore(directoryURL: directory)
+        let repository = try store.voiceInputHistoryRepository()
+        let entries = [
+            VoiceInputHistoryEntry(
+                id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+                createdAt: Date(timeIntervalSince1970: 10),
+                prompt: "paste this"
+            )
+        ]
+
+        try repository.saveEntries(entries)
+
+        XCTAssertEqual(try repository.loadEntries(), entries)
+        let historyURL = directory.appendingPathComponent("voice-input-history.json")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: historyURL.path))
+        let storedJSON = try String(contentsOf: historyURL, encoding: .utf8)
+        XCTAssertTrue(storedJSON.contains("\"prompt\""))
+        XCTAssertFalse(storedJSON.contains("rawTranscript"))
+        XCTAssertFalse(storedJSON.contains("candidates"))
+    }
+
     @MainActor
     func testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger() {
         let monitor = MockKeyboardShortcutMonitor()
         var triggerCount = 0
+        var releaseCount = 0
 
-        monitor.start(shortcut: .defaultVoiceInput) {
-            triggerCount += 1
-        }
+        monitor.start(
+            shortcut: .defaultVoiceInput,
+            onTrigger: {
+                triggerCount += 1
+            },
+            onRelease: {
+                releaseCount += 1
+            }
+        )
         monitor.trigger()
+        monitor.release()
         monitor.stop()
         monitor.trigger()
+        monitor.release()
 
         XCTAssertEqual(triggerCount, 1)
+        XCTAssertEqual(releaseCount, 1)
         XCTAssertNil(monitor.shortcut)
     }
 }
@@ -1443,12 +1631,45 @@ private final class InMemoryAppSettingsRepository: AppSettingsRepository {
     }
 }
 
+private final class InMemoryVoiceInputHistoryRepository: VoiceInputHistoryRepository {
+    private var entries: [VoiceInputHistoryEntry]
+
+    init(entries: [VoiceInputHistoryEntry] = []) {
+        self.entries = entries
+    }
+
+    func loadEntries() throws -> [VoiceInputHistoryEntry] {
+        entries
+    }
+
+    func saveEntries(_ entries: [VoiceInputHistoryEntry]) throws {
+        self.entries = entries
+    }
+}
+
 private enum TemporaryRecordedAudioFileStoreTestError: Error, Equatable {
     case expected
 }
 
 private enum PromptEditLearningTestError: Error {
     case reviewerFailed
+}
+
+private final class RecordedAudioCapture: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storedValue: RecordedAudio?
+
+    var value: RecordedAudio? {
+        lock.lock()
+        defer { lock.unlock() }
+        return storedValue
+    }
+
+    func store(_ audio: RecordedAudio) {
+        lock.lock()
+        storedValue = audio
+        lock.unlock()
+    }
 }
 
 private struct SuffixPromptRefiner: PromptRefiner {

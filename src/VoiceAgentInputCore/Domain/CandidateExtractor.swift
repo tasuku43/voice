@@ -48,10 +48,9 @@ public struct CandidateExtractor: Sendable {
     private static func inferredDeveloperTermHints(from text: String) -> [String: [String]] {
         var inferred: [String: [String]] = [:]
         for term in DeveloperTermSpeechRules.extractTerms(from: text) {
-            guard let spoken = DeveloperTermSpeechRules.spokenPhrase(for: term) else {
-                continue
+            for spoken in DeveloperTermSpeechRules.spokenPhrases(for: term) {
+                inferred[term, default: []].append(spoken)
             }
-            inferred[term, default: []].append(spoken)
         }
         return inferred
     }

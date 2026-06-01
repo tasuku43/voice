@@ -25,6 +25,7 @@ FORBIDDEN_SOURCE_SNIPPETS = [
 REQUIRED_SOURCE_SNIPPETS = {
     "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
         "requiresOnDeviceRecognition: Bool = true",
+        "request.contextualStrings = recognitionHints.contextualStrings",
         "TemporaryRecordedAudioFileStore",
     ],
     "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [
@@ -48,12 +49,18 @@ ALLOWED_WRITE_SNIPPETS = {
     "src/VoiceAgentInputApp/AppDebugLogger.swift": [
         "enabled = arguments.contains(\"--debug\") || environment[\"VOICE_AGENT_INPUT_DEBUG\"] == \"1\"",
         "guard enabled else",
+        ".appendingPathComponent(\"Logs\")",
+        ".appendingPathComponent(\"VoiceAgentInput\")",
+        ".appendingPathComponent(\"debug.log\")",
         "try line.write(to: logFileURL, atomically: true, encoding: .utf8)",
     ],
     "src/VoiceAgentInputCore/Infra/JSONAppSettingsRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],
     "src/VoiceAgentInputCore/Infra/JSONDictionaryRepository.swift": [
+        "try data.write(to: fileURL, options: [.atomic])",
+    ],
+    "src/VoiceAgentInputCore/Infra/JSONVoiceInputHistoryRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],
     "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [

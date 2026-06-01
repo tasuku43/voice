@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 
 
 ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
@@ -45,6 +46,107 @@ def main() -> None:
             fail(f"demo corrected prompt missing {expected}: {corrected}")
     if preview.get("requiresExplicitConfirmation") is not True:
         fail("demo preview does not require explicit confirmation")
+
+    with tempfile.TemporaryDirectory() as temporary_home:
+        codex_directory = Path(temporary_home) / ".codex"
+        codex_directory.mkdir(parents=True)
+        (codex_directory / "history.jsonl").write_text(
+            '{"role":"user","content":"ProjectSpecificName appears in this repository prompt."}\n'
+            '{"role":"user","content":"Please preserve ProjectSpecificName when editing docs."}\n',
+            encoding="utf-8",
+        )
+        history_result = subprocess.run(
+            [
+                str(EXECUTABLE),
+                "--mode", "learn-history",
+                "--home", temporary_home,
+                "--scope", "repository",
+            ],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+            check=False,
+        )
+        if history_result.returncode != 0:
+            fail("demo history learning command failed:\n" + history_result.stderr)
+        try:
+            history_payload = json.loads(history_result.stdout)
+        except json.JSONDecodeError as error:
+            fail(f"demo history learning command did not emit JSON: {error}")
+
+        history_learning = history_payload.get("historyLearning") or {}
+        candidates = history_learning.get("candidates") or []
+        if history_payload.get("mode") != "learn-history":
+            fail("demo history learning command did not run learn-history mode")
+        if not any(
+            candidate.get("correctedPhrase") == "ProjectSpecificName"
+            and candidate.get("rawPhrase") == "project specific name"
+            and candidate.get("suggestedScope") == "repository"
+            for candidate in candidates
+        ):
+            fail("demo history learning command missing ProjectSpecificName candidate")
+
+        approved_dictionary = Path(temporary_home) / "approved-dictionary.json"
+        approved_dictionary.write_text(json.dumps([
+            {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "spokenForms": ["project specific name"],
+                "canonical": "ProjectSpecificName",
+                "kind": "projectTerm",
+                "scope": "repository",
+                "confidence": 0.9,
+                "autoApply": True,
+                "createdAt": "1970-01-01T00:00:00Z",
+                "updatedAt": "1970-01-01T00:00:00Z",
+            }
+        ]), encoding="utf-8")
+        skipped_history_result = subprocess.run(
+            [
+                str(EXECUTABLE),
+                "--mode", "learn-history",
+                "--home", temporary_home,
+                "--scope", "repository",
+                "--approved-dictionary", str(approved_dictionary),
+            ],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+            check=False,
+        )
+        if skipped_history_result.returncode != 0:
+            fail("demo history learning skip command failed:\n" + skipped_history_result.stderr)
+        skipped_payload = json.loads(skipped_history_result.stdout)
+        skipped_learning = skipped_payload.get("historyLearning") or {}
+        if skipped_learning.get("skippedExistingCandidateCount") != 1:
+            fail("demo history learning command did not skip approved-dictionary candidate")
+
+        normalized_history_result = subprocess.run(
+            [
+                str(EXECUTABLE),
+                "--mode", "learn-history-normalize",
+                "--home", temporary_home,
+                "--scope", "repository",
+                "project specific nameの設定を直して",
+            ],
+            cwd=ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=10,
+            check=False,
+        )
+        if normalized_history_result.returncode != 0:
+            fail("demo history learning normalize command failed:\n" + normalized_history_result.stderr)
+        normalized_payload = json.loads(normalized_history_result.stdout)
+        corrected_after_history = (normalized_payload.get("normalization") or {}).get("correctedText") or ""
+        if normalized_payload.get("mode") != "learn-history-normalize":
+            fail("demo history learning normalize command did not run learn-history-normalize mode")
+        if "ProjectSpecificName" not in corrected_after_history:
+            fail("demo history learning normalize command did not apply learned candidate")
 
     print("demo command smoke ok")
 

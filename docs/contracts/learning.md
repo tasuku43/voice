@@ -14,9 +14,11 @@
 ## Allowed
 - Generate dictionary candidates from user edits.
 - Generate dictionary candidates from local agent history after explicit user action.
+- Keep default Quick Paste outside candidate review and approval; `VoiceInputModeDecisionUseCase` inserts the corrected prompt with no learning candidates.
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across history learning and edit learning.
 - Use repository scope for history learning when a repository folder is configured.
+- Use the configured preferred learning scope for Learning Preview edit-derived candidates, so repository-specific edits grow repository-scoped dictionaries.
 - Score likely voice misrecognitions behind a replaceable detector.
 - Review edit-derived candidates after preview confirmation through an off-transcription-path reviewer, so an LLM-style detector can improve learning without slowing STT or deterministic prompt normalization.
 - Invoke an explicit local learning-reviewer command when configured; stdin/stdout JSON is limited to candidates and prompt diff text, and the app provides no cloud client.
@@ -36,6 +38,7 @@
 - `src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift`
 - `src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift`
 - `src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift`
+- `src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift`
 - `src/VoiceAgentInputCore/App/DictionaryLearningUseCase.swift`
 - `src/VoiceAgentInputCore/App/CandidateApprovalUseCase.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift`
@@ -62,3 +65,5 @@
 - Approved entries are stored locally.
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Candidate review runs after user confirmation and preserves dangerous substitution guardrails.
+- Quick Paste remains a fast rule-based insertion path with no learning reviewer or candidate approval dialog.
+- Learning Preview edit learning uses the configured preferred learning scope.

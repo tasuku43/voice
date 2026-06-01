@@ -54,4 +54,12 @@ public struct AppSettingsUseCase {
     public func saveLearningReviewerCommandPath(_ path: String?) throws -> AppSettings {
         try saveLearningReviewerCommand(path: path)
     }
+
+    @discardableResult
+    public func saveVoiceInputMode(_ mode: VoiceInputMode) throws -> AppSettings {
+        var settings = try repository.loadSettings()
+        settings.voiceInputMode = mode
+        try repository.saveSettings(settings)
+        return settings
+    }
 }

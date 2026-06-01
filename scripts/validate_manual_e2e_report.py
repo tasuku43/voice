@@ -22,11 +22,43 @@ REQUIRED_SECTIONS = [
     "Permission Status Evidence",
     "Recording Settings Evidence",
     "Mock Preview Safety Evidence",
-    "Real Voice Input Evidence",
+    "Quick Paste Voice Input Evidence",
+    "Learning Preview Voice Input Evidence",
     "Local Learning Evidence",
     "Local Data Controls Evidence",
     "Repository Vocabulary Evidence",
     "Privacy Evidence",
+]
+
+REQUIRED_EVIDENCE_LABELS = [
+    "Default mode is Quick Paste",
+    "Mode switched back to Quick Paste before daily flow",
+    "Debug launch used `--debug`",
+    "Debug log created at `~/Library/Logs/VoiceAgentInput/debug.log`",
+    "`Open Voice Input Permissions...` opens missing permission settings",
+    "`Quick Paste Voice Input` menu action works",
+    "Push-to-talk release or stop explicitly confirms paste",
+    "No raw/corrected preview window appears in Quick Paste",
+    "No dictionary candidate approval UI appears in Quick Paste",
+    "Pasted or copied prompt contains expected developer terms",
+    "Debug log contains mode=quickPaste for completed recording",
+    "Debug log summary includes mode=quickPaste",
+    "Learning Preview mode selected",
+    "`Record Learning Preview` menu action works in Learning Preview",
+    "Raw transcript visible",
+    "Corrected prompt contains expected developer terms",
+    "Edited prompt inserted only after preview confirmation",
+    "Dictionary candidates shown only after preview confirmation when expected",
+    "Debug log contains mode=learningPreview for completed recording",
+    "Debug log summary includes mode=learningPreview",
+    "Optional trusted local reviewer command runs only after preview confirmation in Learning Preview",
+    "Trusted local reviewer command does not run during Quick Paste",
+    "Learning Preview edit-derived candidate uses repository scope when repository folder is configured",
+    "Learn From Agent History presents bounded Codex/Claude candidates",
+    "History-derived project identifier affects later rule-based normalization",
+    "Raw transcripts are not written to Application Support by default",
+    "Debug log is diagnostics only, not local learning data",
+    "No network/cloud prompt observed",
 ]
 
 EVIDENCE_VALUE_RE = re.compile(r"^- (?P<label>[^:]+): (?P<value>.+)$")
@@ -67,6 +99,13 @@ def main() -> None:
     ]
     if missing_sections:
         fail("manual E2E report missing sections: " + ", ".join(missing_sections))
+
+    missing_labels = [
+        label for label in REQUIRED_EVIDENCE_LABELS
+        if field_value(text, label) is None
+    ]
+    if missing_labels:
+        fail("manual E2E report missing evidence labels: " + ", ".join(missing_labels))
 
     empty_metadata = [
         field for field in REQUIRED_METADATA_FIELDS

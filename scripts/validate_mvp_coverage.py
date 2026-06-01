@@ -20,13 +20,15 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputApp/RecordingFeedbackWindowController.swift": [
             "Connecting microphone...",
             "Listening",
-            "InputLevelView",
+            "RecordingStatusView",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "AppKitKeyboardShortcutMonitor()",
-            "Command-Shift-Space",
+            "Control-Option-Space",
             "recordVoiceInput",
+            "Open Voice Input Permissions...",
             "Open Privacy Settings...",
+            "Privacy_Accessibility",
         ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
             "testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger",
@@ -54,6 +56,7 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "let voiceInputPipeline = VoiceInputPipeline(",
             "let result = try await voiceInputPipeline.run()",
+            "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
         ],
         "src/VoiceAgentInputCore/Infra/AVFoundationAudioRecorder.swift": [
             "AVAudioRecorder",
@@ -61,14 +64,23 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
             "SFSpeechRecognizer",
             "requiresOnDeviceRecognition",
+            "request.contextualStrings",
             "SpeechTranscriptAccumulator",
         ],
+        "src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift": [
+            "public struct SpeechRecognitionHints",
+            "contextualStrings",
+            "public struct SpeechRecognitionHintsUseCase",
+            "DictionaryEntry",
+        ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
+            "testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings",
+            "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",
         ],
     },
-    "preview before insertion": {
+    "learning preview before insertion": {
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
             "requiresExplicitConfirmation",
             "rawTranscript",
@@ -264,6 +276,10 @@ REQUIRED_COVERAGE = {
             "voice-agent-input-demo",
             "demo command smoke ok",
             "requiresExplicitConfirmation",
+            "learn-history",
+            "learn-history-normalize",
+            "ProjectSpecificName",
+            "approved-dictionary",
         ],
         "scripts/validate_eval_coverage.py": [
             "MIN_CASES",
@@ -274,6 +290,20 @@ REQUIRED_COVERAGE = {
             "Claude Code",
             "Cursor",
             "GitHub",
+        ],
+        "evals/learning-cases.json": [
+            "VoiceAgentInput",
+            "ボイスエージェントインプット",
+            "repository",
+        ],
+        "evals/history-learning-cases.json": [
+            "ProjectSpecificName",
+            "project specific name",
+            "repository",
+        ],
+        "test/VoiceAgentInputCoreTests/EvalHarnessTests.swift": [
+            "testHistoryLearningEvalCases",
+            "evals/history-learning-cases.json",
         ],
     },
     "component contracts and codex sessions": {
@@ -372,7 +402,8 @@ REQUIRED_COVERAGE = {
             "VoiceAgentInput.app",
         ],
         "test/e2e/manual-macos-mvp-checklist.md": [
-            "Real Voice Input",
+            "Quick Paste Voice Input",
+            "Learning Preview Voice Input",
             "Accessibility",
             "Local Learning",
             "Repository Vocabulary",
@@ -388,7 +419,8 @@ REQUIRED_COVERAGE = {
         "test/e2e/manual-macos-mvp-report-template.md": [
             "Run Metadata",
             "Overall result: pass/fail",
-            "Real Voice Input Evidence",
+            "Quick Paste Voice Input Evidence",
+            "Learning Preview Voice Input Evidence",
             "Privacy Evidence",
         ],
     },

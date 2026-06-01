@@ -109,7 +109,7 @@ REQUIRED_SNIPPETS = {
         "final class RecordingFeedbackWindowController",
         "Connecting microphone...",
         "Listening",
-        "InputLevelView",
+        "RecordingStatusView",
     ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",

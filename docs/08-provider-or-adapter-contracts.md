@@ -26,6 +26,7 @@ Implementations:
 - `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file, reads it into `RecordedAudio`, and deletes the temporary file immediately.
 - `MockSpeechEngine` for tests and UI development.
 - `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`; its temporary audio file is created through `TemporaryRecordedAudioFileStore` and deleted after success or failure.
+- `AppleSpeechEngine` accepts `SpeechRecognitionHints` and maps them to `SFSpeechRecognitionRequest.contextualStrings` so loaded dictionary entries can help ASR before post-STT normalization.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
@@ -91,6 +92,7 @@ Current adapter:
 Current use cases:
 
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries with approved local entries for preview and confirmation flows.
+- `SpeechRecognitionHintsUseCase` converts the same loaded `DictionaryEntry` values into bounded, de-duplicated ASR contextual strings.
 - `CandidateApprovalUseCase` marks selected candidates as approved and unselected candidates as rejected.
 - `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
 - `LearningApprovalUseCase` combines candidate selection review and approved-entry persistence so UI only supplies selected indexes.
@@ -149,7 +151,7 @@ protocol KeyboardShortcutMonitor {
 
 Current default shortcut:
 
-- Command-Shift-Space
+- Control-Option-Space
 
 Current test adapter:
 
@@ -161,7 +163,7 @@ Current macOS adapter:
 
 App shell rules:
 
-- Command-Shift-Space starts the same record/transcribe/preview path as the menu item.
+- Control-Option-Space starts the same record/transcribe/preview path as the menu item.
 - Repeated hotkey/menu triggers are ignored while a recording/transcription flow is active.
 
 ## ContextProvider

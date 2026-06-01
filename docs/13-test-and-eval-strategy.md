@@ -33,26 +33,45 @@ Cover filesystem and adapter behavior:
 Cover the real executable path where practical:
 
 - `swift run voice-agent-input-demo ...`
-- `scripts/smoke_demo_command.py` verifies the built demo command still emits JSON preview output with expected developer-term normalization.
+- `scripts/smoke_demo_command.py` verifies the built demo command still emits JSON preview output with expected developer-term normalization and local history-learning candidate output.
 - expected output shape,
 - stable correction behavior.
 - `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.
 - `make check` smoke-launches `.build/VoiceAgentInput.app` long enough to catch immediate startup crashes.
-- `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms.
+- `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms, edit-derived learning eval coverage, and history-derived learning eval coverage.
 - `make check` validates architecture boundaries: Domain and App stay free of UI/macOS framework dependencies while framework-specific adapters remain in Infra.
-- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, preview-before-paste, candidate approval, local dictionary data controls, and absence of obvious network calls.
+- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, Quick Paste as the default fast path, Learning Preview for editable learning, candidate approval, local dictionary data controls, and absence of obvious network calls.
 - `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local learning data controls.
 - `make check` validates MVP coverage snippets across source, tests, docs, and manual E2E artifacts so the main success criteria remain represented.
-- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, local learning, repository vocabulary, and privacy expectations.
+- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, Quick Paste without preview/candidate approval UI, Learning Preview candidate approval, local learning, repository vocabulary, and privacy expectations.
 
 ### Evals
 
-Fixture-driven evals live under `evals/`. Each case should include:
+Fixture-driven evals live under `evals/`.
+
+Normalization eval cases in `evals/normalization-cases.json` should include:
 
 - name,
 - raw transcript,
 - expected corrected output,
 - expected correction count or required canonical terms.
+
+Learning eval cases in `evals/learning-cases.json` should include:
+
+- name,
+- raw transcript,
+- final edited prompt,
+- later raw transcript,
+- expected canonical terms after approving the learned candidate,
+- learning scope.
+
+History learning eval cases in `evals/history-learning-cases.json` should include:
+
+- name,
+- bounded local agent history text snippets,
+- later raw transcript,
+- expected canonical terms after approving history-derived candidates,
+- learning scope.
 
 ### Golden snapshots
 

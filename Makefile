@@ -2,7 +2,7 @@ SWIFT_PACKAGE_FLAGS ?= --disable-sandbox
 CLANG_MODULE_CACHE_PATH ?= $(CURDIR)/.build/clang-module-cache
 export CLANG_MODULE_CACHE_PATH
 
-.PHONY: test eval check goal demo manual-e2e-report validate-manual-e2e-report clean xcode-test-env
+.PHONY: test eval check goal demo manual-e2e-launch manual-e2e-report validate-manual-e2e-report clean xcode-test-env
 
 xcode-test-env:
 	python3 scripts/require_xcode_xctest.py
@@ -36,6 +36,9 @@ goal:
 
 demo:
 	swift run voice-agent-input-demo "くらのコードでタイプスクリプトエラーを直して"
+
+manual-e2e-launch:
+	python3 scripts/launch_manual_e2e_app.py .
 
 manual-e2e-report:
 	python3 scripts/create_manual_e2e_report.py .

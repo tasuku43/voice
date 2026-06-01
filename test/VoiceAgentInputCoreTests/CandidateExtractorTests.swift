@@ -65,6 +65,21 @@ final class CandidateExtractorTests: XCTestCase {
         })
     }
 
+    func testCandidateExtractionInfersKatakanaProjectIdentifierSpeechRulesFromEditedPrompt() {
+        let diff = PromptDiff(
+            rawText: "ボイスエージェントインプットのプレビューを直して",
+            autoCorrectedText: "ボイスエージェントインプットのプレビューを直して",
+            finalEditedText: "VoiceAgentInput のプレビューを直して"
+        )
+
+        let candidates = CandidateExtractor(hints: [:]).extract(from: diff)
+
+        XCTAssertTrue(candidates.contains {
+            $0.rawPhrase == "ボイスエージェントインプット" &&
+                $0.correctedPhrase == "VoiceAgentInput"
+        })
+    }
+
     func testCandidateExtractorCanUseReplaceableMisrecognitionDetector() {
         let diff = PromptDiff(
             rawText: "コーデックスで直して",

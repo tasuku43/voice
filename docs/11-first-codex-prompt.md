@@ -20,12 +20,13 @@ The ideal MVP is a macOS-native menu bar app that:
 1. accepts a hotkey-triggered voice input flow,
 2. transcribes speech through a replaceable STT adapter,
 3. normalizes coding-agent terminology through deterministic dictionaries,
-4. shows raw transcript and corrected prompt in a preview panel,
-5. lets the user edit before insertion,
-6. pastes only after explicit confirmation,
-7. extracts dictionary candidates from user edits,
-8. stores approved dictionary entries locally,
-9. never uploads audio or transcripts.
+4. supports fast `Quick Paste` for daily stop-to-paste input,
+5. supports `Learning Preview` with raw transcript and corrected prompt in a preview panel,
+6. lets the user edit before insertion in `Learning Preview`,
+7. pastes only after explicit confirmation,
+8. extracts dictionary candidates from user edits,
+9. stores approved dictionary entries locally,
+10. never uploads audio or transcripts.
 
 Current scaffold already contains the core normalization and learning direction. Continue from there.
 
@@ -34,7 +35,7 @@ Implementation priorities:
 1. Strengthen the core domain and tests if needed.
 2. Add a macOS app shell only if the current environment supports it.
 3. If macOS APIs are unavailable, add protocols, mocks, and documented adapter seams instead of blocking.
-4. Implement preview-before-paste before real microphone recording.
+4. Implement explicit-confirmation insertion before real microphone recording. In the current product split, `Quick Paste` uses stop/release as confirmation, while `Learning Preview` keeps preview-before-paste for dictionary growth.
 5. Implement deterministic dictionary learning before semantic rewriting.
 6. Keep STT replaceable: Apple Speech first, Whisper optional later.
 7. Keep privacy defaults local-only.

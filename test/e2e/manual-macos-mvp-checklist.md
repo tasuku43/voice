@@ -4,9 +4,13 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 ## Setup
 
-1. Open `.build/VoiceAgentInput.app`.
+1. Open `.build/VoiceAgentInput.app` with debug logging enabled:
+   `make manual-e2e-launch`
+   or `open -n .build/VoiceAgentInput.app --args --debug`
 2. Confirm the menu bar item titled `Voice` appears.
 3. Open a text target such as TextEdit, Codex, Claude Code, Cursor, or a terminal prompt.
+4. Confirm `~/Library/Logs/VoiceAgentInput/debug.log` is created.
+5. Keep the debug log available for the mode-specific checks below.
 
 ## Permission Status
 
@@ -15,9 +19,11 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
    - `Microphone`
    - `Speech recognition`
    - `Accessibility paste`
-3. Choose `Open Privacy Settings...` and verify macOS opens Privacy & Security settings.
-4. If microphone or speech recognition is not authorized, continue to the recording flow and verify macOS prompts for the missing permission.
-5. If Accessibility paste is not trusted, keep the fallback behavior expectation below.
+   - `Input monitoring hotkeys`
+3. Choose `Open Voice Input Permissions...` and verify macOS opens the missing Accessibility and/or Input Monitoring settings.
+4. Choose `Open Privacy Settings...` and verify macOS opens Privacy & Security settings.
+5. If microphone or speech recognition is not authorized, continue to the recording flow and verify macOS prompts for the missing permission.
+6. If Accessibility paste is not trusted, keep the fallback behavior expectation below.
 
 ## Recording Settings
 
@@ -26,6 +32,10 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 3. Set Speech locale to `ja-JP`.
 4. Save the dialog.
 5. Reopen `Recording Settings...` and verify the saved values are shown.
+6. Choose `Voice Input Mode...`.
+7. Verify the default mode is `Quick Paste`.
+8. Switch to `Learning Preview`, save, reopen, and verify the saved mode is shown.
+9. Switch back to `Quick Paste` before running the daily input flow below.
 
 ## Mock Preview Safety
 
@@ -36,20 +46,37 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. Verify no automatic submit happens in the target app.
 6. Verify dictionary candidates are shown for approval when the edit creates candidates.
 
-## Real Voice Input
+## Quick Paste Voice Input
 
 1. Focus the target text app.
-2. Trigger voice input with Command-Shift-Space or choose `Record Voice Input`.
+2. Trigger voice input with Control-Option-Space or choose `Quick Paste Voice Input` while mode is `Quick Paste`.
 3. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
 4. Verify recording does not start again while already recording.
-5. Verify the preview appears after transcription.
-6. Verify raw transcript is visible.
-7. Verify corrected prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
-8. Edit the corrected prompt if needed.
-9. Confirm paste.
-10. If Accessibility is trusted, verify the prompt is pasted into the focused target.
-11. If Accessibility is not trusted, verify the app copies the prompt and asks the user to press Command-V.
+5. Release the push-to-talk shortcut or stop recording and verify that this explicit stop acts as the confirmation for paste.
+6. Verify no raw/corrected preview window appears in `Quick Paste`.
+7. Verify no dictionary candidate approval UI appears in `Quick Paste`.
+8. Verify the pasted or copied prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
+9. Verify the debug log contains `mode=quickPaste` for the completed recording.
+10. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=quickPaste` summary for the report.
+11. If Accessibility is trusted, verify the prompt is pasted into the focused target.
+12. If Accessibility is not trusted, verify the app copies the prompt and asks the user to press Command-V.
+13. Verify the prompt is not automatically submitted.
+
+## Learning Preview Voice Input
+
+1. Choose `Voice Input Mode...`, switch to `Learning Preview`, and focus the target text app.
+2. Trigger voice input with Control-Option-Space or choose `Record Learning Preview`.
+3. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
+4. Verify the preview appears after transcription.
+5. Verify raw transcript is visible.
+6. Verify corrected prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
+7. Edit the corrected prompt if needed.
+8. Confirm paste.
+9. Verify dictionary candidates are shown for approval only after preview confirmation when the edit creates candidates.
+10. Verify the debug log contains `mode=learningPreview` for the completed recording.
+11. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=learningPreview` summary for the report.
 12. Verify the prompt is not automatically submitted.
+13. Switch back to `Quick Paste` after the learning flow.
 
 ## Local Learning
 
@@ -58,9 +85,11 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 3. Verify the approved dictionary entry affects normalization.
 4. Reject or leave unselected any dangerous command candidate and verify it is not auto-applied by default.
 5. Choose `Learning Settings...`, leave reviewer command blank or disable it, and verify candidate learning still works without a reviewer command.
-6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation.
-7. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
-8. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
+6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation in `Learning Preview`.
+7. Verify the trusted local reviewer command does not run during `Quick Paste`.
+8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is suggested with repository scope.
+9. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
+10. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
 
 ## Local Data Controls
 
@@ -83,3 +112,4 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 1. Verify no raw audio file remains in the selected repository after recording.
 2. Verify raw transcripts are not written to Application Support by default.
 3. Verify approved dictionary entries and settings are local files only.
+4. Verify `debug.log` contains operational diagnostics only and does not become the local learning data source.

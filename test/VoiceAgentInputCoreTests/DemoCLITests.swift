@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import VoiceAgentInputCore
 
 final class DemoCLITests: XCTestCase {
     func testDemoPreviewModeUsesRealExecutablePath() throws {
@@ -30,6 +31,91 @@ final class DemoCLITests: XCTestCase {
         let candidates = try XCTUnwrap(confirmed["candidates"] as? [[String: Any]])
         XCTAssertTrue(candidates.contains { $0["correctedPhrase"] as? String == "Claude Code" })
         XCTAssertTrue(candidates.contains { $0["correctedPhrase"] as? String == "TypeScript" })
+    }
+
+    func testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let codexDirectory = home.appendingPathComponent(".codex")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+        try """
+        {"role":"user","content":"ProjectSpecificName appears in this repository prompt."}
+        {"role":"user","content":"Please preserve ProjectSpecificName when editing docs."}
+        """.write(to: codexDirectory.appendingPathComponent("history.jsonl"), atomically: true, encoding: .utf8)
+
+        let output = try runDemo(arguments: [
+            "--mode", "learn-history",
+            "--home", home.path,
+            "--scope", "repository"
+        ])
+
+        XCTAssertEqual(output["mode"] as? String, "learn-history")
+        XCTAssertNil(output["preview"] as? [String: Any])
+        XCTAssertNil(output["confirmed"] as? [String: Any])
+        let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
+        XCTAssertEqual(historyLearning["scannedTextCount"] as? Int, 1)
+        let candidates = try XCTUnwrap(historyLearning["candidates"] as? [[String: Any]])
+        let candidate = try XCTUnwrap(candidates.first {
+            $0["correctedPhrase"] as? String == "ProjectSpecificName"
+        })
+        XCTAssertEqual(candidate["rawPhrase"] as? String, "project specific name")
+        XCTAssertEqual(candidate["suggestedScope"] as? String, "repository")
+    }
+
+    func testDemoHistoryLearningModeCanSkipApprovedDictionaryEntries() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let home = directory.appendingPathComponent("home")
+        let codexDirectory = home.appendingPathComponent(".codex")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+        try """
+        {"role":"user","content":"ProjectSpecificName appears in this repository prompt."}
+        {"role":"user","content":"Please preserve ProjectSpecificName when editing docs."}
+        """.write(to: codexDirectory.appendingPathComponent("history.jsonl"), atomically: true, encoding: .utf8)
+
+        let dictionaryURL = directory.appendingPathComponent("approved-dictionary.json")
+        try JSONDictionaryRepository(fileURL: dictionaryURL).saveEntries([
+            DictionaryEntry(
+                spokenForms: ["project specific name"],
+                canonical: "ProjectSpecificName",
+                kind: .projectTerm,
+                scope: .repository,
+                confidence: 0.9,
+                autoApply: true
+            )
+        ])
+
+        let output = try runDemo(arguments: [
+            "--mode", "learn-history",
+            "--home", home.path,
+            "--scope", "repository",
+            "--approved-dictionary", dictionaryURL.path
+        ])
+
+        let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
+        XCTAssertEqual(historyLearning["skippedExistingCandidateCount"] as? Int, 1)
+        XCTAssertEqual((historyLearning["candidates"] as? [[String: Any]])?.isEmpty, true)
+    }
+
+    func testDemoHistoryLearningNormalizeModeShowsApprovedCandidatesAffectLaterRules() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let codexDirectory = home.appendingPathComponent(".codex")
+        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
+        try """
+        {"role":"user","content":"ProjectSpecificName appears in this repository prompt."}
+        {"role":"user","content":"Please preserve ProjectSpecificName when editing docs."}
+        """.write(to: codexDirectory.appendingPathComponent("history.jsonl"), atomically: true, encoding: .utf8)
+
+        let output = try runDemo(arguments: [
+            "--mode", "learn-history-normalize",
+            "--home", home.path,
+            "--scope", "repository",
+            "project specific nameの設定を直して"
+        ])
+
+        XCTAssertEqual(output["mode"] as? String, "learn-history-normalize")
+        let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
+        XCTAssertEqual((historyLearning["candidates"] as? [[String: Any]])?.count, 1)
+        let normalization = try XCTUnwrap(output["normalization"] as? [String: Any])
+        XCTAssertEqual(normalization["correctedText"] as? String, "ProjectSpecificName の設定を直して")
     }
 
     private func runDemo(arguments: [String]) throws -> [String: Any] {

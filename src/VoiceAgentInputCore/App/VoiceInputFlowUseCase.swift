@@ -6,32 +6,37 @@ public struct VoiceInputFlowUseCase {
     public var speechEngine: any SpeechToTextEngine
     public var previewUseCase: PromptPreviewUseCase
     public var refiner: any PromptRefiner
+    public var recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)?
 
     public init(
         audioRecorder: (any AudioRecorder)? = nil,
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
         previewUseCase: PromptPreviewUseCase,
-        refiner: any PromptRefiner = NoOpPromptRefiner()
+        refiner: any PromptRefiner = NoOpPromptRefiner(),
+        recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)? = nil
     ) {
         self.audioRecorder = audioRecorder
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.previewUseCase = previewUseCase
         self.refiner = refiner
+        self.recordedAudioHandler = recordedAudioHandler
     }
 
     public init(
         audioRecorder: (any AudioRecorder)? = nil,
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
-        entries: [DictionaryEntry]
+        entries: [DictionaryEntry],
+        recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)? = nil
     ) {
         self.audioRecorder = audioRecorder
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.previewUseCase = PromptPreviewUseCase(entries: entries)
         self.refiner = NoOpPromptRefiner()
+        self.recordedAudioHandler = recordedAudioHandler
     }
 
     public func recordTranscribeAndPreview() async throws -> PromptPreview {
@@ -52,7 +57,8 @@ public struct VoiceInputFlowUseCase {
             microphonePermissionProvider: microphonePermissionProvider,
             speechEngine: speechEngine,
             refiner: refiner,
-            normalizationContext: NormalizationContext(entries: previewUseCase.normalizationUseCase.entries)
+            normalizationContext: NormalizationContext(entries: previewUseCase.normalizationUseCase.entries),
+            recordedAudioHandler: recordedAudioHandler
         )
     }
 }

@@ -2,6 +2,7 @@
 import plistlib
 import shutil
 import stat
+import subprocess
 import sys
 from pathlib import Path
 
@@ -40,6 +41,25 @@ def main() -> int:
     target_executable = macos / executable.name
     shutil.copy2(executable, target_executable)
     target_executable.chmod(target_executable.stat().st_mode | stat.S_IXUSR)
+
+    bundle_identifier = plist.get("CFBundleIdentifier")
+    subprocess.run(
+        [
+            "codesign",
+            "--force",
+            "--sign",
+            "-",
+            "--identifier",
+            bundle_identifier,
+            "--requirements",
+            f'=designated => identifier "{bundle_identifier}"',
+            str(bundle),
+        ],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
 
     print(f"built {bundle}")
     return 0

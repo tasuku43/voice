@@ -33,15 +33,19 @@
 
 - Unit tests cover deterministic algorithms.
 - E2E tests cover the demo CLI path.
-- Fixture-driven eval cases cover realistic utterances.
+- Fixture-driven normalization eval cases cover realistic utterances.
+- Fixture-driven learning eval cases cover approved edit-derived dictionary growth and later rule-based reuse.
+- Fixture-driven history learning eval cases cover approved history-derived dictionary growth and later rule-based reuse.
 
 ## Human usability
 
 Minimum acceptable behavior:
 
-- User can inspect raw and corrected text before paste.
-- User can cancel safely.
-- User can reject bad dictionary candidates.
+- Default daily input uses `Quick Paste`.
+- In `Quick Paste`, user stop or key release confirms paste without opening learning UI.
+- In `Learning Preview`, user can inspect raw and corrected text before paste.
+- In `Learning Preview`, user can cancel safely.
+- In `Learning Preview`, user can reject bad dictionary candidates.
 
 Stretch goals:
 

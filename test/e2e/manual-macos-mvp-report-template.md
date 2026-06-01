@@ -25,6 +25,8 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 
 - Voice menu bar item appears: pass/fail
 - Target text app focused: pass/fail
+- Debug launch used `--debug`: pass/fail
+- Debug log created at `~/Library/Logs/VoiceAgentInput/debug.log`: pass/fail
 - Notes:
 
 ## Permission Status Evidence
@@ -33,6 +35,8 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Microphone shown: pass/fail
 - Speech recognition shown: pass/fail
 - Accessibility paste shown: pass/fail
+- Input monitoring hotkeys shown: pass/fail
+- `Open Voice Input Permissions...` opens missing permission settings: pass/fail
 - `Open Privacy Settings...` opens Privacy & Security: pass/fail
 - macOS permission prompts observed when needed: pass/fail/not applicable
 - Notes:
@@ -42,6 +46,10 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - `Recording Settings...` opened: pass/fail
 - Recording duration saved and reloaded: pass/fail
 - Speech locale saved and reloaded: pass/fail
+- `Voice Input Mode...` opened: pass/fail
+- Default mode is Quick Paste: pass/fail
+- Learning Preview mode saved and reloaded: pass/fail
+- Mode switched back to Quick Paste before daily flow: pass/fail
 - Notes:
 
 ## Mock Preview Safety Evidence
@@ -54,17 +62,37 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Dictionary candidates shown when expected: pass/fail
 - Notes:
 
-## Real Voice Input Evidence
+## Quick Paste Voice Input Evidence
 
-- Command-Shift-Space trigger works: pass/fail
-- `Record Voice Input` menu action works: pass/fail
+- Control-Option-Space trigger works: pass/fail
+- `Quick Paste Voice Input` menu action works: pass/fail
 - Recording reentry is blocked while recording: pass/fail
 - Speech transcription completes: pass/fail
-- Raw transcript visible: pass/fail
-- Corrected prompt contains expected developer terms: pass/fail
+- Push-to-talk release or stop explicitly confirms paste: pass/fail
+- No raw/corrected preview window appears in Quick Paste: pass/fail
+- No dictionary candidate approval UI appears in Quick Paste: pass/fail
+- Pasted or copied prompt contains expected developer terms: pass/fail
+- Debug log contains mode=quickPaste for completed recording: pass/fail
+- Debug log summary includes mode=quickPaste: pass/fail
 - Confirm paste works with Accessibility trusted: pass/fail/not applicable
 - Pasteboard fallback works without Accessibility trust: pass/fail/not applicable
 - No automatic submit: pass/fail
+- Notes:
+
+## Learning Preview Voice Input Evidence
+
+- Learning Preview mode selected: pass/fail
+- Control-Option-Space trigger works in Learning Preview: pass/fail
+- `Record Learning Preview` menu action works in Learning Preview: pass/fail
+- Speech transcription completes: pass/fail
+- Raw transcript visible: pass/fail
+- Corrected prompt contains expected developer terms: pass/fail
+- Edited prompt inserted only after preview confirmation: pass/fail
+- Dictionary candidates shown only after preview confirmation when expected: pass/fail
+- Debug log contains mode=learningPreview for completed recording: pass/fail
+- Debug log summary includes mode=learningPreview: pass/fail
+- No automatic submit: pass/fail
+- Mode switched back to Quick Paste after learning flow: pass/fail
 - Notes:
 
 ## Local Learning Evidence
@@ -73,7 +101,9 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Approved candidate reused later: pass/fail
 - Dangerous command candidate not auto-applied by default: pass/fail
 - Learning Settings blank/disabled path keeps learning local and rule-based: pass/fail
-- Optional trusted local reviewer command runs only after preview confirmation: pass/fail/not applicable
+- Optional trusted local reviewer command runs only after preview confirmation in Learning Preview: pass/fail/not applicable
+- Trusted local reviewer command does not run during Quick Paste: pass/fail/not applicable
+- Learning Preview edit-derived candidate uses repository scope when repository folder is configured: pass/fail
 - Learn From Agent History presents bounded Codex/Claude candidates: pass/fail
 - History-derived project identifier affects later rule-based normalization: pass/fail
 - Notes:
@@ -100,6 +130,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - No raw audio remains in selected repository: pass/fail
 - Raw transcripts are not written to Application Support by default: pass/fail
 - Approved dictionary entries and settings are local files only: pass/fail
+- Debug log is diagnostics only, not local learning data: pass/fail
 - No network/cloud prompt observed: pass/fail
 - Notes:
 

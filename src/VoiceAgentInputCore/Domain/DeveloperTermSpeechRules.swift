@@ -23,6 +23,10 @@ public enum DeveloperTermSpeechRules {
     }
 
     public static func spokenPhrase(for term: String) -> String? {
+        spokenPhrases(for: term).first
+    }
+
+    public static func spokenPhrases(for term: String) -> [String] {
         let lower = term.lowercased()
         let fixed: [String: String] = [
             "api": "えーぴーあい",
@@ -47,15 +51,17 @@ public enum DeveloperTermSpeechRules {
             "cursor": "かーそる"
         ]
         if let phrase = fixed[lower] {
-            return phrase
+            return [phrase]
         }
         if term.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber) }), term.count <= 6, term.uppercased() == term {
-            return term.lowercased().map(String.init).joined(separator: " ")
+            return [term.lowercased().map(String.init).joined(separator: " ")]
         }
+        var phrases: [String] = []
         if let phrase = spokenIdentifierPhrase(for: term) {
-            return phrase
+            phrases.append(phrase)
         }
-        return nil
+        phrases += katakanaIdentifierPhrases(for: term)
+        return Array(Set(phrases)).sorted()
     }
 
     private static func spokenIdentifierPhrase(for term: String) -> String? {
@@ -67,6 +73,35 @@ public enum DeveloperTermSpeechRules {
             return nil
         }
         return components.map { $0.lowercased() }.joined(separator: " ")
+    }
+
+    private static func katakanaIdentifierPhrases(for term: String) -> [String] {
+        let components = identifierComponents(for: term)
+        guard components.count >= 2 else {
+            return []
+        }
+        let katakanaByComponent = [
+            "agent": "エージェント",
+            "app": "アップ",
+            "code": "コード",
+            "codex": "コーデックス",
+            "input": "インプット",
+            "name": "ネーム",
+            "preview": "プレビュー",
+            "project": "プロジェクト",
+            "specific": "スペシフィック",
+            "voice": "ボイス"
+        ]
+        let katakanaComponents = components.compactMap { component in
+            katakanaByComponent[component.lowercased()]
+        }
+        guard katakanaComponents.count == components.count else {
+            return []
+        }
+        return [
+            katakanaComponents.joined(),
+            katakanaComponents.joined(separator: " ")
+        ]
     }
 
     private static func identifierComponents(for term: String) -> [String] {

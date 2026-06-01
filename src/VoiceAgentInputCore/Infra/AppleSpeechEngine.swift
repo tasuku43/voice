@@ -5,17 +5,20 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
     public let localeIdentifier: String
     public let temporaryDirectory: URL
     public let requiresOnDeviceRecognition: Bool
+    public let recognitionHints: SpeechRecognitionHints
     public var recognitionSnapshotHandler: (@Sendable (String, Bool) -> Void)?
 
     public init(
         localeIdentifier: String = "ja-JP",
         temporaryDirectory: URL = FileManager.default.temporaryDirectory,
         requiresOnDeviceRecognition: Bool = true,
+        recognitionHints: SpeechRecognitionHints = SpeechRecognitionHints(),
         recognitionSnapshotHandler: (@Sendable (String, Bool) -> Void)? = nil
     ) {
         self.localeIdentifier = localeIdentifier
         self.temporaryDirectory = temporaryDirectory
         self.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+        self.recognitionHints = recognitionHints
         self.recognitionSnapshotHandler = recognitionSnapshotHandler
     }
 
@@ -32,9 +35,7 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
         ).withRecordedAudioFile(audio) { url in
             try await withCheckedThrowingContinuation { continuation in
                 let box = SpeechResultBox(continuation: continuation)
-                let request = SFSpeechURLRecognitionRequest(url: url)
-                request.shouldReportPartialResults = true
-                request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+                let request = self.recognitionRequest(url: url)
 
                 recognizer.recognitionTask(with: request) { result, error in
                     if let result {
@@ -68,6 +69,16 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
 
     public func transcribeMockText(_ text: String) async throws -> String {
         text
+    }
+
+    func recognitionRequest(url: URL) -> SFSpeechURLRecognitionRequest {
+        let request = SFSpeechURLRecognitionRequest(url: url)
+        request.shouldReportPartialResults = true
+        request.requiresOnDeviceRecognition = requiresOnDeviceRecognition
+        if !recognitionHints.contextualStrings.isEmpty {
+            request.contextualStrings = recognitionHints.contextualStrings
+        }
+        return request
     }
 }
 

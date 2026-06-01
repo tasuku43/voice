@@ -1,0 +1,14 @@
+[
+  {
+    "name": "agent-history-project-identifier-learning",
+    "historyTexts": [
+      "ProjectSpecificName appears in this repository prompt.",
+      "Please preserve ProjectSpecificName when editing docs."
+    ],
+    "laterRawTranscript": "project specific nameの設定を直して",
+    "expectedContains": [
+      "ProjectSpecificName"
+    ],
+    "scope": "repository"
+  }
+]

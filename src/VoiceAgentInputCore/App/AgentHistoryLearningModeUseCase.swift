@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AgentHistoryLearningModeResult: Equatable, Sendable {
+public struct AgentHistoryLearningModeResult: Codable, Equatable, Sendable {
     public var scannedTextCount: Int
     public var candidates: [CorrectionCandidate]
     public var skippedExistingCandidateCount: Int

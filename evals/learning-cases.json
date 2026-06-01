@@ -1,0 +1,12 @@
+[
+  {
+    "name": "katakana-project-identifier-learning",
+    "rawTranscript": "ボイスエージェントインプットを直して",
+    "finalEditedPrompt": "VoiceAgentInput を直して",
+    "laterRawTranscript": "ボイスエージェントインプットのプレビューを直して",
+    "expectedContains": [
+      "VoiceAgentInput"
+    ],
+    "scope": "repository"
+  }
+]

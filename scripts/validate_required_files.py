@@ -32,6 +32,8 @@ required = [
     'docs/codex-sessions/learning-session.md',
     'docs/codex-sessions/output-session.md',
     'scripts/smoke_demo_command.py',
+    'scripts/launch_manual_e2e_app.py',
+    'scripts/summarize_debug_log.py',
     'scripts/local_learning_reviewer_example.py',
     'scripts/validate_architecture_refactor.py',
     'scripts/validate_component_contracts.py',
@@ -43,6 +45,8 @@ required = [
     'src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift',
     'src/VoiceAgentInputCore/App/PromptTextTransform.swift',
     'src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift',
+    'src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift',
+    'src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift',
     'src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift',
     'src/VoiceAgentInputCore/App/AppSettingsUseCase.swift',
     'src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift',
@@ -57,6 +61,8 @@ required = [
     'src/VoiceAgentInputApp/CandidateApprovalDialogController.swift',
     '.codex/goals/voice-agent-input-full-build.md',
     'evals/normalization-cases.json',
+    'evals/learning-cases.json',
+    'evals/history-learning-cases.json',
 ]
 
 root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('.')

@@ -6,17 +6,23 @@ final class PreviewWindowController: NSWindowController {
     private let preview: PromptPreview
     private let previewUseCase: PromptPreviewUseCase
     private let editLearningUseCase: PromptEditLearningUseCase
+    private let suggestedLearningScope: DictionaryScope
     private let candidateApprovalDialog = CandidateApprovalDialogController()
     private let correctedTextView = NSTextView()
+    private let onConfirmedPaste: (ConfirmedPrompt) -> Void
 
     init(
         preview: PromptPreview,
         previewUseCase: PromptPreviewUseCase,
-        editLearningUseCase: PromptEditLearningUseCase? = nil
+        editLearningUseCase: PromptEditLearningUseCase? = nil,
+        suggestedLearningScope: DictionaryScope = .user,
+        onConfirmedPaste: @escaping (ConfirmedPrompt) -> Void = { _ in }
     ) {
         self.preview = preview
         self.previewUseCase = previewUseCase
         self.editLearningUseCase = editLearningUseCase ?? PromptEditLearningUseCase(previewUseCase: previewUseCase)
+        self.suggestedLearningScope = suggestedLearningScope
+        self.onConfirmedPaste = onConfirmedPaste
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 680, height: 420),
@@ -134,9 +140,11 @@ final class PreviewWindowController: NSWindowController {
             do {
                 let confirmed = try await editLearningUseCase.confirm(
                     preview: preview,
-                    finalEditedPrompt: correctedTextView.string
+                    finalEditedPrompt: correctedTextView.string,
+                    suggestedScope: suggestedLearningScope
                 )
                 try insertConfirmedPrompt(confirmed)
+                onConfirmedPaste(confirmed)
                 close()
             } catch {
                 let alert = NSAlert(error: error)

@@ -1,4 +1,7 @@
 import AppKit
+import ApplicationServices
+import Carbon
+import CoreGraphics
 import UniformTypeIdentifiers
 import VoiceAgentInputCore
 
@@ -14,10 +17,18 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var debugWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
     private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
+    private var pushToTalkWindowController: PushToTalkWindowController?
     private var activeAudioRecorder: AVFoundationAudioRecorder?
     private var inputLevelTimer: Timer?
     private var hasDetectedVoiceInput = false
+    private var shouldStopRecordingWhenReady = false
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
+    private let historyHotkeyMonitor = AppKitKeyboardShortcutMonitor()
+    private var diagnosticHotkeyMonitors: [AppKitKeyboardShortcutMonitor] = []
+    private var keyboardEventTap: KeyboardEventTap?
+    private var permissionStatusTimer: Timer?
+    private var lastPermissionStatusSnapshot: PermissionStatusSnapshot?
+    private var hasOpenedMissingPermissionSettings = false
     private var isRecording = false {
         didSet {
             updateRecordingState()
@@ -25,22 +36,33 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        debugLogger.log("applicationDidFinishLaunching started")
+        debugLogger.log("applicationDidFinishLaunching started; hotkeyDiagnosticsBuild=dispatcher-target-v1 bundlePath=\(Bundle.main.bundlePath) args=\(CommandLine.arguments.joined(separator: " "))")
         NSApp.setActivationPolicy(.regular)
         installMenuBarItem()
         showLaunchWindow()
         showDebugWindowIfNeeded()
-        hotkeyMonitor.start(shortcut: .defaultVoiceInput) { [weak self] in
-            Task { @MainActor in
-                self?.recordVoiceInput()
-            }
-        }
+        logPermissionStatusForDebug()
+        requestInputMonitoringAccessIfNeeded()
+        requestAccessibilityAccessIfNeeded()
+        openMissingPermissionSettingsIfNeeded(reason: "launch")
+        registerHotkeys(reason: "launch")
+        startHotkeyDiagnosticsIfDebug()
+        startPermissionStatusMonitoring()
         debugLogger.log("applicationDidFinishLaunching finished")
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         debugLogger.log("applicationWillTerminate")
+        permissionStatusTimer?.invalidate()
+        permissionStatusTimer = nil
         hotkeyMonitor.stop()
+        historyHotkeyMonitor.stop()
+        diagnosticHotkeyMonitors.forEach { $0.stop() }
+        keyboardEventTap?.stop()
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        checkPermissionStatusForChanges(reason: "app became active")
     }
 
     private func installMenuBarItem() {
@@ -49,14 +71,23 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         item.button?.title = "Voice"
 
         let menu = NSMenu()
-        let recordItem = NSMenuItem(title: "Record Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r")
+        let recordItem = NSMenuItem(title: "Quick Paste Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r")
+        let historyItem = NSMenuItem(title: "Voice Input History...", action: #selector(showVoiceInputHistory), keyEquivalent: "v")
+        historyItem.keyEquivalentModifierMask = [.control, .shift]
         menu.addItem(recordItem)
+        menu.addItem(NSMenuItem(title: "Show Push-to-Talk Button", action: #selector(showPushToTalkButton), keyEquivalent: "b"))
         menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
-        menu.addItem(NSMenuItem(title: "Hotkey: Command-Shift-Space", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Start Hotkey Diagnostics", action: #selector(startHotkeyDiagnostics), keyEquivalent: ""))
+        menu.addItem(historyItem)
+        menu.addItem(NSMenuItem(title: "History Hotkey: Control-Shift-V", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem(title: "Voice Input Mode...", action: #selector(showVoiceInputModeSettings), keyEquivalent: "m"))
         menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Voice Input Permissions...", action: #selector(openVoiceInputPermissionSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Privacy Settings...", action: #selector(openPrivacySettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Input Monitoring Settings...", action: #selector(openInputMonitoringSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
@@ -100,7 +131,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         buttons.spacing = 8
         buttons.alignment = .centerY
         buttons.addArrangedSubview(NSButton(title: "Mock Preview", target: self, action: #selector(showMockPreview)))
-        let recordButton = NSButton(title: "Record", target: self, action: #selector(recordVoiceInput))
+        let recordButton = NSButton(title: "Quick Paste", target: self, action: #selector(recordVoiceInput))
         launchRecordButton = recordButton
         buttons.addArrangedSubview(recordButton)
 
@@ -172,6 +203,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             return
         }
         isRecording = true
+        shouldStopRecordingWhenReady = false
 
         let entries: [DictionaryEntry]
         let settings: AppSettings
@@ -199,10 +231,17 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.showRecordingFeedback()
                     self.startInputLevelMonitoring()
                     self.debugLogger.log("recordVoiceInput recording started; waiting for user stop")
+                    if self.shouldStopRecordingWhenReady {
+                        Task { @MainActor in
+                            try? await Task.sleep(nanoseconds: 120_000_000)
+                            audioRecorder.stopRecording()
+                        }
+                    }
                 }
                 let speechEngine = AppleSpeechEngine(
                     localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
                     requiresOnDeviceRecognition: true,
+                    recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries),
                     recognitionSnapshotHandler: { [debugLogger] snapshot, isFinal in
                         debugLogger.log("speech snapshot final=\(isFinal) text=\(snapshot)")
                     }
@@ -212,7 +251,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
                     speechEngine: speechEngine,
                     refiner: JapanesePunctuationPromptRefiner(),
-                    normalizationContext: NormalizationContext(entries: entries)
+                    normalizationContext: NormalizationContext(entries: entries),
+                    recordedAudioHandler: { [debugLogger] audio in
+                        debugLogger.log(
+                            "recordVoiceInput recorded audio duration=\(String(format: "%.2f", audio.durationSeconds))s bytes=\(audio.data.count) format=\(audio.formatDescription)"
+                        )
+                    }
                 )
                 let result = try await voiceInputPipeline.run()
                 await MainActor.run {
@@ -220,8 +264,28 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
                     self.isRecording = false
-                    self.debugLogger.log("recordVoiceInput completed; opening preview")
-                    self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
+                    self.shouldStopRecordingWhenReady = false
+                    self.debugLogger.log(
+                        "recordVoiceInput completed; transcriptLength=\(result.transcript.text.count) correctedLength=\(result.preview.correctedPrompt.count); mode=\(settings.voiceInputMode.rawValue)"
+                    )
+                }
+                switch VoiceInputModeDecisionUseCase().decide(
+                    mode: settings.voiceInputMode,
+                    preview: result.preview
+                ) {
+                case let .learningPreview(preview):
+                    await MainActor.run {
+                        self.openPreview(preview: preview, previewUseCase: previewUseCase)
+                    }
+                case let .quickPaste(confirmed):
+                    await MainActor.run {
+                        do {
+                            try self.insertConfirmedPrompt(confirmed)
+                        } catch {
+                            self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
+                            self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
+                        }
+                    }
                 }
             } catch {
                 await MainActor.run {
@@ -229,6 +293,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.closeRecordingFeedback()
                     self.activeAudioRecorder = nil
                     self.isRecording = false
+                    self.shouldStopRecordingWhenReady = false
                     self.debugLogger.log("recordVoiceInput failed: \(error)")
                     self.presentError(error)
                 }
@@ -236,11 +301,173 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func startVoiceInputFromShortcut() {
+        guard !isRecording else {
+            debugLogger.log("voice input push-to-talk keyDown ignored because recording is already active")
+            return
+        }
+        debugLogger.log("voice input push-to-talk keyDown received; starting")
+        recordVoiceInput()
+    }
+
+    private func stopVoiceInputFromShortcut() {
+        guard isRecording else {
+            debugLogger.log("voice input push-to-talk keyUp ignored because no recording is active")
+            return
+        }
+        debugLogger.log("voice input push-to-talk keyUp received; stopping recording")
+        if let activeAudioRecorder {
+            activeAudioRecorder.stopRecording()
+        } else {
+            shouldStopRecordingWhenReady = true
+            debugLogger.log("voice input push-to-talk keyUp received before recorder was ready; queued stop")
+        }
+    }
+
     private func updateRecordingState() {
+        let idleRecordTitle: String
+        let idleButtonTitle: String
+        if let settings = try? settingsUseCase().loadSettings() {
+            switch settings.voiceInputMode {
+            case .quickPaste:
+                idleRecordTitle = "Quick Paste Voice Input"
+                idleButtonTitle = "Quick Paste"
+            case .learningPreview:
+                idleRecordTitle = "Record Learning Preview"
+                idleButtonTitle = "Learning Preview"
+            }
+        } else {
+            idleRecordTitle = "Quick Paste Voice Input"
+            idleButtonTitle = "Quick Paste"
+        }
+
         statusItem?.button?.title = isRecording ? "Voice..." : "Voice"
-        recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Record Voice Input"
+        recordMenuItem?.title = isRecording ? "Stop Voice Input" : idleRecordTitle
         recordMenuItem?.isEnabled = true
-        launchRecordButton?.title = isRecording ? "Stop" : "Record"
+        launchRecordButton?.title = isRecording ? "Stop" : idleButtonTitle
+        pushToTalkWindowController?.setRecording(isRecording)
+    }
+
+    @objc private func showPushToTalkButton() {
+        if let pushToTalkWindowController {
+            pushToTalkWindowController.showWindow(nil)
+            return
+        }
+        let controller = PushToTalkWindowController(
+            startAction: { [weak self] in
+                self?.debugLogger.log("push-to-talk button pressed; starting")
+                self?.startVoiceInputFromShortcut()
+            },
+            stopAction: { [weak self] in
+                self?.debugLogger.log("push-to-talk button released; stopping")
+                self?.stopVoiceInputFromShortcut()
+            }
+        )
+        pushToTalkWindowController = controller
+        controller.showWindow(nil)
+    }
+
+    private func startHotkeyDiagnosticsIfDebug() {
+        guard debugLogger.enabled else {
+            return
+        }
+        startHotkeyDiagnostics()
+    }
+
+    @objc private func startHotkeyDiagnostics() {
+        debugLogger.log("hotkey diagnostics starting")
+        diagnosticHotkeyMonitors.forEach { $0.stop() }
+        diagnosticHotkeyMonitors = []
+
+        let diagnosticShortcuts: [(String, KeyboardShortcut)] = [
+            ("diagnostic/control-option-s", KeyboardShortcut(key: "s", modifiers: [.control, .option])),
+            ("diagnostic/control-shift-d", KeyboardShortcut(key: "d", modifiers: [.control, .shift])),
+            ("diagnostic/control-option-d", KeyboardShortcut(key: "d", modifiers: [.control, .option]))
+        ]
+        for (label, shortcut) in diagnosticShortcuts {
+            let monitor = AppKitKeyboardShortcutMonitor()
+            monitor.start(
+                shortcut: shortcut,
+                onTrigger: { [debugLogger] in
+                    debugLogger.log("hotkey diagnostics carbon pressed label=\(label)")
+                },
+                onRelease: { [debugLogger] in
+                    debugLogger.log("hotkey diagnostics carbon released label=\(label)")
+                }
+            )
+            diagnosticHotkeyMonitors.append(monitor)
+        }
+
+        if keyboardEventTap == nil {
+            keyboardEventTap = KeyboardEventTap(debugLogger: debugLogger)
+        }
+        keyboardEventTap?.start()
+        debugLogger.log("hotkey diagnostics ready; try Control-Option-Space, Control-Shift-S, Control-Option-S, Control-Shift-D, Control-Option-D")
+    }
+
+    private func registerHotkeys(reason: String) {
+        AppKitKeyboardShortcutMonitor.debugLogger = debugLogger
+        hotkeyMonitor.stop()
+        historyHotkeyMonitor.stop()
+
+        debugLogger.log("registering voice input hotkey Control-Option-Space reason=\(reason)")
+        hotkeyMonitor.start(
+            shortcut: .defaultVoiceInput,
+            onTrigger: { [weak self] in
+                Task { @MainActor in
+                    self?.startVoiceInputFromShortcut()
+                }
+            },
+            onRelease: { [weak self] in
+                Task { @MainActor in
+                    self?.stopVoiceInputFromShortcut()
+                }
+            }
+        )
+        debugLogger.log("registering voice input history hotkey Control-Shift-V reason=\(reason)")
+        historyHotkeyMonitor.start(shortcut: .defaultVoiceInputHistory) { [weak self] in
+            Task { @MainActor in
+                self?.debugLogger.log("voice input history hotkey triggered")
+                self?.showVoiceInputHistory()
+            }
+        }
+    }
+
+    private func startPermissionStatusMonitoring() {
+        lastPermissionStatusSnapshot = currentPermissionStatus()
+        let timer = Timer(timeInterval: 2.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.checkPermissionStatusForChanges(reason: "poll")
+            }
+        }
+        permissionStatusTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func checkPermissionStatusForChanges(reason: String) {
+        let status = currentPermissionStatus()
+        guard let lastPermissionStatusSnapshot else {
+            self.lastPermissionStatusSnapshot = status
+            debugLogger.log("permission status baseline \(permissionStatusDescription(status)) reason=\(reason)")
+            return
+        }
+        guard status != lastPermissionStatusSnapshot else {
+            return
+        }
+
+        debugLogger.log(
+            "permission status changed \(permissionStatusDescription(lastPermissionStatusSnapshot)) -> \(permissionStatusDescription(status)) reason=\(reason)"
+        )
+        self.lastPermissionStatusSnapshot = status
+
+        if lastPermissionStatusSnapshot.inputMonitoring != .trusted,
+           status.inputMonitoring == .trusted
+        {
+            registerHotkeys(reason: "input monitoring became trusted")
+            if debugLogger.enabled {
+                startHotkeyDiagnostics()
+            }
+        }
     }
 
     private func showRecordingFeedback() {
@@ -262,11 +489,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func startInputLevelMonitoring() {
         stopInputLevelMonitoring()
-        inputLevelTimer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { [weak self] _ in
+        let timer = Timer(timeInterval: 0.08, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updateInputLevelFeedback()
             }
         }
+        inputLevelTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     private func stopInputLevelMonitoring() {
@@ -301,18 +530,57 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
+        let learningScope = (try? loadSettings().preferredLearningScope) ?? .user
         let controller = PreviewWindowController(
             preview: preview,
             previewUseCase: previewUseCase,
             editLearningUseCase: PromptEditLearningUseCase(
                 previewUseCase: previewUseCase,
                 candidateReviewer: learningCandidateReviewer()
-            )
+            ),
+            suggestedLearningScope: learningScope,
+            onConfirmedPaste: { [weak self] confirmed in
+                self?.recordVoiceInputHistory(
+                    prompt: confirmed.promptToInsert
+                )
+            }
         )
         previewWindowController = controller
         controller.showWindow(nil)
         controller.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func insertConfirmedPrompt(_ confirmed: ConfirmedPrompt) throws {
+        do {
+            let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
+            try insertion.insert(confirmed, explicitConfirmation: true)
+            recordVoiceInputHistory(prompt: confirmed.promptToInsert)
+            try CandidateApprovalDialogController().approveCandidatesIfRequested(confirmed.candidates)
+        } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
+            try PromptInsertionUseCase(
+                insertionController: PasteboardTextInsertionController()
+            ).insert(confirmed, explicitConfirmation: true)
+            recordVoiceInputHistory(prompt: confirmed.promptToInsert)
+            showAccessibilityFallbackAlert()
+            try CandidateApprovalDialogController().approveCandidatesIfRequested(confirmed.candidates)
+        }
+    }
+
+    private func recordVoiceInputHistory(prompt: String) {
+        do {
+            try voiceInputHistoryUseCase().record(prompt: prompt)
+        } catch {
+            debugLogger.log("voice input history record failed: \(error)")
+        }
+    }
+
+    private func showAccessibilityFallbackAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = "Prompt copied"
+        alert.informativeText = "Enable Accessibility access for Voice Agent Input in System Settings to paste automatically. For now, press Command-V in the target app."
+        alert.runModal()
     }
 
     private func learningCandidateReviewer() -> any LearningCandidateReviewer {
@@ -372,9 +640,132 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         try AppSettingsUseCase(repository: settingsRepository())
     }
 
+    private func voiceInputHistoryUseCase() throws -> VoiceInputHistoryUseCase {
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        return try VoiceInputHistoryUseCase(repository: store.voiceInputHistoryRepository())
+    }
+
     private func approvedDictionaryRepository() throws -> JSONDictionaryRepository {
         let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
         return try store.repository()
+    }
+
+    private func logPermissionStatusForDebug() {
+        let status = currentPermissionStatus()
+        debugLogger.log("permission status \(permissionStatusDescription(status))")
+    }
+
+    private func currentPermissionStatus() -> PermissionStatusSnapshot {
+        PermissionStatusUseCase(
+            microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
+            speechRecognitionPermissionProvider: SFSpeechRecognitionPermissionProvider(),
+            accessibilityPermissionProvider: AXAccessibilityPermissionProvider(),
+            inputMonitoringPermissionProvider: CGEventInputMonitoringPermissionProvider()
+        ).currentStatus()
+    }
+
+    private func permissionStatusDescription(_ status: PermissionStatusSnapshot) -> String {
+        "microphone=\(status.microphone.rawValue) speech=\(status.speechRecognition.rawValue) accessibility=\(status.accessibility.rawValue) inputMonitoring=\(status.inputMonitoring.rawValue)"
+    }
+
+    private func requestInputMonitoringAccessIfNeeded() {
+        let provider = CGEventInputMonitoringPermissionProvider()
+        guard provider.currentStatus() != .trusted else {
+            return
+        }
+        debugLogger.log("input monitoring is not trusted; requesting access for global hotkeys")
+        let requestedStatus = provider.requestAccess()
+        debugLogger.log("input monitoring request result=\(requestedStatus.rawValue)")
+    }
+
+    private func requestAccessibilityAccessIfNeeded() {
+        guard AXAccessibilityPermissionProvider().currentStatus() != .trusted else {
+            return
+        }
+        debugLogger.log("accessibility is not trusted; requesting access for automatic paste")
+        let options = [
+            "AXTrustedCheckOptionPrompt": true
+        ] as CFDictionary
+        let isTrusted = AXIsProcessTrustedWithOptions(options)
+        debugLogger.log("accessibility request result=\(isTrusted ? "trusted" : "notTrusted")")
+    }
+
+    private func openMissingPermissionSettingsIfNeeded(reason: String, force: Bool = false) {
+        let status = currentPermissionStatus()
+        let needsAccessibility = status.accessibility != .trusted
+        let needsInputMonitoring = status.inputMonitoring != .trusted
+        guard needsAccessibility || needsInputMonitoring else {
+            debugLogger.log("permission settings not opened reason=\(reason) missing=none")
+            if force {
+                openPrivacySettings()
+            }
+            return
+        }
+        guard force || !hasOpenedMissingPermissionSettings else {
+            debugLogger.log("permission settings already opened once; skipping reason=\(reason)")
+            return
+        }
+
+        hasOpenedMissingPermissionSettings = true
+        let missing = [
+            needsAccessibility ? "accessibility" : nil,
+            needsInputMonitoring ? "inputMonitoring" : nil
+        ].compactMap { $0 }.joined(separator: ",")
+        debugLogger.log("opening permission settings reason=\(reason) missing=\(missing)")
+
+        if needsInputMonitoring {
+            openInputMonitoringSettings()
+        }
+        if needsAccessibility {
+            let delay: TimeInterval = needsInputMonitoring ? 0.8 : 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.openAccessibilitySettings()
+            }
+        }
+    }
+
+    @objc private func showVoiceInputHistory() {
+        do {
+            let entries = try voiceInputHistoryUseCase().recentEntries()
+            guard !entries.isEmpty else {
+                let alert = NSAlert()
+                alert.alertStyle = .informational
+                alert.messageText = "No voice input history yet"
+                alert.informativeText = "Recorded prompts appear here after they are pasted or copied."
+                alert.runModal()
+                return
+            }
+
+            let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 420, height: 28), pullsDown: false)
+            for entry in entries {
+                let title = entry.prompt.count > 80
+                    ? String(entry.prompt.prefix(77)) + "..."
+                    : entry.prompt
+                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+                item.representedObject = entry.prompt
+                popup.menu?.addItem(item)
+            }
+
+            let alert = NSAlert()
+            alert.messageText = "Voice input history"
+            alert.informativeText = "Choose a past voice input to paste into the focused app."
+            alert.accessoryView = popup
+            alert.addButton(withTitle: "Paste")
+            alert.addButton(withTitle: "Cancel")
+
+            guard
+                alert.runModal() == .alertFirstButtonReturn,
+                let prompt = popup.selectedItem?.representedObject as? String
+            else {
+                return
+            }
+
+            try insertConfirmedPrompt(
+                ConfirmedPrompt(promptToInsert: prompt, candidates: [])
+            )
+        } catch {
+            presentError(error)
+        }
     }
 
     @objc private func setRepositoryFolder() {
@@ -390,6 +781,41 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         do {
             try settingsUseCase().saveRepositoryPath(url.path)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func showVoiceInputModeSettings() {
+        do {
+            let settingsUseCase = try settingsUseCase()
+            let settings = try settingsUseCase.loadSettings()
+
+            let modePicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 220, height: 28), pullsDown: false)
+            for mode in VoiceInputMode.allCases {
+                let item = NSMenuItem(title: mode.displayName, action: nil, keyEquivalent: "")
+                item.representedObject = mode.rawValue
+                modePicker.menu?.addItem(item)
+            }
+            modePicker.selectItem(withTitle: settings.voiceInputMode.displayName)
+
+            let alert = NSAlert()
+            alert.messageText = "Voice input mode"
+            alert.informativeText = "Quick Paste is for daily use. Learning Preview shows raw and corrected text so edits can improve future normalization."
+            alert.accessoryView = modePicker
+            alert.addButton(withTitle: "Save")
+            alert.addButton(withTitle: "Cancel")
+
+            guard
+                alert.runModal() == .alertFirstButtonReturn,
+                let rawValue = modePicker.selectedItem?.representedObject as? String,
+                let mode = VoiceInputMode(rawValue: rawValue)
+            else {
+                return
+            }
+
+            try settingsUseCase.saveVoiceInputMode(mode)
+            updateRecordingState()
         } catch {
             presentError(error)
         }
@@ -472,7 +898,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let status = PermissionStatusUseCase(
             microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
             speechRecognitionPermissionProvider: SFSpeechRecognitionPermissionProvider(),
-            accessibilityPermissionProvider: AXAccessibilityPermissionProvider()
+            accessibilityPermissionProvider: AXAccessibilityPermissionProvider(),
+            inputMonitoringPermissionProvider: CGEventInputMonitoringPermissionProvider()
         ).currentStatus()
 
         let alert = NSAlert()
@@ -481,13 +908,39 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         Microphone: \(status.microphone.rawValue)
         Speech recognition: \(status.speechRecognition.rawValue)
         Accessibility paste: \(status.accessibility.rawValue)
+        Input monitoring hotkeys: \(status.inputMonitoring.rawValue)
         """
         alert.addButton(withTitle: "OK")
-        alert.runModal()
+        alert.addButton(withTitle: "Open Settings")
+        if alert.runModal() == .alertSecondButtonReturn {
+            openMissingPermissionSettingsIfNeeded(reason: "permission status alert", force: true)
+        }
+    }
+
+    @objc private func openVoiceInputPermissionSettings() {
+        requestInputMonitoringAccessIfNeeded()
+        requestAccessibilityAccessIfNeeded()
+        openMissingPermissionSettingsIfNeeded(reason: "permission menu", force: true)
     }
 
     @objc private func openPrivacySettings() {
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy") else {
+            return
+        }
+        NSWorkspace.shared.open(url)
+    }
+
+    @objc private func openAccessibilitySettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") else {
+            openPrivacySettings()
+            return
+        }
+        NSWorkspace.shared.open(url)
+    }
+
+    @objc private func openInputMonitoringSettings() {
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent") else {
+            openPrivacySettings()
             return
         }
         NSWorkspace.shared.open(url)
@@ -661,65 +1114,488 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
 @MainActor
 private final class AppKitKeyboardShortcutMonitor: KeyboardShortcutMonitor {
-    private var globalMonitor: Any?
-    private var localMonitor: Any?
+    nonisolated(unsafe) static var debugLogger: AppDebugLogger?
+    nonisolated(unsafe) private static var nextHotKeyID: UInt32 = 1
+    private static let signature = OSType(
+        UInt32(Character("V").asciiValue!) << 24
+            | UInt32(Character("A").asciiValue!) << 16
+            | UInt32(Character("I").asciiValue!) << 8
+            | UInt32(Character("H").asciiValue!)
+    )
 
-    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void) {
+    private var eventHotKeyRef: EventHotKeyRef?
+    private var eventHandlerRef: EventHandlerRef?
+    private var eventTap: CFMachPort?
+    private var eventTapRunLoopSource: CFRunLoopSource?
+    private var hotKeyID: EventHotKeyID?
+    nonisolated(unsafe) private var eventTapKeyCode: Int?
+    nonisolated(unsafe) private var eventTapModifiers: KeyboardShortcut.Modifiers = []
+    private var keyCode: Int?
+    private var modifiers: KeyboardShortcut.Modifiers = []
+    private var onTrigger: (() -> Void)?
+    private var onRelease: (() -> Void)?
+    private var isPressed = false
+
+    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void, onRelease: (() -> Void)? = nil) {
         stop()
+        self.onTrigger = onTrigger
+        self.onRelease = onRelease
 
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { event in
-            if Self.matches(event: event, shortcut: shortcut) {
-                Task { @MainActor in
-                    onTrigger()
+        guard let keyCode = Self.carbonKeyCode(for: shortcut.key) else {
+            Self.debugLogger?.log("carbon hotkey registration failed; unsupported key=\(shortcut.key)")
+            return
+        }
+        self.keyCode = keyCode
+        modifiers = shortcut.modifiers
+        eventTapKeyCode = keyCode
+        eventTapModifiers = shortcut.modifiers
+
+        let id = EventHotKeyID(signature: Self.signature, id: Self.nextHotKeyID)
+        Self.nextHotKeyID += 1
+        hotKeyID = id
+
+        var eventTypes = [
+            EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed)),
+            EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyReleased))
+        ]
+        let eventTarget = GetEventDispatcherTarget()
+        let installStatus = InstallEventHandler(
+            eventTarget,
+            { _, event, userData in
+                guard let event, let userData else {
+                    return noErr
                 }
-            }
+                let monitor = Unmanaged<AppKitKeyboardShortcutMonitor>
+                    .fromOpaque(userData)
+                    .takeUnretainedValue()
+                var eventHotKeyID = EventHotKeyID()
+                let parameterStatus = GetEventParameter(
+                    event,
+                    EventParamName(kEventParamDirectObject),
+                    EventParamType(typeEventHotKeyID),
+                    nil,
+                    MemoryLayout<EventHotKeyID>.size,
+                    nil,
+                    &eventHotKeyID
+                )
+                guard parameterStatus == noErr else {
+                    return noErr
+                }
+                Task { @MainActor in
+                    monitor.handleCarbonHotKey(
+                        eventKind: GetEventKind(event),
+                        eventHotKeyID: eventHotKeyID
+                    )
+                }
+                return noErr
+            },
+            eventTypes.count,
+            &eventTypes,
+            Unmanaged.passUnretained(self).toOpaque(),
+            &eventHandlerRef
+        )
+        guard installStatus == noErr else {
+            Self.debugLogger?.log("carbon hotkey handler install failed status=\(installStatus)")
+            stop()
+            return
         }
-        localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if Self.matches(event: event, shortcut: shortcut) {
-                onTrigger()
-                return nil
-            }
-            return event
+
+        var registeredHotKeyRef: EventHotKeyRef?
+        let registerStatus = RegisterEventHotKey(
+            UInt32(keyCode),
+            Self.carbonModifiers(for: shortcut.modifiers),
+            id,
+            eventTarget,
+            OptionBits(0),
+            &registeredHotKeyRef
+        )
+        guard registerStatus == noErr else {
+            Self.debugLogger?.log("carbon hotkey registration failed status=\(registerStatus) key=\(shortcut.key) modifiers=\(Self.modifierDescription(shortcut.modifiers))")
+            stop()
+            return
         }
+        eventHotKeyRef = registeredHotKeyRef
+        Self.debugLogger?.log("carbon hotkey registered target=dispatcher key=\(shortcut.key) keyCode=\(keyCode) modifiers=\(Self.modifierDescription(shortcut.modifiers)) id=\(id.id)")
+        startEventTapFallback(shortcut: shortcut, keyCode: keyCode)
     }
 
     func stop() {
-        if let globalMonitor {
-            NSEvent.removeMonitor(globalMonitor)
+        if let eventTapRunLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), eventTapRunLoopSource, .commonModes)
         }
-        if let localMonitor {
-            NSEvent.removeMonitor(localMonitor)
+        if let eventTap {
+            CFMachPortInvalidate(eventTap)
         }
-        globalMonitor = nil
-        localMonitor = nil
+        if let eventHotKeyRef {
+            UnregisterEventHotKey(eventHotKeyRef)
+        }
+        if let eventHandlerRef {
+            RemoveEventHandler(eventHandlerRef)
+        }
+        eventTap = nil
+        eventTapRunLoopSource = nil
+        eventHotKeyRef = nil
+        eventHandlerRef = nil
+        hotKeyID = nil
+        eventTapKeyCode = nil
+        eventTapModifiers = []
+        keyCode = nil
+        modifiers = []
+        onTrigger = nil
+        onRelease = nil
+        isPressed = false
     }
 
-    private static func matches(event: NSEvent, shortcut: KeyboardShortcut) -> Bool {
-        normalizedKey(from: event) == shortcut.key
-            && modifierSet(from: event.modifierFlags) == shortcut.modifiers
+    private func startEventTapFallback(shortcut: KeyboardShortcut, keyCode: Int) {
+        guard CGPreflightListenEventAccess() else {
+            Self.debugLogger?.log("cgevent hotkey fallback not started; input monitoring not trusted key=\(shortcut.key) modifiers=\(Self.modifierDescription(shortcut.modifiers))")
+            return
+        }
+
+        let eventsOfInterest =
+            (1 << CGEventType.keyDown.rawValue)
+            | (1 << CGEventType.keyUp.rawValue)
+        let eventTapCallback: CGEventTapCallBack = { _, type, event, userInfo in
+            guard let userInfo else {
+                return Unmanaged.passUnretained(event)
+            }
+            let monitor = Unmanaged<AppKitKeyboardShortcutMonitor>
+                .fromOpaque(userInfo)
+                .takeUnretainedValue()
+                let shouldConsume = monitor.handleEventTap(type: type, event: event)
+            if shouldConsume {
+                return nil
+            }
+            return Unmanaged.passUnretained(event)
+        }
+        let userInfo = Unmanaged.passUnretained(self).toOpaque()
+        let tapOptions: CGEventTapOptions
+        let createdEventTap: CFMachPort?
+        if let activeEventTap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .defaultTap,
+            eventsOfInterest: CGEventMask(eventsOfInterest),
+            callback: eventTapCallback,
+            userInfo: userInfo
+        ) {
+            tapOptions = .defaultTap
+            createdEventTap = activeEventTap
+        } else if let listenOnlyEventTap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .listenOnly,
+            eventsOfInterest: CGEventMask(eventsOfInterest),
+            callback: eventTapCallback,
+            userInfo: userInfo
+        ) {
+            tapOptions = .listenOnly
+            createdEventTap = listenOnlyEventTap
+        } else {
+            Self.debugLogger?.log("cgevent hotkey fallback create failed for active and listenOnly taps key=\(shortcut.key) modifiers=\(Self.modifierDescription(shortcut.modifiers))")
+            return
+        }
+
+        guard let eventTap = createdEventTap else {
+            return
+        }
+        guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0) else {
+            CFMachPortInvalidate(eventTap)
+            Self.debugLogger?.log("cgevent hotkey fallback run loop source create failed key=\(shortcut.key)")
+            return
+        }
+
+        self.eventTap = eventTap
+        eventTapRunLoopSource = source
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+        Self.debugLogger?.log("cgevent hotkey fallback started options=\(tapOptions == .listenOnly ? "listenOnly" : "active") key=\(shortcut.key) keyCode=\(keyCode) modifiers=\(Self.modifierDescription(shortcut.modifiers))")
     }
 
-    private static func normalizedKey(from event: NSEvent) -> String {
-        if event.keyCode == 49 {
-            return "space"
+    private nonisolated func handleEventTap(type: CGEventType, event: CGEvent) -> Bool {
+        let eventKeyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
+        let eventFlags = event.flags
+        Task { @MainActor in
+            self.handleEventTapOnMainActor(type: type, keyCode: eventKeyCode, flags: eventFlags)
         }
-        return (event.charactersIgnoringModifiers ?? "").lowercased()
+        return matchesEventTap(type: type, keyCode: eventKeyCode, flags: eventFlags)
     }
 
-    private static func modifierSet(from flags: NSEvent.ModifierFlags) -> KeyboardShortcut.Modifiers {
-        var modifiers: KeyboardShortcut.Modifiers = []
-        if flags.contains(.command) {
-            modifiers.insert(.command)
+    private nonisolated func matchesEventTap(type: CGEventType, keyCode eventKeyCode: Int, flags: CGEventFlags) -> Bool {
+        guard let expectedKeyCode = eventTapKeyCode else {
+            return false
         }
-        if flags.contains(.option) {
-            modifiers.insert(.option)
+        guard eventKeyCode == expectedKeyCode else {
+            return false
         }
-        if flags.contains(.control) {
-            modifiers.insert(.control)
+        if type == .keyUp {
+            return true
         }
-        if flags.contains(.shift) {
-            modifiers.insert(.shift)
+        return Self.modifiersMatch(flags: flags, modifiers: eventTapModifiers)
+    }
+
+    private func handleEventTapOnMainActor(type: CGEventType, keyCode eventKeyCode: Int, flags: CGEventFlags) {
+        guard let keyCode, eventKeyCode == keyCode else {
+            return
         }
-        return modifiers
+
+        switch type {
+        case .keyDown:
+            guard Self.modifiersMatch(flags: flags, modifiers: modifiers) else {
+                return
+            }
+            if !isPressed {
+                Self.debugLogger?.log("cgevent hotkey pressed keyCode=\(eventKeyCode) modifiers=\(Self.modifierDescription(modifiers))")
+                isPressed = true
+                onTrigger?()
+            }
+        case .keyUp:
+            if isPressed {
+                Self.debugLogger?.log("cgevent hotkey released keyCode=\(eventKeyCode) modifiers=\(Self.modifierDescription(modifiers)) eventModifiers=\(Self.cgModifierDescription(flags))")
+                isPressed = false
+                onRelease?()
+            }
+        default:
+            break
+        }
+    }
+
+    private func handleCarbonHotKey(eventKind: UInt32, eventHotKeyID: EventHotKeyID) {
+        guard
+            let hotKeyID,
+            eventHotKeyID.signature == hotKeyID.signature,
+            eventHotKeyID.id == hotKeyID.id
+        else {
+            return
+        }
+
+        switch eventKind {
+        case UInt32(kEventHotKeyPressed):
+            if !isPressed {
+                Self.debugLogger?.log("carbon hotkey pressed id=\(eventHotKeyID.id)")
+                isPressed = true
+                onTrigger?()
+            }
+        case UInt32(kEventHotKeyReleased):
+            if isPressed {
+                Self.debugLogger?.log("carbon hotkey released id=\(eventHotKeyID.id)")
+                isPressed = false
+                onRelease?()
+            }
+        default:
+            break
+        }
+    }
+
+    private static func carbonKeyCode(for key: String) -> Int? {
+        switch key.lowercased() {
+        case "s":
+            kVK_ANSI_S
+        case "d":
+            kVK_ANSI_D
+        case "v":
+            kVK_ANSI_V
+        case "space":
+            kVK_Space
+        default:
+            nil
+        }
+    }
+
+    private static func carbonModifiers(for modifiers: KeyboardShortcut.Modifiers) -> UInt32 {
+        var carbonModifiers: UInt32 = 0
+        if modifiers.contains(.command) {
+            carbonModifiers |= UInt32(cmdKey)
+        }
+        if modifiers.contains(.option) {
+            carbonModifiers |= UInt32(optionKey)
+        }
+        if modifiers.contains(.control) {
+            carbonModifiers |= UInt32(controlKey)
+        }
+        if modifiers.contains(.shift) {
+            carbonModifiers |= UInt32(shiftKey)
+        }
+        return carbonModifiers
+    }
+
+    private static func modifierDescription(_ modifiers: KeyboardShortcut.Modifiers) -> String {
+        var names: [String] = []
+        if modifiers.contains(.control) {
+            names.append("control")
+        }
+        if modifiers.contains(.shift) {
+            names.append("shift")
+        }
+        if modifiers.contains(.command) {
+            names.append("command")
+        }
+        if modifiers.contains(.option) {
+            names.append("option")
+        }
+        return names.joined(separator: "+")
+    }
+
+    private nonisolated static func cgModifierDescription(_ flags: CGEventFlags) -> String {
+        var names: [String] = []
+        if flags.contains(.maskControl) {
+            names.append("control")
+        }
+        if flags.contains(.maskShift) {
+            names.append("shift")
+        }
+        if flags.contains(.maskCommand) {
+            names.append("command")
+        }
+        if flags.contains(.maskAlternate) {
+            names.append("option")
+        }
+        return names.isEmpty ? "none" : names.joined(separator: "+")
+    }
+
+    private nonisolated static func modifiersMatch(flags: CGEventFlags, modifiers: KeyboardShortcut.Modifiers) -> Bool {
+        var expected: CGEventFlags = []
+        if modifiers.contains(.command) {
+            expected.insert(.maskCommand)
+        }
+        if modifiers.contains(.option) {
+            expected.insert(.maskAlternate)
+        }
+        if modifiers.contains(.control) {
+            expected.insert(.maskControl)
+        }
+        if modifiers.contains(.shift) {
+            expected.insert(.maskShift)
+        }
+        let relevantFlags = flags.intersection([.maskCommand, .maskAlternate, .maskControl, .maskShift])
+        return relevantFlags == expected
+    }
+}
+
+private final class KeyboardEventTap {
+    private let debugLogger: AppDebugLogger
+    private var eventTap: CFMachPort?
+    private var runLoopSource: CFRunLoopSource?
+
+    init(debugLogger: AppDebugLogger) {
+        self.debugLogger = debugLogger
+    }
+
+    func start() {
+        stop()
+        guard CGPreflightListenEventAccess() else {
+            debugLogger.log("hotkey diagnostics cgevent tap not started; input monitoring not trusted")
+            return
+        }
+
+        let eventsOfInterest =
+            (1 << CGEventType.keyDown.rawValue)
+            | (1 << CGEventType.keyUp.rawValue)
+            | (1 << CGEventType.flagsChanged.rawValue)
+
+        guard let eventTap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .listenOnly,
+            eventsOfInterest: CGEventMask(eventsOfInterest),
+            callback: { _, type, event, userInfo in
+                guard let userInfo else {
+                    return Unmanaged.passUnretained(event)
+                }
+                let tap = Unmanaged<KeyboardEventTap>
+                    .fromOpaque(userInfo)
+                    .takeUnretainedValue()
+                tap.log(event: event, type: type)
+                return Unmanaged.passUnretained(event)
+            },
+            userInfo: Unmanaged.passUnretained(self).toOpaque()
+        ) else {
+            debugLogger.log("hotkey diagnostics cgevent tap create failed")
+            return
+        }
+
+        guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0) else {
+            debugLogger.log("hotkey diagnostics cgevent run loop source create failed")
+            CFMachPortInvalidate(eventTap)
+            return
+        }
+
+        self.eventTap = eventTap
+        self.runLoopSource = source
+        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
+        CGEvent.tapEnable(tap: eventTap, enable: true)
+        debugLogger.log("hotkey diagnostics cgevent tap started")
+    }
+
+    func stop() {
+        if let runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
+        }
+        if let eventTap {
+            CFMachPortInvalidate(eventTap)
+        }
+        runLoopSource = nil
+        eventTap = nil
+    }
+
+    private func log(event: CGEvent, type: CGEventType) {
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let flags = event.flags
+        guard shouldLog(keyCode: keyCode, flags: flags, type: type) else {
+            return
+        }
+        debugLogger.log(
+            "hotkey diagnostics cgevent \(typeDescription(type)) keyCode=\(keyCode) modifiers=\(modifierDescription(flags))"
+        )
+    }
+
+    private func shouldLog(keyCode: Int64, flags: CGEventFlags, type: CGEventType) -> Bool {
+        if type == .flagsChanged {
+            return true
+        }
+        let interestingKeys: Set<Int64> = [
+            Int64(kVK_ANSI_S),
+            Int64(kVK_ANSI_D),
+            Int64(kVK_ANSI_V),
+            Int64(kVK_Space)
+        ]
+        return interestingKeys.contains(keyCode)
+            || flags.contains(.maskControl)
+            || flags.contains(.maskShift)
+            || flags.contains(.maskCommand)
+            || flags.contains(.maskAlternate)
+    }
+
+    private func typeDescription(_ type: CGEventType) -> String {
+        switch type {
+        case .keyDown:
+            "keyDown"
+        case .keyUp:
+            "keyUp"
+        case .flagsChanged:
+            "flagsChanged"
+        default:
+            "\(type.rawValue)"
+        }
+    }
+
+    private func modifierDescription(_ flags: CGEventFlags) -> String {
+        var names: [String] = []
+        if flags.contains(.maskControl) {
+            names.append("control")
+        }
+        if flags.contains(.maskShift) {
+            names.append("shift")
+        }
+        if flags.contains(.maskCommand) {
+            names.append("command")
+        }
+        if flags.contains(.maskAlternate) {
+            names.append("option")
+        }
+        if flags.contains(.maskSecondaryFn) {
+            names.append("fn")
+        }
+        return names.isEmpty ? "none" : names.joined(separator: "+")
     }
 }

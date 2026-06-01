@@ -24,12 +24,23 @@ public struct KeyboardShortcut: Equatable, Sendable {
 
     public static let defaultVoiceInput = KeyboardShortcut(
         key: "space",
-        modifiers: [.command, .shift]
+        modifiers: [.control, .option]
+    )
+
+    public static let defaultVoiceInputHistory = KeyboardShortcut(
+        key: "v",
+        modifiers: [.control, .shift]
     )
 }
 
 @MainActor
 public protocol KeyboardShortcutMonitor {
-    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void)
+    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void, onRelease: (() -> Void)?)
     func stop()
+}
+
+public extension KeyboardShortcutMonitor {
+    func start(shortcut: KeyboardShortcut, onTrigger: @escaping () -> Void) {
+        start(shortcut: shortcut, onTrigger: onTrigger, onRelease: nil)
+    }
 }

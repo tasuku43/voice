@@ -21,7 +21,7 @@
 
 ## Phase 3: input loop
 
-- Global hotkey. Initial AppKit global/local monitor done for Command-Shift-Space.
+- Global hotkey. Initial AppKit global/local monitor done for Control-Option-Space.
 - Pasteboard insertion. Done for text-only adapter and wired into the app shell.
 - Accessibility paste insertion. Initial adapter sends Command-V only after explicit confirmation; copy fallback is used if Accessibility access is not granted.
 - Explicit no-submit behavior.
