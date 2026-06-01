@@ -49,6 +49,12 @@ REQUIRED_SNIPPETS = {
         "public struct LocalContextModelDataUseCase",
         "deleteLocalContextModel",
     ],
+    "src/VoiceAgentInputCore/App/DictionaryEntryLoadingUseCase.swift": [
+        "public struct DictionaryEntryLoadingUseCase",
+        "localContextModelRepository",
+        "postSTTEntries",
+        "deduplicated",
+    ],
     "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
         "public struct JSONLocalContextModelRepository",
         "LocalContextModelRepository",

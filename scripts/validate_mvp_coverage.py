@@ -70,6 +70,7 @@ REQUIRED_COVERAGE = {
             "let voiceInputPipeline = VoiceInputPipeline(",
             "let result = try await voiceInputPipeline.run()",
             "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
+            "localContextModelRepository: try localContextModelRepository()",
         ],
         "src/VoiceAgentInputCore/Infra/AVFoundationAudioRecorder.swift": [
             "AVAudioRecorder",
@@ -121,6 +122,8 @@ REQUIRED_COVERAGE = {
             "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
             "testLocalContextModelDocumentCodecRoundTrip",
             "testJSONLocalContextModelRepositoryRoundTripAndDelete",
+            "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",
+            "testDictionaryEntryLoadingDeduplicatesSavedLocalContextModelEntries",
             "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",

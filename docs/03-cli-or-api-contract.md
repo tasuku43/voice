@@ -82,7 +82,7 @@ VoiceInputFlowUseCase.transcribeAndPreview(mockAudioText: String) async throws -
 VoiceInputFlowUseCase.recordTranscribeAndPreview() async throws -> PromptPreview
 ```
 
-This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Runtime entries also feed `SpeechRecognitionHints` so the local context model can affect recognition before post-STT normalization.
+This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Runtime entries also feed `SpeechRecognitionHints` so the saved local context model can affect recognition before post-STT normalization.
 
 Local context model:
 
@@ -93,7 +93,7 @@ LearningSource.learningTexts() throws -> [LearningText]
 AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLearningModeResult
 ```
 
-The current concrete model is represented by dictionary entries, recognition hints, learning source text, and candidate metadata. Future work should make this a first-class `LocalContextModel` document that can be rebuilt from enabled local sources, exported, imported, and deleted.
+The current concrete model is represented by dictionary entries, recognition hints, learning source text, and candidate metadata. `DictionaryEntryLoadingUseCase` loads seed entries, approved local entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
 
 Learning use case:
 

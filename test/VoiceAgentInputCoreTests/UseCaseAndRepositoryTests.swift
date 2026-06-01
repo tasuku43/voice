@@ -1791,6 +1791,63 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
     }
 
+    func testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries() throws {
+        let modelEntry = DictionaryEntry(
+            spokenForms: ["ろーかるこんてきすと"],
+            canonical: "LocalContextModel",
+            recognitionHints: ["LocalContextModel", "ローカルコンテキストモデル"],
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.88,
+            autoApply: true
+        )
+        let useCase = DictionaryEntryLoadingUseCase(
+            repository: InMemoryDictionaryRepository(),
+            localContextModelRepository: InMemoryLocalContextModelRepository(
+                model: LocalContextModel(entries: [modelEntry])
+            ),
+            seedEntries: []
+        )
+
+        let entries = try useCase.loadEntries()
+        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "ろーかるこんてきすとを読み込む")
+
+        XCTAssertEqual(entries, [modelEntry])
+        XCTAssertTrue(preview.correctedPrompt.contains("LocalContextModel"))
+    }
+
+    func testDictionaryEntryLoadingDeduplicatesSavedLocalContextModelEntries() throws {
+        let approvedEntry = DictionaryEntry(
+            spokenForms: ["ぼいすえーじぇんと"],
+            canonical: "VoiceAgentInput",
+            recognitionHints: ["VoiceAgentInput"],
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let duplicateModelEntry = DictionaryEntry(
+            spokenForms: ["ぼいすえーじぇんと"],
+            canonical: "VoiceAgentInput",
+            recognitionHints: ["VoiceAgentInput", "ボイスエージェント"],
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.7,
+            autoApply: true
+        )
+        let useCase = DictionaryEntryLoadingUseCase(
+            repository: InMemoryDictionaryRepository(entries: [approvedEntry]),
+            localContextModelRepository: InMemoryLocalContextModelRepository(
+                model: LocalContextModel(entries: [duplicateModelEntry])
+            ),
+            seedEntries: []
+        )
+
+        let entries = try useCase.loadEntries()
+
+        XCTAssertEqual(entries, [approvedEntry])
+    }
+
     func testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly() throws {
         let localEntry = DictionaryEntry(
             spokenForms: ["ぼいすえーじぇんと"],
@@ -1992,6 +2049,22 @@ private final class InMemoryDictionaryRepository: DictionaryRepository {
 
     func saveEntries(_ entries: [DictionaryEntry]) throws {
         self.entries = entries
+    }
+}
+
+private final class InMemoryLocalContextModelRepository: LocalContextModelRepository {
+    private var model: LocalContextModel
+
+    init(model: LocalContextModel = LocalContextModel()) {
+        self.model = model
+    }
+
+    func loadModel() throws -> LocalContextModel {
+        model
+    }
+
+    func saveModel(_ model: LocalContextModel) throws {
+        self.model = model
     }
 }
 

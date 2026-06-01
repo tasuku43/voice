@@ -645,7 +645,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
-        try DictionaryEntryLoadingUseCase(repository: try approvedDictionaryRepository()).loadEntries()
+        try DictionaryEntryLoadingUseCase(
+            repository: try approvedDictionaryRepository(),
+            localContextModelRepository: try localContextModelRepository()
+        ).loadEntries()
     }
 
     private func loadSettings() throws -> AppSettings {
@@ -680,6 +683,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private func approvedDictionaryRepository() throws -> JSONDictionaryRepository {
         let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
         return try store.repository()
+    }
+
+    private func localContextModelRepository() throws -> JSONLocalContextModelRepository {
+        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        return try store.localContextModelRepository()
     }
 
     private func logPermissionStatusForDebug() {
