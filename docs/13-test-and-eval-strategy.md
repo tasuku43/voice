@@ -43,10 +43,10 @@ Cover the real executable path where practical:
 - `make check` runs the app executable with `--ui-layout-smoke`, renders representative optional Preview, candidate approval, learning settings, and recording HUD layouts to `.build/ui-layout-smoke/`, and fails on ambiguous or empty view frames.
 - `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms, edit-derived learning eval coverage, and history-derived learning eval coverage.
 - `make check` validates architecture boundaries: Domain and App stay free of UI/macOS framework dependencies while framework-specific adapters remain in Infra.
-- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, optional Learning Preview curation, local learning source controls, local dictionary data controls, and absence of obvious network calls.
+- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, local learning source controls, local dictionary data controls, and absence of obvious network calls.
 - `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local learning data controls.
 - `make check` validates MVP coverage snippets across source, tests, docs, and manual E2E artifacts so the main success criteria remain represented.
-- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, focused-cursor insertion through the current Quick Paste path, optional Learning Preview candidate approval, local learning, repository vocabulary, and privacy expectations.
+- `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, focused-cursor insertion through the current Quick Paste path, local context model learning, repository vocabulary, and privacy expectations.
 
 ### Evals
 

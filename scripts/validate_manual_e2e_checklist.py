@@ -24,29 +24,21 @@ REQUIRED_SNIPPETS = [
     "Open Privacy Settings...",
     "Recording Settings...",
     "Hotkey Settings...",
-    "Voice Input Mode...",
     "Quick Paste",
-    "Learning Preview",
     "Control-Option-Space",
     "Quick Paste Voice Input",
-    "Record Learning Preview",
     "explicit stop acts as the confirmation for paste",
     "Toggle Recording",
     "toggle stop explicitly confirms paste",
     "mode=quickPaste",
-    "mode=learningPreview",
     "python3 scripts/summarize_debug_log.py",
     "no raw/corrected preview window appears",
     "no dictionary candidate approval UI appears",
-    "raw transcript",
-    "corrected prompt",
     "Claude Code",
     "TypeScript",
     "not automatically submitted",
     "Accessibility",
     "copies the prompt",
-    "dictionary candidates",
-    "candidate is still suggested with user scope by default",
     "Rebuild Local Context Model...",
     "without opening candidate approval",
     "rebuild time and source kinds",
@@ -80,20 +72,14 @@ REQUIRED_REPORT_SNIPPETS = [
     "Custom voice input hotkey saved and menu label updated",
     "Toggle Recording mode starts and stops from the same hotkey",
     "Quick Paste Voice Input Evidence",
-    "Learning Preview Voice Input Evidence",
     "Local Learning Evidence",
-    "Default mode is Quick Paste",
     "Debug log created at `~/Library/Logs/VoiceAgentInput/debug.log`",
     "No raw/corrected preview window appears in Quick Paste",
     "`Quick Paste Voice Input` menu action works",
-    "`Record Learning Preview` menu action works in Learning Preview",
     "No dictionary candidate approval UI appears in Quick Paste",
     "Debug log contains mode=quickPaste for completed recording",
     "Debug log summary includes mode=quickPaste",
     "Toggle hotkey stop explicitly confirms paste",
-    "Debug log contains mode=learningPreview for completed recording",
-    "Debug log summary includes mode=learningPreview",
-    "Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured",
     "Rebuilt Local Context Model affects later Quick Paste normalization without candidate approval",
     "Local Data Controls Evidence",
     "Repository Vocabulary Evidence",
@@ -117,12 +103,7 @@ REQUIRED_REPORT_VALIDATOR_SNIPPETS = [
     "No dictionary candidate approval UI appears in Quick Paste",
     "Debug log contains mode=quickPaste for completed recording",
     "Debug log summary includes mode=quickPaste",
-    "Debug log contains mode=learningPreview for completed recording",
-    "Debug log summary includes mode=learningPreview",
-    "Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured",
-    "Dictionary candidates shown only after preview confirmation when expected",
     "Quick Paste Voice Input Evidence",
-    "Learning Preview Voice Input Evidence",
     "manual E2E report ok",
 ]
 
@@ -142,7 +123,6 @@ REQUIRED_README_SNIPPETS = [
     "~/Library/Logs/VoiceAgentInput/debug.log",
     "python3 scripts/summarize_debug_log.py",
     "mode=quickPaste",
-    "mode=learningPreview",
     "make validate-manual-e2e-report",
 ]
 
@@ -234,10 +214,6 @@ def validate_log_summarizer_smoke() -> None:
             "2026-06-01T00:00:00Z recordVoiceInput completed; "
             "transcriptLength=10 correctedLength=20; mode=quickPaste\n"
         )
-        log.write(
-            "2026-06-01T00:01:00Z recordVoiceInput completed; "
-            "transcriptLength=10 correctedLength=20; mode=learningPreview\n"
-        )
         log_path = Path(log.name)
 
     try:
@@ -252,7 +228,7 @@ def validate_log_summarizer_smoke() -> None:
 
     if result.returncode != 0:
         fail("debug log summarizer smoke failed:\n" + result.stdout + result.stderr)
-    for snippet in ["mode=quickPaste: 1", "mode=learningPreview: 1"]:
+    for snippet in ["mode=quickPaste: 1"]:
         if snippet not in result.stdout:
             fail("debug log summarizer smoke missing output: " + snippet)
 

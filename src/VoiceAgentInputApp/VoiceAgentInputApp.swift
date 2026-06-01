@@ -89,7 +89,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(historyItem)
         menu.addItem(NSMenuItem(title: "History Hotkey: Control-Shift-V", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Voice Input Mode...", action: #selector(showVoiceInputModeSettings), keyEquivalent: "m"))
         menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Voice Input Permissions...", action: #selector(openVoiceInputPermissionSettings), keyEquivalent: ""))
@@ -274,25 +273,18 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.isRecording = false
                     self.shouldStopRecordingWhenReady = false
                     self.debugLogger.log(
-                        "recordVoiceInput completed; transcriptLength=\(result.transcript.text.count) correctedLength=\(result.preview.correctedPrompt.count); mode=\(settings.voiceInputMode.rawValue)"
+                        "recordVoiceInput completed; transcriptLength=\(result.transcript.text.count) correctedLength=\(result.preview.correctedPrompt.count); mode=quickPaste"
                     )
                 }
-                switch VoiceInputModeDecisionUseCase().decide(
-                    mode: settings.voiceInputMode,
-                    preview: result.preview
-                ) {
-                case let .learningPreview(preview):
-                    await MainActor.run {
-                        self.openPreview(preview: preview, previewUseCase: previewUseCase)
-                    }
-                case let .quickPaste(confirmed):
-                    await MainActor.run {
-                        do {
-                            try self.insertConfirmedPrompt(confirmed)
-                        } catch {
-                            self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
-                            self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
-                        }
+                await MainActor.run {
+                    do {
+                        try self.insertConfirmedPrompt(ConfirmedPrompt(
+                            promptToInsert: result.preview.correctedPrompt,
+                            candidates: []
+                        ))
+                    } catch {
+                        self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
+                        self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
                     }
                 }
             } catch {
@@ -334,26 +326,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func updateRecordingState() {
-        let idleRecordTitle: String
-        let idleButtonTitle: String
-        if let settings = try? settingsUseCase().loadSettings() {
-            switch settings.voiceInputMode {
-            case .quickPaste:
-                idleRecordTitle = "Quick Paste Voice Input"
-                idleButtonTitle = "Quick Paste"
-            case .learningPreview:
-                idleRecordTitle = "Record Learning Preview"
-                idleButtonTitle = "Learning Preview"
-            }
-        } else {
-            idleRecordTitle = "Quick Paste Voice Input"
-            idleButtonTitle = "Quick Paste"
-        }
-
         statusItem?.button?.title = isRecording ? "Voice..." : "Voice"
-        recordMenuItem?.title = isRecording ? "Stop Voice Input" : idleRecordTitle
+        recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Quick Paste Voice Input"
         recordMenuItem?.isEnabled = true
-        launchRecordButton?.title = isRecording ? "Stop" : idleButtonTitle
+        launchRecordButton?.title = isRecording ? "Stop" : "Quick Paste"
         pushToTalkWindowController?.setRecording(isRecording)
     }
 
@@ -798,41 +774,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         do {
             try settingsUseCase().saveRepositoryPath(url.path)
-        } catch {
-            presentError(error)
-        }
-    }
-
-    @objc private func showVoiceInputModeSettings() {
-        do {
-            let settingsUseCase = try settingsUseCase()
-            let settings = try settingsUseCase.loadSettings()
-
-            let modePicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
-            for mode in VoiceInputMode.allCases {
-                let item = NSMenuItem(title: mode.displayName, action: nil, keyEquivalent: "")
-                item.representedObject = mode.rawValue
-                modePicker.menu?.addItem(item)
-            }
-            modePicker.selectItem(withTitle: settings.voiceInputMode.displayName)
-
-            let alert = NSAlert()
-            alert.messageText = "Voice input mode"
-            alert.informativeText = "Quick Paste is for daily use. Learning Preview shows raw and corrected text so edits can improve future normalization."
-            alert.accessoryView = modePicker
-            alert.addButton(withTitle: "Save")
-            alert.addButton(withTitle: "Cancel")
-
-            guard
-                alert.runModal() == .alertFirstButtonReturn,
-                let rawValue = modePicker.selectedItem?.representedObject as? String,
-                let mode = VoiceInputMode(rawValue: rawValue)
-            else {
-                return
-            }
-
-            try settingsUseCase.saveVoiceInputMode(mode)
-            updateRecordingState()
         } catch {
             presentError(error)
         }

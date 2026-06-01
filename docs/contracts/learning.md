@@ -21,11 +21,11 @@
 - Report source-level scan counts so the app can explain what was used.
 - Build local context model data from bounded source adapters.
 - Use local Foundation Model assistance for model education when explicitly enabled and local-only.
-- Keep default Quick Paste outside candidate review and approval; `VoiceInputModeDecisionUseCase` inserts the corrected prompt with no learning candidates.
+- Keep Quick Paste outside candidate review and approval; the recording flow inserts the corrected prompt with no learning candidates.
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across history learning and edit learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
-- Use the configured preferred learning scope for Learning Preview edit-derived candidates. The default preferred scope is user scope even when a repository folder is configured.
+- Use user scope by default for edit-derived candidates when optional preview fallback is used.
 - Score likely voice misrecognitions behind a replaceable detector.
 - Review edit-derived candidates after preview confirmation through an off-transcription-path detector or future local Foundation Model adapter, without slowing STT or deterministic prompt normalization.
 - If candidate review fails, confirmation still returns the prompt and unreviewed candidates; optional review must not block paste confirmation.
@@ -45,7 +45,6 @@
 - `src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift`
 - `src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift`
 - `src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift`
-- `src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift`
 - `src/VoiceAgentInputCore/App/DictionaryLearningUseCase.swift`
 - `src/VoiceAgentInputCore/App/CandidateApprovalUseCase.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift`
@@ -75,5 +74,5 @@
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.
 - Candidate review remains off the default hotkey path and preserves dangerous substitution guardrails.
 - Quick Paste remains a fast rule-based insertion path with no learning reviewer or candidate approval dialog.
-- Learning Preview edit learning uses the configured preferred learning scope.
+- Optional preview fallback edit learning uses the configured preferred learning scope.
 - Repository vocabulary is available as an explicit learning source and is not mixed into the runtime dictionary by default.

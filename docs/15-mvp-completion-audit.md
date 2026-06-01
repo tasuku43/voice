@@ -11,7 +11,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 - Component contract validation through required-file and MVP coverage checks ensures `PromptRefiner`, `VoiceInputPipeline`, `docs/contracts/`, and `docs/codex-sessions/` stay present.
 - Privacy contract validation includes direct networking/cloud guards and an allowlist for Swift file writes so raw transcript or raw audio persistence cannot be added silently.
 - `DemoCLITests` exercise process-level preview, confirm, and history-learning flows.
-- `UseCaseAndRepositoryTests` cover voice-flow orchestration, Quick Paste versus Learning Preview compatibility decisions, permission use cases, settings persistence, candidate approval, local dictionary import/export/delete, repository vocabulary, STT recognition hints, and temporary audio cleanup.
+- `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, candidate approval, local dictionary import/export/delete, repository vocabulary, STT recognition hints, and temporary audio cleanup.
 - `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, explicit-confirmation enforcement, and automatic-submit rejection.
 - `EvalHarnessTests` covers fixture-driven normalization cases, edit-derived learning cases, and history-derived context learning cases.
 
@@ -19,15 +19,14 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 
 | Requirement | Current evidence | Status |
 | --- | --- | --- |
-| Invoke voice input from macOS | `AppKitKeyboardShortcutMonitor`, Control-Option-Space wiring, `Quick Paste Voice Input` / `Record Learning Preview` menu item labels, app launch smoke | Implemented, needs manual hotkey confirmation |
+| Invoke voice input from macOS | `AppKitKeyboardShortcutMonitor`, Control-Option-Space wiring, `Quick Paste Voice Input` menu item label, app launch smoke | Implemented, needs manual hotkey confirmation |
 | Configure macOS permissions | `Permission Status...`, `Open Privacy Settings...`, permission provider use cases, app contract validation | Implemented, needs manual settings confirmation |
 | Record microphone input | `AVFoundationAudioRecorder`, microphone permission use case, app contract validation | Implemented, needs real microphone confirmation |
 | Transcribe speech | `AppleSpeechEngine`, on-device default, speech permission use case, app contract validation | Implemented, needs real speech confirmation |
 | Normalize developer terms | domain normalization tests, fixture evals, eval coverage validation | Verified |
 | Feed learned context into STT hints | `SpeechRecognitionHintsUseCase`, dictionary `recognitionHints`, Apple Speech contextual string tests | Verified |
 | Reuse learned context after STT | learning eval fixtures, `PromptEditLearningUseCase`, `AgentHistoryLearningModeUseCase`, normalization tests | Verified |
-| Quick Paste daily input compatibility | `VoiceInputModeDecisionUseCase`, default `AppSettings.voiceInputMode`, use-case tests, app contract validation | Implemented, needs manual target-app confirmation |
-| Optional Learning Preview curation | `PromptPreviewUseCase`, preview window contract, use-case tests | Implemented, needs visual/manual confirmation |
+| Quick Paste daily input compatibility | direct recording-flow insertion of `result.preview.correctedPrompt`, app contract validation | Implemented, needs manual target-app confirmation |
 | Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
 | Extract dictionary candidates from edits | preview confirmation tests and candidate extractor tests | Verified as optional curation |
 | User approves or rejects candidates | app candidate approval dialog contract and candidate approval tests | Implemented as optional curation, needs manual UI confirmation |
@@ -49,12 +48,10 @@ The MVP should not be marked fully complete until a real macOS run fills out `te
 - microphone permission prompt and recording,
 - Apple Speech transcription,
 - focused-cursor insertion or copy fallback through the current Quick Paste path,
-- optional Learning Preview window rendering and editing,
 - Control-Option-Space trigger in a desktop session,
 - Privacy & Security settings shortcut,
 - Accessibility paste into a focused target app,
 - pasteboard fallback when Accessibility is not trusted,
-- candidate approval UI only in optional curation flows,
 - local dictionary export/import/open-folder/delete menu actions,
 - repository folder selection and repository vocabulary learning source,
 - Application Support privacy inspection for raw transcripts,

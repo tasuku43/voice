@@ -18,7 +18,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "Toggle Recording",
     "Recording Settings...",
     "Quick Paste Voice Input",
-    "Record Learning Preview",
     "showRecordingSettings",
     "Permission Status...",
     "Open Voice Input Permissions...",
@@ -59,8 +58,8 @@ REQUIRED_SOURCE_SNIPPETS = [
     "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
     "let voiceInputPipeline = VoiceInputPipeline(",
     "let result = try await voiceInputPipeline.run()",
-    "mode=\\(settings.voiceInputMode.rawValue)",
-    "VoiceInputModeDecisionUseCase().decide",
+    "mode=quickPaste",
+    "promptToInsert: result.preview.correctedPrompt",
     "suggestedLearningScope: learningScope",
     "suggestedScope: suggestedLearningScope",
     "correctedTextView.string",
@@ -121,16 +120,13 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "@objc private func recordVoiceInput()",
         "private func startVoiceInputFromShortcut()",
     )
-    if "PromptEditLearningUseCase(" in record_flow and "case .quickPaste:" in record_flow:
-        fail("Quick Paste recording flow must not construct edit-learning before paste fallback")
-
-    decision_to_fallback = source_between(
+    quick_paste_to_fallback = source_between(
         record_flow,
-        "VoiceInputModeDecisionUseCase().decide",
+        "promptToInsert: result.preview.correctedPrompt",
         "recordVoiceInput paste failed",
     )
-    if "PromptEditLearningUseCase(" in decision_to_fallback:
-        fail("Quick Paste mode decision must not enter edit-learning before paste fallback")
+    if "PromptEditLearningUseCase(" in quick_paste_to_fallback:
+        fail("Quick Paste recording flow must not construct edit-learning before paste fallback")
 
     open_preview = source_between(
         source,
@@ -141,7 +137,7 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         fail("Edit learning must stay attached to the editable preview path")
 
 
-def validate_quick_paste_mode_labels(source: str) -> None:
+def validate_quick_paste_label(source: str) -> None:
     install_menu = source_between(
         source,
         "private func installMenuBarItem()",
@@ -155,17 +151,13 @@ def validate_quick_paste_mode_labels(source: str) -> None:
         "private func updateRecordingState()",
         "@objc private func showPushToTalkButton()",
     )
-    required_mode_label_snippets = [
-        "case .quickPaste:",
-        'idleRecordTitle = "Quick Paste Voice Input"',
-        'idleButtonTitle = "Quick Paste"',
-        "case .learningPreview:",
-        'idleRecordTitle = "Record Learning Preview"',
-        'idleButtonTitle = "Learning Preview"',
+    required_label_snippets = [
+        '"Quick Paste Voice Input"',
+        '"Quick Paste"',
     ]
-    missing = [snippet for snippet in required_mode_label_snippets if snippet not in update_state]
+    missing = [snippet for snippet in required_label_snippets if snippet not in update_state]
     if missing:
-        fail("voice input mode labels must keep Quick Paste and Learning Preview separated: " + ", ".join(missing))
+        fail("recording state must keep Quick Paste as the daily voice input label: " + ", ".join(missing))
 
 
 def main() -> None:
@@ -188,7 +180,7 @@ def main() -> None:
         fail("forbidden network snippet in app source: " + ", ".join(forbidden))
 
     validate_quick_paste_learning_boundary(source)
-    validate_quick_paste_mode_labels(source)
+    validate_quick_paste_label(source)
 
     print("app contract ok")
 

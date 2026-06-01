@@ -133,7 +133,7 @@ REQUIRED_COVERAGE = {
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",
         ],
     },
-    "learning preview before insertion": {
+    "fallback preview before insertion": {
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
             "requiresExplicitConfirmation",
             "rawTranscript",
@@ -509,7 +509,6 @@ REQUIRED_COVERAGE = {
         ],
         "test/e2e/manual-macos-mvp-checklist.md": [
             "Quick Paste Voice Input",
-            "Learning Preview Voice Input",
             "Accessibility",
             "Local Learning",
             "Repository Vocabulary",
@@ -526,7 +525,6 @@ REQUIRED_COVERAGE = {
             "Run Metadata",
             "Overall result: pass/fail",
             "Quick Paste Voice Input Evidence",
-            "Learning Preview Voice Input Evidence",
             "Privacy Evidence",
         ],
     },

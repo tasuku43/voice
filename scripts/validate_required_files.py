@@ -52,7 +52,6 @@ required = [
     'src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift',
     'src/VoiceAgentInputCore/App/LocalContextModelRepository.swift',
     'src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift',
-    'src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift',
     'src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift',
     'src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift',
     'src/VoiceAgentInputCore/App/AppSettingsUseCase.swift',

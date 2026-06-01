@@ -32,21 +32,17 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 3. Set Speech locale to `ja-JP`.
 4. Save the dialog.
 5. Reopen `Recording Settings...` and verify the saved values are shown.
-6. Choose `Voice Input Mode...`.
-7. Verify the default mode is `Quick Paste`.
-8. Switch to `Learning Preview`, save, reopen, and verify the saved mode is shown.
-9. Switch back to `Quick Paste` before running the daily input flow below.
-10. Choose `Hotkey Settings...`.
-11. Change the voice input key to Control-Option-S, save, and verify the menu label updates.
-12. Trigger voice input with Control-Option-S, then stop it with the Stop button.
-13. Reopen `Hotkey Settings...`, switch trigger mode to `Toggle Recording`, and save.
-14. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
-15. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the mode-specific flows below.
+6. Choose `Hotkey Settings...`.
+7. Change the voice input key to Control-Option-S, save, and verify the menu label updates.
+8. Trigger voice input with Control-Option-S, then stop it with the Stop button.
+9. Reopen `Hotkey Settings...`, switch trigger mode to `Toggle Recording`, and save.
+10. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
+11. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the Quick Paste flow below.
 
 ## Quick Paste Voice Input
 
 1. Focus the target text app.
-2. Trigger voice input with Control-Option-Space or choose `Quick Paste Voice Input` while mode is `Quick Paste`.
+2. Trigger voice input with Control-Option-Space or choose `Quick Paste Voice Input`.
 3. Verify the cursor-adjacent recording HUD appears near the focused input when Accessibility can locate the caret, shows elapsed time, shows live input-level movement while speaking, and says `Release shortcut to paste` in press-and-hold mode.
 4. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
 5. Verify recording does not start again while already recording.
@@ -62,32 +58,11 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 15. Switch to `Toggle Recording` in `Hotkey Settings...`, start with Control-Option-Space, verify the HUD says `Press shortcut again to paste`, press Control-Option-Space again, and verify the toggle stop acts as explicit paste confirmation.
 16. Restore `Press and Hold` in `Hotkey Settings...`.
 
-## Learning Preview Voice Input
-
-1. Choose `Voice Input Mode...`, switch to `Learning Preview`, and focus the target text app.
-2. Trigger voice input with Control-Option-Space or choose `Record Learning Preview`.
-3. Speak a short Japanese / mixed developer instruction such as `くらのコードでタイプスクリプトエラーを直して`.
-4. Verify the preview appears after transcription.
-5. Verify raw transcript is visible.
-6. Verify corrected prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
-7. Edit the corrected prompt if needed.
-8. Confirm paste.
-9. Verify dictionary candidates are shown for approval only after preview confirmation when the edit creates candidates.
-10. Verify the debug log contains `mode=learningPreview` for the completed recording.
-11. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=learningPreview` summary for the report.
-12. Verify the prompt is not automatically submitted.
-13. Switch back to `Quick Paste` after the learning flow.
-
 ## Local Learning
 
-1. Approve at least one non-dangerous candidate.
-2. Run another Learning Preview voice input using the same spoken form.
-3. Verify the approved dictionary entry affects normalization.
-4. Reject or leave unselected any dangerous command candidate and verify it is not auto-applied by default.
-5. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
-6. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
-7. Choose `Local Context Model Status...` and verify the saved status shows the last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
-8. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
+1. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
+2. Choose `Local Context Model Status...` and verify the saved status shows the last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
+3. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
 
 ## Local Data Controls
 
@@ -100,14 +75,15 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 7. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
 8. Choose `Delete Local Dictionary...`.
 9. Choose `Delete Local Context Model...`.
-10. Verify later previews no longer use deleted local entries unless they come from seed or a rebuilt local context model.
+10. Verify later Quick Paste runs no longer use deleted local entries unless they come from seed or a rebuilt local context model.
 
 ## Repository Vocabulary
 
 1. Choose `Set Repository Folder...`.
 2. Select a Git repository folder.
-3. Trigger a preview containing the repository name, branch name, or tracked file name.
-4. Verify repository vocabulary appears only after explicit learning approval, not merely because a repository folder is configured.
+3. Choose `Rebuild Local Context Model...` with `Git repository vocabulary` selected.
+4. Trigger Quick Paste containing the repository name, branch name, or tracked file name.
+5. Verify repository vocabulary appears only after an explicit model rebuild, not merely because a repository folder is configured.
 
 ## Privacy
 

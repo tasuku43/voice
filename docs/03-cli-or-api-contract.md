@@ -8,11 +8,11 @@ The production app will be a macOS menu bar utility. The scaffold also includes 
 swift run voice-agent-input-app
 ```
 
-The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and mode-specific stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. In `Quick Paste` mode, key release, toggle stop, or the Stop button is explicit confirmation to paste the corrected prompt. In `Learning Preview` mode, the app opens an editable raw/corrected preview so the user can refine the prompt and generate learning candidates. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after explicit confirmation and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted. If direct paste fails, the app falls back to the editable preview window before insertion.
+The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button is explicit confirmation to paste the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after explicit confirmation and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted. If direct paste fails, the app falls back to the editable preview window before insertion.
 
-The shell also includes Control-Shift-V voice input history recall, local voice input mode settings, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, per-candidate learning approval in optional preview curation, and export/import/open-folder/delete controls for approved local dictionary entries and local context model data.
+The shell also includes Control-Shift-V voice input history recall, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, per-candidate learning approval in optional preview curation, and export/import/open-folder/delete controls for approved local dictionary entries and local context model data.
 
-Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the current implementation of that daily path. `Learning Preview` and candidate approval are optional curation surfaces for improving local context; they are not the core voice-input experience.
+Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the implementation of that daily path. Model education happens through explicit local context model rebuilds, not a second voice input mode.
 
 ## Demo CLI
 
@@ -141,14 +141,6 @@ VoiceInputHistoryUseCase.recentEntries() throws -> [VoiceInputHistoryEntry]
 
 Voice input history stores pasted final prompts locally for recall. It does not store raw audio or raw transcripts, and it is separate from approved dictionary learning data.
 
-Voice input mode decision:
-
-```swift
-VoiceInputModeDecisionUseCase.decide(mode: VoiceInputMode, preview: PromptPreview) -> VoiceInputModeDecision
-```
-
-`Quick Paste` returns a `ConfirmedPrompt` containing only `preview.correctedPrompt` and no learning candidates. This keeps the daily path rule-based and avoids candidate extraction review and candidate approval UI. `Learning Preview` returns the editable preview so user edits can generate candidates and evolve the approved dictionary.
-
 App settings:
 
 ```swift
@@ -156,17 +148,16 @@ AppSettings(
     repositoryPath: String?,
     recordingDurationSeconds: TimeInterval,
     speechLocaleIdentifier: String,
-    voiceInputMode: VoiceInputMode,
     voiceInputShortcut: KeyboardShortcut,
     voiceInputTriggerMode: VoiceInputTriggerMode
 )
 ```
 
-Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, `Quick Paste` voice input mode, Control-Option-Space voice-input hotkey, and press-and-hold trigger mode. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
+Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, Control-Option-Space voice-input hotkey, and press-and-hold trigger mode. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
 
 The macOS menu bar shell exposes recording settings locally through `Recording Settings...` and hotkey settings through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
 
-Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so approved candidates still become user-scoped entries unless a caller explicitly requests another scope. As the local context model becomes first-class, repository context should be included through explicit source selection and bounded rebuilds rather than implicit broad scans.
+Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so repository context is included through explicit source selection and bounded model rebuilds rather than implicit broad scans.
 
 Learning candidate review:
 

@@ -25,7 +25,7 @@ def main() -> None:
     print(f"App: {APP}")
     print(f"Debug log: {LOG}")
     print(f"Tail log: tail -f {LOG!s}")
-    print("Summarize modes after Quick Paste and Learning Preview runs:")
+    print("Summarize Quick Paste runs:")
     print("  python3 scripts/summarize_debug_log.py")
 
 

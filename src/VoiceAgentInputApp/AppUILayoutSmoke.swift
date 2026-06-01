@@ -85,13 +85,6 @@ enum AppUILayoutSmoke {
         failures.append(contentsOf: auditView(recordingStack, name: "recording-settings"))
         renderView(recordingStack, size: NSSize(width: 560, height: 92), name: "recording-settings", outputDirectory: outputDirectory)
 
-        let modePicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
-        modePicker.addItems(withTitles: ["Quick Paste", "Learning Preview"])
-        let modeStack = AppLayout.formStack()
-        modeStack.addArrangedSubview(AppLayout.formRow(label: "Mode", view: modePicker))
-        failures.append(contentsOf: auditView(modeStack, name: "voice-input-mode"))
-        renderView(modeStack, size: NSSize(width: 560, height: 56), name: "voice-input-mode", outputDirectory: outputDirectory)
-
         let historyPopup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 520, height: 28), pullsDown: false)
         historyPopup.addItem(withTitle: "Claude Code で TypeScript エラーを直して、pnpm test を実行して、失敗したログを要約")
         failures.append(contentsOf: auditView(historyPopup, name: "voice-input-history"))

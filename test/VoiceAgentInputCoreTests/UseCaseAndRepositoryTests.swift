@@ -24,33 +24,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(confirmed.shouldSubmitAutomatically)
     }
 
-    func testVoiceInputModeDecisionKeepsQuickPasteOffTheLearningPath() {
-        let preview = PromptPreview(
-            rawTranscript: "コーデックスで直して",
-            correctedPrompt: "Codex で直して",
-            corrections: []
-        )
-
-        let decision = VoiceInputModeDecisionUseCase().decide(mode: .quickPaste, preview: preview)
-
-        XCTAssertEqual(decision, .quickPaste(ConfirmedPrompt(
-            promptToInsert: "Codex で直して",
-            candidates: []
-        )))
-    }
-
-    func testVoiceInputModeDecisionUsesLearningPreviewForDictionaryGrowth() {
-        let preview = PromptPreview(
-            rawTranscript: "コーデックスで直して",
-            correctedPrompt: "Codex で直して",
-            corrections: []
-        )
-
-        let decision = VoiceInputModeDecisionUseCase().decide(mode: .learningPreview, preview: preview)
-
-        XCTAssertEqual(decision, .learningPreview(preview))
-    }
-
     func testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview() async throws {
         let speechEngine = MockSpeechEngine()
         let useCase = VoiceInputFlowUseCase(
@@ -1557,7 +1530,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let settings = try JSONAppSettingsRepository(fileURL: fileURL).loadSettings()
 
         XCTAssertEqual(settings, AppSettings(repositoryPath: "/tmp/repo"))
-        XCTAssertEqual(settings.voiceInputMode, .quickPaste)
         XCTAssertEqual(settings.voiceInputShortcut, .defaultVoiceInput)
         XCTAssertEqual(settings.voiceInputTriggerMode, .pressAndHold)
     }
@@ -1589,10 +1561,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(recordingSettings.recordingDurationSeconds, 30)
         XCTAssertEqual(recordingSettings.speechLocaleIdentifier, "en-US")
         XCTAssertEqual(try repository.loadSettings(), recordingSettings)
-
-        let modeSettings = try useCase.saveVoiceInputMode(.learningPreview)
-        XCTAssertEqual(modeSettings.voiceInputMode, .learningPreview)
-        XCTAssertEqual(try repository.loadSettings().voiceInputMode, .learningPreview)
 
         let hotkeySettings = try useCase.saveVoiceInputHotkey(
             shortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),

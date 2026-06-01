@@ -13,7 +13,6 @@ DEFAULT_LOG = (
 
 MODE_MARKERS = [
     "mode=quickPaste",
-    "mode=learningPreview",
 ]
 
 

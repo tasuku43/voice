@@ -9,7 +9,7 @@ ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
 REQUIRED_SNIPPETS = {
     "docs/17-learning-goal-audit.md": [
         "mostly rule-based voice input tool",
-        "default `Quick Paste` mode",
+        "`Quick Paste` is the only normal voice input mode",
         "no learning reviewer and no candidate approval dialog",
         "Reuse learned context before and after ASR.",
         "SpeechRecognitionHintsUseCase",
@@ -44,10 +44,10 @@ REQUIRED_SNIPPETS = {
         "Bounded local Codex/Claude history text",
         "Configured repository vocabulary exposed through a learning-source adapter.",
         "Generate dictionary candidates from local learning sources after explicit user action.",
-        "Keep default Quick Paste outside candidate review and approval",
+        "Keep Quick Paste outside candidate review and approval",
         "Reuse deterministic developer-term speech rules across history learning and edit learning.",
         "Treat repository folders as learning-source configuration",
-        "Use the configured preferred learning scope for Learning Preview edit-derived candidates",
+        "Use user scope by default for edit-derived candidates",
         "If candidate review fails, confirmation still returns the prompt and unreviewed candidates",
         "Persist approved entries only after user approval.",
         "Quick Paste remains a fast rule-based insertion path",
@@ -147,12 +147,7 @@ REQUIRED_SNIPPETS = {
         "Git repository vocabulary",
         "localContextModelRepository: try localContextModelRepository()",
         "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
-        "VoiceInputModeDecisionUseCase().decide",
-    ],
-    "src/VoiceAgentInputCore/App/VoiceInputModeDecisionUseCase.swift": [
-        "case quickPaste(ConfirmedPrompt)",
-        "case learningPreview(PromptPreview)",
-        "promptToInsert: preview.correctedPrompt",
+        "promptToInsert: result.preview.correctedPrompt",
         "candidates: []",
     ],
     "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
@@ -162,7 +157,6 @@ REQUIRED_SNIPPETS = {
         "testAgentHistoryLearningApprovalEvolvesRuleBasedNormalizationForProjectTerms",
         "testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails",
         "testDetectorBackedLearningReviewerPreservesDangerousCandidateGuardrails",
-        "testVoiceInputModeDecisionKeepsQuickPasteOffTheLearningPath",
         "testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings",
         "testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms",
         "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",

@@ -45,7 +45,7 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 
 ## Current Evidence
 
-- `VoiceAgentInputApp.recordVoiceInput()` uses Quick Paste as the daily path and keeps Learning Preview optional.
+- `VoiceAgentInputApp.recordVoiceInput()` uses Quick Paste as the only normal voice input path.
 - `AgentHistoryLearningModeUseCase` reads bounded local learning sources and generates candidates without network IO.
 - `LocalContextModelDataUseCase.rebuildModel(...)` persists a local model document from learning results.
 - `Local Context Model Status...` shows the saved model's last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.

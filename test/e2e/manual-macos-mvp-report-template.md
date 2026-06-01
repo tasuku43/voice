@@ -46,15 +46,11 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - `Recording Settings...` opened: pass/fail
 - Recording duration saved and reloaded: pass/fail
 - Speech locale saved and reloaded: pass/fail
-- `Voice Input Mode...` opened: pass/fail
-- Default mode is Quick Paste: pass/fail
-- Learning Preview mode saved and reloaded: pass/fail
-- Mode switched back to Quick Paste before daily flow: pass/fail
 - `Hotkey Settings...` opened: pass/fail
 - Custom voice input hotkey saved and menu label updated: pass/fail
 - Custom voice input hotkey starts recording: pass/fail
 - Toggle Recording mode starts and stops from the same hotkey: pass/fail
-- Default Control-Option-Space Press and Hold restored before mode flows: pass/fail
+- Default Control-Option-Space Press and Hold restored before Quick Paste flow: pass/fail
 - Notes:
 
 ## Quick Paste Voice Input Evidence
@@ -75,28 +71,8 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - No automatic submit: pass/fail
 - Notes:
 
-## Learning Preview Voice Input Evidence
-
-- Learning Preview mode selected: pass/fail
-- Control-Option-Space trigger works in Learning Preview: pass/fail
-- `Record Learning Preview` menu action works in Learning Preview: pass/fail
-- Speech transcription completes: pass/fail
-- Raw transcript visible: pass/fail
-- Corrected prompt contains expected developer terms: pass/fail
-- Edited prompt inserted only after preview confirmation: pass/fail
-- Dictionary candidates shown only after preview confirmation when expected: pass/fail
-- Debug log contains mode=learningPreview for completed recording: pass/fail
-- Debug log summary includes mode=learningPreview: pass/fail
-- No automatic submit: pass/fail
-- Mode switched back to Quick Paste after learning flow: pass/fail
-- Notes:
-
 ## Local Learning Evidence
 
-- Non-dangerous candidate approved: pass/fail
-- Approved candidate reused later: pass/fail
-- Dangerous command candidate not auto-applied by default: pass/fail
-- Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured: pass/fail
 - Rebuild Local Context Model works without candidate approval and shows rebuild metadata: pass/fail
 - Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding: pass/fail
 - Rebuilt Local Context Model affects later Quick Paste normalization without candidate approval: pass/fail
