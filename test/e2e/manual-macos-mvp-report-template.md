@@ -57,16 +57,6 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Default Control-Option-Space Press and Hold restored before mode flows: pass/fail
 - Notes:
 
-## Mock Preview Safety Evidence
-
-- `Mock Preview` opened: pass/fail
-- Raw transcript visible: pass/fail
-- Corrected prompt visible: pass/fail
-- Edited prompt inserted only after confirmation: pass/fail
-- No automatic submit: pass/fail
-- Dictionary candidates shown when expected: pass/fail
-- Notes:
-
 ## Quick Paste Voice Input Evidence
 
 - Control-Option-Space trigger works: pass/fail

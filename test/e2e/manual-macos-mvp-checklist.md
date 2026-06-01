@@ -43,15 +43,6 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 14. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
 15. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the mode-specific flows below.
 
-## Mock Preview Safety
-
-1. Choose `Mock Preview`.
-2. Verify the preview shows both raw transcript and corrected prompt.
-3. Edit the corrected prompt.
-4. Confirm paste.
-5. Verify no automatic submit happens in the target app.
-6. Verify dictionary candidates are shown for approval when the edit creates candidates.
-
 ## Quick Paste Voice Input
 
 1. Focus the target text app.
@@ -90,7 +81,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 ## Local Learning
 
 1. Approve at least one non-dangerous candidate.
-2. Run another mock or real preview using the same spoken form.
+2. Run another Learning Preview voice input using the same spoken form.
 3. Verify the approved dictionary entry affects normalization.
 4. Reject or leave unselected any dangerous command candidate and verify it is not auto-applied by default.
 5. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.

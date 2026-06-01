@@ -21,7 +21,6 @@ REQUIRED_SECTIONS = [
     "Setup Evidence",
     "Permission Status Evidence",
     "Recording Settings Evidence",
-    "Mock Preview Safety Evidence",
     "Quick Paste Voice Input Evidence",
     "Learning Preview Voice Input Evidence",
     "Local Learning Evidence",

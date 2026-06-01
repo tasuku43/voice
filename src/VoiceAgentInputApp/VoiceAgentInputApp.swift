@@ -82,7 +82,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         historyItem.keyEquivalentModifierMask = [.control, .shift]
         menu.addItem(recordItem)
         menu.addItem(NSMenuItem(title: "Show Push-to-Talk Button", action: #selector(showPushToTalkButton), keyEquivalent: "b"))
-        menu.addItem(NSMenuItem(title: "Mock Preview", action: #selector(showMockPreview), keyEquivalent: "p"))
         let hotkeyItem = NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: "")
         menu.addItem(hotkeyItem)
         menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
@@ -143,7 +142,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         buttons.orientation = .horizontal
         buttons.spacing = 8
         buttons.alignment = .centerY
-        buttons.addArrangedSubview(NSButton(title: "Mock Preview", target: self, action: #selector(showMockPreview)))
         let recordButton = NSButton(title: "Quick Paste", target: self, action: #selector(recordVoiceInput))
         launchRecordButton = recordButton
         buttons.addArrangedSubview(recordButton)
@@ -201,11 +199,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         debugLogger.log("showDebugWindowIfNeeded finished; visible=\(window.isVisible)")
-    }
-
-    @objc private func showMockPreview() {
-        debugLogger.log("showMockPreview")
-        presentPreview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
     }
 
     @objc private func recordVoiceInput() {
