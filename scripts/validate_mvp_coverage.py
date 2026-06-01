@@ -199,10 +199,14 @@ REQUIRED_COVERAGE = {
             "parsedStructuredJSON",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+            "Rebuild Local Context Model...",
+            "rebuildLocalContextModelFromSources",
+            "showLocalContextModelRebuiltAlert",
             "Learn From Agent History...",
             "Train Dictionary From Sources...",
             "promptForLearningSourceSelection",
             "runDictionaryTraining",
+            "rebuildLocalContextModel(selection:",
             "Codex / Claude local sessions",
             "Git repository vocabulary",
             "Learning Settings...",
@@ -464,6 +468,7 @@ REQUIRED_COVERAGE = {
             "Preview/edit UI is an optional curation surface",
             "Any requirement that the default hotkey path show a preview before insertion",
             "Local context model rebuild/export/import/delete UI is implemented",
+            "last-rebuilt timestamps",
             "local Foundation Model adapter",
         ],
         "docs/codex-sessions/local-context-model-session.md": [

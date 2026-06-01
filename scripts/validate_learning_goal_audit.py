@@ -23,6 +23,7 @@ REQUIRED_SNIPPETS = {
         "katakana project identifier aliases",
         "AppSettings.preferredLearningScope",
         "LearningSourceSelection",
+        "Rebuild Local Context Model...",
         "Train Dictionary From Sources...",
         "source text counts",
         "RepositoryVocabularyLearningSource",
@@ -137,6 +138,9 @@ REQUIRED_SNIPPETS = {
         "request.contextualStrings = recognitionHints.contextualStrings",
     ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+        "Rebuild Local Context Model...",
+        "rebuildLocalContextModelFromSources",
+        "showLocalContextModelRebuiltAlert",
         "Learn From Agent History...",
         "Train Dictionary From Sources...",
         "Codex / Claude local sessions",

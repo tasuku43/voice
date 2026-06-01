@@ -42,7 +42,7 @@
 - Learning source selection. Initial app flow done.
 - Local Codex / Claude Code history source. Done through bounded local history adapters.
 - Git repository vocabulary source. Done through explicit repository vocabulary learning source.
-- Local context model rebuild. App training now rebuilds and persists the local context model from selected sources.
+- Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering candidate approval.
 - Optional editable prompt preview.
 - Optional diff extraction.
 - Optional candidate approval UI. App-shell approval dialog supports per-candidate selection.

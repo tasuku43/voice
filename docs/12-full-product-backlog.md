@@ -2,7 +2,6 @@
 
 ## Core
 
-- Add a rebuild-only local context model command that does not enter candidate approval.
 - Add stale-model and last-rebuilt metadata to the local context model document.
 - Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.

@@ -54,6 +54,6 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 
 ## Remaining Shape Work
 
-- Local context model rebuild/export/import/delete UI is implemented; improve it with stale-model metadata and a clearer rebuild-only command.
+- Local context model rebuild/export/import/delete UI is implemented; improve it with stale-model metadata and last-rebuilt timestamps.
 - Decide which optional curation surfaces stay visible by default after the model education flow is stronger.
 - Add local Foundation Model protocols only after deterministic model education and runtime transforms are not enough.

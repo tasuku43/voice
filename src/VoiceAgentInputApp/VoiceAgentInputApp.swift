@@ -99,6 +99,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Open Input Monitoring Settings...", action: #selector(openInputMonitoringSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Learning Settings...", action: #selector(showLearningSettings), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Train Dictionary From Sources...", action: #selector(trainDictionaryFromSources), keyEquivalent: "t"))
         menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
@@ -1194,7 +1195,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     @objc private func trainDictionaryFromSources() {
         do {
-            guard let selection = try promptForLearningSourceSelection() else {
+            guard let selection = try promptForLearningSourceSelection(
+                title: "Train dictionary from sources",
+                informativeText: "Selected local sources refresh the local context model. Nothing is uploaded; approved dictionary entries are saved only after approval.",
+                confirmButtonTitle: "Train"
+            ) else {
                 return
             }
             guard !selection.isEmpty else {
@@ -1210,7 +1215,32 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func promptForLearningSourceSelection() throws -> LearningSourceSelection? {
+    @objc private func rebuildLocalContextModelFromSources() {
+        do {
+            guard let selection = try promptForLearningSourceSelection(
+                title: "Rebuild local context model",
+                informativeText: "Selected local sources refresh the model used for STT hints and post-STT transforms. Nothing is uploaded, and no candidate approval is required.",
+                confirmButtonTitle: "Rebuild"
+            ) else {
+                return
+            }
+            guard !selection.isEmpty else {
+                showNoLearningSourceSelectedAlert()
+                return
+            }
+
+            let run = try rebuildLocalContextModel(selection: selection)
+            showLocalContextModelRebuiltAlert(result: run.result, model: run.model)
+        } catch {
+            presentError(error)
+        }
+    }
+
+    private func promptForLearningSourceSelection(
+        title: String,
+        informativeText: String,
+        confirmButtonTitle: String
+    ) throws -> LearningSourceSelection? {
         let repositoryURL = configuredRepositoryURL()
         let agentHistoryCheckbox = NSButton(
             checkboxWithTitle: "Codex / Claude local sessions",
@@ -1242,10 +1272,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         stack.addArrangedSubview(repositoryLabel)
 
         let alert = NSAlert()
-        alert.messageText = "Train dictionary from sources"
-        alert.informativeText = "Selected local sources refresh the local context model. Nothing is uploaded; approved dictionary entries are saved only after approval."
+        alert.messageText = title
+        alert.informativeText = informativeText
         alert.accessoryView = stack
-        alert.addButton(withTitle: "Train")
+        alert.addButton(withTitle: confirmButtonTitle)
         if repositoryURL == nil {
             alert.addButton(withTitle: "Set Repository Folder")
         }
@@ -1276,6 +1306,24 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         selection: LearningSourceSelection,
         emptyMessage: String
     ) throws {
+        let run = try rebuildLocalContextModel(selection: selection)
+
+        guard !run.result.candidates.isEmpty else {
+            let alert = NSAlert()
+            alert.alertStyle = .informational
+            alert.messageText = "No dictionary candidates found"
+            alert.informativeText = emptyMessage + " The local context model was refreshed from the selected sources."
+            alert.runModal()
+            return
+        }
+
+        try CandidateApprovalDialogController()
+            .approveCandidatesIfRequested(run.result.candidates, maximumVisibleCandidates: 24)
+    }
+
+    private func rebuildLocalContextModel(
+        selection: LearningSourceSelection
+    ) throws -> (result: AgentHistoryLearningModeResult, model: LocalContextModel) {
         let historyProvider = LocalAgentHistoryTextProvider()
         let existingEntries = try loadDictionaryEntries()
         let approvedEntries = try approvedDictionaryRepository().loadEntries()
@@ -1298,17 +1346,22 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         ).rebuildModel(learningResult: result)
         debugLogger.log("local context model rebuilt with \(localContextModel.entries.count) entries and \(localContextModel.generatedCandidateCount) generated candidates")
 
-        guard !result.candidates.isEmpty else {
-            let alert = NSAlert()
-            alert.alertStyle = .informational
-            alert.messageText = "No dictionary candidates found"
-            alert.informativeText = emptyMessage + " The local context model was refreshed from the selected sources."
-            alert.runModal()
-            return
-        }
+        return (result, localContextModel)
+    }
 
-        try CandidateApprovalDialogController()
-            .approveCandidatesIfRequested(result.candidates, maximumVisibleCandidates: 24)
+    private func showLocalContextModelRebuiltAlert(
+        result: AgentHistoryLearningModeResult,
+        model: LocalContextModel
+    ) {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = "Local context model rebuilt"
+        alert.informativeText = """
+        Scanned \(result.scannedTextCount) local source texts.
+        Added \(result.candidates.count) generated candidates to the local context model.
+        Runtime model entries: \(model.entries.count).
+        """
+        alert.runModal()
     }
 
     private func configuredLearningSources(

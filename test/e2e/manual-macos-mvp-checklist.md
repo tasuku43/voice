@@ -97,9 +97,10 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation in `Learning Preview`.
 7. Verify the trusted local reviewer command does not run during `Quick Paste`.
 8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
-9. Choose `Train Dictionary From Sources...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify candidates are shown only after explicit approval.
-10. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
-11. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
+9. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval.
+10. Choose `Train Dictionary From Sources...`, select the same sources, then verify candidates are shown only after explicit approval.
+11. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
+12. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
 
 ## Local Data Controls
 

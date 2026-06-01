@@ -51,6 +51,8 @@ REQUIRED_SNIPPETS = [
     "trusted local reviewer command",
     "does not run during `Quick Paste`",
     "candidate is still suggested with user scope by default",
+    "Rebuild Local Context Model...",
+    "without opening candidate approval",
     "Train Dictionary From Sources...",
     "Codex / Claude local sessions",
     "Git repository vocabulary",
