@@ -23,18 +23,10 @@ public struct DictionaryContextLoadingUseCase {
     }
 
     public func loadEntries(startingAt repositoryURL: URL) throws -> [DictionaryEntry] {
-        try DictionaryEntryLoadingUseCase(
+        _ = repositoryURL
+        return try DictionaryEntryLoadingUseCase(
             repository: repository,
-            seedEntries: seedEntries,
-            contextualEntries: loadRepositoryVocabularyEntries(startingAt: repositoryURL)
+            seedEntries: seedEntries
         ).loadEntries()
-    }
-
-    private func loadRepositoryVocabularyEntries(startingAt repositoryURL: URL) -> [DictionaryEntry] {
-        guard let context = try? repositoryContextProvider.currentContext(startingAt: repositoryURL) else {
-            return []
-        }
-        let filePaths = (try? repositoryVocabularyFilePathProvider?.trackedVocabularyFilePaths(rootPath: context.rootPath)) ?? []
-        return RepositoryVocabularyUseCase().entries(from: context, filePaths: filePaths)
     }
 }

@@ -111,16 +111,26 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
             "AgentHistoryTextProvider",
             "historyTexts()",
+            "LearningSource",
+        ],
+        "src/VoiceAgentInputCore/App/LearningSource.swift": [
+            "LearningSource",
+            "LearningText",
+            "CorrectionCandidateLearningSource",
         ],
         "src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift": [
             "AgentHistoryLearningModeUseCase",
-            "historyProvider.historyTexts()",
+            "learningSources",
             "dictionaryLearningUseCase.candidates",
             "skippedExistingCandidateCount",
         ],
         "src/VoiceAgentInputCore/App/AppSettings.swift": [
             "preferredLearningScope",
-            ".repository",
+            ".user",
+        ],
+        "src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift": [
+            "RepositoryVocabularyLearningSource",
+            "CorrectionCandidateLearningSource",
         ],
         "src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift": [
             "LocalAgentHistoryTextProvider",
@@ -192,6 +202,8 @@ REQUIRED_COVERAGE = {
             "testAgentHistoryLearningModeUseCaseLoadsHistoryAndGeneratesCandidates",
             "testAgentHistoryLearningModeSkipsExistingDictionaryEntries",
             "testAgentHistoryLearningModeCanGenerateRepositoryScopedCandidates",
+            "testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources",
+            "testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly",
             "testApprovedLearningEntriesAffectNextRuleBasedNormalization",
             "testAgentHistoryLearningApprovalEvolvesRuleBasedNormalizationForProjectTerms",
             "testApprovingEquivalentCandidateStrengthensExistingDictionaryEntry",

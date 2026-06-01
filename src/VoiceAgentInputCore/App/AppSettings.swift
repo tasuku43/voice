@@ -52,10 +52,7 @@ public struct AppSettings: Codable, Equatable, Sendable {
     }
 
     public var preferredLearningScope: DictionaryScope {
-        guard let repositoryPath, !repositoryPath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            return .user
-        }
-        return .repository
+        .user
     }
 
     private enum CodingKeys: String, CodingKey {

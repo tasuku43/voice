@@ -600,24 +600,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
-        try dictionaryContextLoader().loadEntries(startingAt: repositoryVocabularyStartURL())
+        try DictionaryEntryLoadingUseCase(repository: try approvedDictionaryRepository()).loadEntries()
     }
 
     private func loadSettings() throws -> AppSettings {
         try settingsUseCase().loadSettings()
-    }
-
-    private func dictionaryContextLoader() throws -> DictionaryContextLoadingUseCase {
-        let provider = GitRepositoryContextProvider()
-        return DictionaryContextLoadingUseCase(
-            repository: try approvedDictionaryRepository(),
-            repositoryContextProvider: provider,
-            repositoryVocabularyFilePathProvider: provider
-        )
-    }
-
-    private func repositoryVocabularyStartURL() -> URL {
-        configuredRepositoryURL() ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
     }
 
     private func configuredRepositoryURL() -> URL? {
@@ -773,7 +760,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
-        panel.message = "Choose a Git repository folder for repository-scoped vocabulary."
+        panel.message = "Choose a Git repository folder for repository vocabulary learning."
 
         guard panel.runModal() == .OK, let url = panel.url else {
             return
@@ -1022,11 +1009,13 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             let historyProvider = LocalAgentHistoryTextProvider()
             let existingEntries = try loadDictionaryEntries()
             let learningScope = try loadSettings().preferredLearningScope
+            let learningSources = try configuredLearningSources(historyProvider: historyProvider)
             let result = try AgentHistoryLearningModeUseCase(
-                historyProvider: historyProvider,
+                learningSources: learningSources,
                 dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
             ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
-            debugLogger.log("learnFromAgentHistory scanned \(historyProvider.historyFileURLs().count) local files, loaded \(result.scannedTextCount) texts, skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue)")
+            let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
+            debugLogger.log("learnFromAgentHistory scanned \(historyProvider.historyFileURLs().count) local files, loaded \(result.scannedTextCount) source texts, skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
             guard !result.candidates.isEmpty else {
                 let alert = NSAlert()
                 alert.alertStyle = .informational
@@ -1041,6 +1030,21 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         } catch {
             presentError(error)
         }
+    }
+
+    private func configuredLearningSources(
+        historyProvider: LocalAgentHistoryTextProvider
+    ) throws -> [any LearningSource] {
+        var sources: [any LearningSource] = [historyProvider]
+        if let repositoryURL = configuredRepositoryURL() {
+            let provider = GitRepositoryContextProvider()
+            sources.append(RepositoryVocabularyLearningSource(
+                startingURL: repositoryURL,
+                repositoryContextProvider: provider,
+                repositoryVocabularyFilePathProvider: provider
+            ))
+        }
+        return sources
     }
 
     @objc private func deleteLocalDictionary() {

@@ -87,7 +87,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. Choose `Learning Settings...`, leave reviewer command blank or disable it, and verify candidate learning still works without a reviewer command.
 6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation in `Learning Preview`.
 7. Verify the trusted local reviewer command does not run during `Quick Paste`.
-8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is suggested with repository scope.
+8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
 9. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
 10. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
 
@@ -105,7 +105,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 1. Choose `Set Repository Folder...`.
 2. Select a Git repository folder.
 3. Trigger a preview containing the repository name, branch name, or tracked file name.
-4. Verify repository-scoped vocabulary can appear in the corrected prompt.
+4. Verify repository vocabulary appears only after explicit learning approval, not merely because a repository folder is configured.
 
 ## Privacy
 

@@ -10,7 +10,7 @@ swift run voice-agent-input-app
 
 The current shell installs a menu bar item, registers Control-Option-Space as a push-to-talk voice-input hotkey, shows a small recording status indicator near the focused input when possible, records while the hotkey is held, stops when the hotkey is released, and transcribes the clip through on-device `AppleSpeechEngine`. Loaded dictionary entries are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization. In `Quick Paste` mode, key release is explicit confirmation to paste the corrected prompt. In `Learning Preview` mode, the app opens an editable raw/corrected preview so the user can refine the prompt and generate learning candidates. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after explicit confirmation and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted. If direct paste fails, the app falls back to the editable preview window before insertion.
 
-The shell also includes a mock preview action for development, Control-Shift-V voice input history recall, local voice input mode settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository-scoped vocabulary, per-candidate learning approval, and export/import/open-folder/delete controls for approved local dictionary entries.
+The shell also includes a mock preview action for development, Control-Shift-V voice input history recall, local voice input mode settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, per-candidate learning approval, and export/import/open-folder/delete controls for approved local dictionary entries.
 
 ## Demo CLI
 
@@ -143,7 +143,7 @@ The macOS menu bar shell exposes these recording settings locally through `Recor
 
 The macOS menu bar shell exposes learning reviewer command configuration through `Learning Settings...`. The command is optional and local-only. When configured, the app sends candidate-review JSON to the command only after preview confirmation; it is not part of speech recognition, dictionary normalization, or prompt refinement. The interactive app uses a short reviewer timeout so optional review cannot become a noticeable paste-confirmation bottleneck.
 
-Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. With a repository folder configured, edit-derived correction candidates are suggested as repository-scoped entries; otherwise they default to user scope.
+Learning Preview uses `AppSettings.preferredLearningScope` when confirming user edits. Runtime voice input stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so approved candidates still become user-scoped entries unless a caller explicitly requests another scope.
 
 Learning candidate review:
 

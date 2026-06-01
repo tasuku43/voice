@@ -19,7 +19,7 @@ Contract:
 - Do not perform broad uncontrolled recursive scans.
 
 Tests:
-- `swift test --filter UseCaseAndRepositoryTests/testDictionaryContextLoadingUseCaseCombinesSeedLocalAndRepositoryVocabulary`
+- `swift test --filter UseCaseAndRepositoryTests/testDictionaryContextLoadingUseCaseKeepsRepositoryVocabularyOutOfRuntimeEntries`
 - `swift test --filter UseCaseAndRepositoryTests/testGitRepositoryContextProviderReadsBoundedTrackedVocabularyFiles`
 - `make check`
 

@@ -103,7 +103,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Learning Settings blank/disabled path keeps learning local and rule-based: pass/fail
 - Optional trusted local reviewer command runs only after preview confirmation in Learning Preview: pass/fail/not applicable
 - Trusted local reviewer command does not run during Quick Paste: pass/fail/not applicable
-- Learning Preview edit-derived candidate uses repository scope when repository folder is configured: pass/fail
+- Learning Preview edit-derived candidate uses user scope by default even when repository folder is configured: pass/fail
 - Learn From Agent History presents bounded Codex/Claude candidates: pass/fail
 - History-derived project identifier affects later rule-based normalization: pass/fail
 - Notes:

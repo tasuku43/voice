@@ -16,15 +16,25 @@ public struct AgentHistoryLearningModeResult: Codable, Equatable, Sendable {
     }
 }
 
-public struct AgentHistoryLearningModeUseCase: Sendable {
-    public var historyProvider: any AgentHistoryTextProvider
+public struct AgentHistoryLearningModeUseCase {
+    public var learningSources: [any LearningSource]
     public var dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase
 
     public init(
         historyProvider: any AgentHistoryTextProvider,
         dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase = AgentHistoryDictionaryLearningUseCase()
     ) {
-        self.historyProvider = historyProvider
+        self.init(
+            learningSources: [historyProvider],
+            dictionaryLearningUseCase: dictionaryLearningUseCase
+        )
+    }
+
+    public init(
+        learningSources: [any LearningSource],
+        dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase = AgentHistoryDictionaryLearningUseCase()
+    ) {
+        self.learningSources = learningSources
         self.dictionaryLearningUseCase = dictionaryLearningUseCase
     }
 
@@ -32,13 +42,23 @@ public struct AgentHistoryLearningModeUseCase: Sendable {
         scope: DictionaryScope = .user,
         existingEntries: [DictionaryEntry] = []
     ) throws -> AgentHistoryLearningModeResult {
-        let texts = try historyProvider.historyTexts()
-        let candidates = dictionaryLearningUseCase.candidates(from: texts, scope: scope)
+        let learningTexts = try learningSources.flatMap { try $0.learningTexts() }
+        let textCandidates = dictionaryLearningUseCase.candidates(
+            from: learningTexts.map(\.text),
+            scope: scope
+        )
+        let sourceCandidates = try learningSources.flatMap { source -> [CorrectionCandidate] in
+            guard let candidateSource = source as? any CorrectionCandidateLearningSource else {
+                return []
+            }
+            return try candidateSource.correctionCandidates(scope: scope)
+        }
+        let candidates = textCandidates + sourceCandidates
         let freshCandidates = candidates.filter { candidate in
             !existingEntries.containsEquivalent(to: candidate)
         }
         return AgentHistoryLearningModeResult(
-            scannedTextCount: texts.count,
+            scannedTextCount: learningTexts.count,
             candidates: freshCandidates,
             skippedExistingCandidateCount: candidates.count - freshCandidates.count
         )

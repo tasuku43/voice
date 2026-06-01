@@ -72,12 +72,22 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
         "public protocol AgentHistoryTextProvider",
         "historyTexts()",
+        "LearningSource",
+    ],
+    "src/VoiceAgentInputCore/App/LearningSource.swift": [
+        "public protocol LearningSource",
+        "public struct LearningText",
+        "public protocol CorrectionCandidateLearningSource",
     ],
     "src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift": [
         "public struct AgentHistoryLearningModeUseCase",
-        "historyProvider.historyTexts()",
+        "learningSources",
         "dictionaryLearningUseCase.candidates",
         "skippedExistingCandidateCount",
+    ],
+    "src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift": [
+        "public struct RepositoryVocabularyLearningSource",
+        "CorrectionCandidateLearningSource",
     ],
     "src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift": [
         "public struct AgentHistoryDictionaryLearningUseCase",

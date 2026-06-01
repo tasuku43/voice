@@ -91,11 +91,24 @@ final class RecordingFeedbackWindowController: NSWindowController {
         guard let window, let screen = NSScreen.main else {
             return
         }
-        if let focusedFrame = Self.focusedInputAnchorFrame() {
+        if let focusedAnchor = Self.focusedInputAnchor() {
             let visibleFrame = screen.visibleFrame
-            let x = min(max(focusedFrame.minX, visibleFrame.minX + 8), visibleFrame.maxX - window.frame.width - 8)
-            let y = min(max(focusedFrame.maxY + 6, visibleFrame.minY + 8), visibleFrame.maxY - window.frame.height - 8)
-            window.setFrameOrigin(NSPoint(x: x, y: y))
+            let origin: NSPoint
+            switch focusedAnchor.kind {
+            case .caret:
+                origin = Self.originNextToCaret(
+                    focusedAnchor.frame,
+                    windowSize: window.frame.size,
+                    visibleFrame: visibleFrame
+                )
+            case .focusedElement:
+                origin = Self.originAboveFocusedElement(
+                    focusedAnchor.frame,
+                    windowSize: window.frame.size,
+                    visibleFrame: visibleFrame
+                )
+            }
+            window.setFrameOrigin(origin)
             return
         }
 
@@ -108,11 +121,46 @@ final class RecordingFeedbackWindowController: NSWindowController {
         window.setFrameOrigin(origin)
     }
 
-    private static func focusedInputAnchorFrame() -> CGRect? {
+    private static func originNextToCaret(
+        _ caretFrame: CGRect,
+        windowSize: CGSize,
+        visibleFrame: CGRect
+    ) -> NSPoint {
+        let gap: CGFloat = 4
+        let rightX = caretFrame.maxX + gap
+        let leftX = caretFrame.minX - windowSize.width - gap
+        let unclampedX = rightX + windowSize.width <= visibleFrame.maxX - 6 ? rightX : leftX
+        return NSPoint(
+            x: min(max(unclampedX, visibleFrame.minX + 6), visibleFrame.maxX - windowSize.width - 6),
+            y: min(
+                max(caretFrame.midY - windowSize.height / 2, visibleFrame.minY + 6),
+                visibleFrame.maxY - windowSize.height - 6
+            )
+        )
+    }
+
+    private static func originAboveFocusedElement(
+        _ elementFrame: CGRect,
+        windowSize: CGSize,
+        visibleFrame: CGRect
+    ) -> NSPoint {
+        NSPoint(
+            x: min(max(elementFrame.minX, visibleFrame.minX + 8), visibleFrame.maxX - windowSize.width - 8),
+            y: min(max(elementFrame.maxY + 6, visibleFrame.minY + 8), visibleFrame.maxY - windowSize.height - 8)
+        )
+    }
+
+    private static func focusedInputAnchor() -> RecordingFeedbackAnchor? {
         guard let element = focusedElement() else {
             return nil
         }
-        return selectedTextRangeFrame(in: element) ?? elementFrame(element)
+        if let caretFrame = selectedTextRangeFrame(in: element) {
+            return RecordingFeedbackAnchor(frame: caretFrame, kind: .caret)
+        }
+        if let elementFrame = elementFrame(element) {
+            return RecordingFeedbackAnchor(frame: elementFrame, kind: .focusedElement)
+        }
+        return nil
     }
 
     private static func focusedElement() -> AXUIElement? {
@@ -159,7 +207,10 @@ final class RecordingFeedbackWindowController: NSWindowController {
 
         let boundsAXValue = boundsValue as! AXValue
         var bounds = CGRect.zero
-        guard AXValueGetValue(boundsAXValue, .cgRect, &bounds), !bounds.isNull, !bounds.isEmpty else {
+        guard AXValueGetValue(boundsAXValue, .cgRect, &bounds),
+              !bounds.isNull,
+              bounds.height > 0
+        else {
             return nil
         }
         return bounds
@@ -193,6 +244,16 @@ final class RecordingFeedbackWindowController: NSWindowController {
 
     @objc private func stop() {
         stopAction()
+    }
+}
+
+private struct RecordingFeedbackAnchor {
+    var frame: CGRect
+    var kind: Kind
+
+    enum Kind {
+        case caret
+        case focusedElement
     }
 }
 

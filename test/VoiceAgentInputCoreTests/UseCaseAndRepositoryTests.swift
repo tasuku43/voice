@@ -1394,7 +1394,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(tooLong.effectiveRecordingDurationSeconds, 30)
         XCTAssertEqual(tooLong.effectiveSpeechLocaleIdentifier, "en-US")
         XCTAssertEqual(AppSettings().preferredLearningScope, .user)
-        XCTAssertEqual(AppSettings(repositoryPath: "/tmp/repo").preferredLearningScope, .repository)
+        XCTAssertEqual(AppSettings(repositoryPath: "/tmp/repo").preferredLearningScope, .user)
     }
 
     func testAppSettingsUseCaseSavesRepositoryAndClampedRecordingSettings() throws {
@@ -1456,7 +1456,54 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
     }
 
-    func testDictionaryContextLoadingUseCaseCombinesSeedLocalAndRepositoryVocabulary() throws {
+    func testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly() throws {
+        let localEntry = DictionaryEntry(
+            spokenForms: ["ぼいすえーじぇんと"],
+            canonical: "VoiceAgentInput",
+            kind: .projectTerm,
+            scope: .user,
+            confidence: 0.9,
+            autoApply: true
+        )
+        let useCase = DictionaryEntryLoadingUseCase(
+            repository: InMemoryDictionaryRepository(entries: [localEntry])
+        )
+
+        let entries = try useCase.loadEntries()
+
+        XCTAssertTrue(entries.contains { $0.canonical == "VoiceAgentInput" && $0.scope == .user })
+        XCTAssertTrue(entries.contains { $0.canonical == "Codex" && $0.scope == .global })
+        XCTAssertFalse(entries.contains { $0.scope == .repository })
+    }
+
+    func testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources() throws {
+        let historyProvider = StubAgentHistoryTextProvider(texts: [
+            "SwiftUI renders JSON previews.",
+            "SwiftUI loads JSON fixtures."
+        ])
+        let repositorySource = RepositoryVocabularyLearningSource(
+            startingURL: URL(fileURLWithPath: "/tmp/VoiceAgentInput"),
+            repositoryContextProvider: StubRepositoryContextProvider(
+                context: RepositoryContext(rootPath: "/tmp/VoiceAgentInput", branchName: "feature/context")
+            ),
+            repositoryVocabularyFilePathProvider: StubRepositoryVocabularyFilePathProvider(filePaths: [])
+        )
+
+        let result = try AgentHistoryLearningModeUseCase(
+            learningSources: [historyProvider, repositorySource],
+            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        ).generateCandidates()
+
+        XCTAssertEqual(result.scannedTextCount, 3)
+        XCTAssertTrue(result.candidates.contains { $0.correctedPhrase == "SwiftUI" })
+        XCTAssertTrue(result.candidates.contains {
+            $0.correctedPhrase == "VoiceAgentInput" &&
+            $0.rawPhrase == "voice agent input" &&
+            $0.suggestedScope == .user
+        })
+    }
+
+    func testDictionaryContextLoadingUseCaseKeepsRepositoryVocabularyOutOfRuntimeEntries() throws {
         let localEntry = DictionaryEntry(
             spokenForms: ["ろーかる"],
             canonical: "local-term",
@@ -1475,9 +1522,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertTrue(entries.contains { $0.canonical == "local-term" && $0.scope == .user })
         XCTAssertTrue(entries.contains { $0.canonical == "Codex" && $0.scope == .global })
-        XCTAssertTrue(entries.contains { $0.canonical == "voice" && $0.scope == .repository })
-        XCTAssertTrue(entries.contains { $0.canonical == "feature/pipeline" && $0.scope == .repository })
-        XCTAssertTrue(entries.contains { $0.canonical == "Package.swift" && $0.scope == .repository })
+        XCTAssertFalse(entries.contains { $0.scope == .repository })
     }
 
     func testGitRepositoryContextProviderReadsRootAndBranch() throws {
