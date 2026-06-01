@@ -120,6 +120,17 @@ LocalLearningDataUseCase.deleteAllLocalLearningData() throws
 
 These operations apply only to approved local dictionary entries. They do not export or persist raw audio or raw transcripts.
 
+Local context model data use case:
+
+```swift
+LocalContextModelDataUseCase.exportModel() throws -> LocalContextModel
+LocalContextModelDataUseCase.importModel(_ model: LocalContextModel) throws
+LocalContextModelDataUseCase.rebuildModel(...) throws -> LocalContextModel
+LocalContextModelDataUseCase.deleteLocalContextModel() throws
+```
+
+These operations apply to the saved local context model document used for STT recognition hints and post-STT transforms. The app exposes export/import/delete separately from approved dictionary controls.
+
 Voice input history:
 
 ```swift

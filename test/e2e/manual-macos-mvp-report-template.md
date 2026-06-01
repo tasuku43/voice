@@ -120,8 +120,12 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Export Local Dictionary works: pass/fail
 - Export contains approved dictionary entries only: pass/fail
 - Import Local Dictionary works: pass/fail
+- Export Local Context Model works: pass/fail
+- Exported Local Context Model contains schemaVersion and model: pass/fail
+- Import Local Context Model works: pass/fail
 - Open Local Data Folder works: pass/fail
 - Delete Local Dictionary works: pass/fail
+- Delete Local Context Model works: pass/fail
 - Deleted local entries no longer affect later previews: pass/fail
 - Notes:
 

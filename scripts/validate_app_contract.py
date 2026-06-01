@@ -72,6 +72,9 @@ REQUIRED_SOURCE_SNIPPETS = [
     "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "Export Local Dictionary...",
     "Import Local Dictionary...",
+    "Export Local Context Model...",
+    "Import Local Context Model...",
+    "LocalContextModelDocumentCodec",
     "Learn From Agent History...",
     "LearningSourceSelection",
     "AgentHistoryLearningModeUseCase",
@@ -82,6 +85,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "preferredLearningScope",
     "Open Local Data Folder...",
     "Delete Local Dictionary...",
+    "Delete Local Context Model...",
     "LocalLearningDataUseCase",
 ]
 

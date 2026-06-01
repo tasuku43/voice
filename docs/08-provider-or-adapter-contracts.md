@@ -97,6 +97,7 @@ Current use cases:
 - `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
 - `LearningApprovalUseCase` combines candidate selection review and approved-entry persistence so UI only supplies selected indexes.
 - `LocalLearningDataUseCase` exports, imports, and deletes approved local dictionary entries; the macOS shell exposes these as menu actions.
+- `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete separately from approved dictionary controls.
 - `LocalLearningDataDocumentCodec` owns the JSON document shape for local dictionary import/export.
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
 - Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.

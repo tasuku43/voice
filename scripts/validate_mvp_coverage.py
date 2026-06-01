@@ -308,11 +308,24 @@ REQUIRED_COVERAGE = {
             "dateEncodingStrategy = .iso8601",
             "dateDecodingStrategy = .iso8601",
         ],
+        "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
+            "exportModel",
+            "importModel",
+            "deleteLocalContextModel",
+        ],
+        "src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift": [
+            "LocalContextModelDocumentCodec",
+            "dateEncodingStrategy = .iso8601",
+            "dateDecodingStrategy = .iso8601",
+        ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "Export Local Dictionary...",
             "Import Local Dictionary...",
+            "Export Local Context Model...",
+            "Import Local Context Model...",
             "Open Local Data Folder...",
             "Delete Local Dictionary...",
+            "Delete Local Context Model...",
         ],
     },
     "repository vocabulary": {
@@ -450,6 +463,7 @@ REQUIRED_COVERAGE = {
             "Spec trim audit",
             "Preview/edit UI is an optional curation surface",
             "Any requirement that the default hotkey path show a preview before insertion",
+            "Local context model rebuild/export/import/delete UI is implemented",
             "local Foundation Model adapter",
         ],
         "docs/codex-sessions/local-context-model-session.md": [

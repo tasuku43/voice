@@ -103,8 +103,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
         menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
+        menu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Import Local Context Model...", action: #selector(importLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
         menu.addItem(NSMenuItem(title: "Delete Local Dictionary...", action: #selector(deleteLocalDictionary), keyEquivalent: "d"))
+        menu.addItem(NSMenuItem(title: "Delete Local Context Model...", action: #selector(deleteLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         item.menu = menu
@@ -1122,6 +1125,52 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
+    @objc private func exportLocalContextModel() {
+        do {
+            let model = try LocalContextModelDataUseCase(
+                repository: localContextModelRepository()
+            ).exportModel()
+
+            let panel = NSSavePanel()
+            panel.allowedContentTypes = [.json]
+            panel.nameFieldStringValue = "voice-agent-input-local-context-model.json"
+            panel.message = "Export the local context model used for STT hints and post-STT transforms."
+
+            guard panel.runModal() == .OK, let url = panel.url else {
+                return
+            }
+
+            try LocalContextModelDocumentCodec()
+                .encode(model)
+                .write(to: url, options: [.atomic])
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func importLocalContextModel() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.json]
+        panel.message = "Import a local context model JSON document."
+
+        guard panel.runModal() == .OK, let url = panel.url else {
+            return
+        }
+
+        do {
+            let model = try LocalContextModelDocumentCodec()
+                .decode(try Data(contentsOf: url))
+            try LocalContextModelDataUseCase(
+                repository: localContextModelRepository()
+            ).importModel(model)
+        } catch {
+            presentError(error)
+        }
+    }
+
     @objc private func openLocalDataFolder() {
         do {
             let url = try LocalLearningDictionaryStore.defaultDirectoryURL()
@@ -1297,6 +1346,27 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             try LocalLearningDataUseCase(
                 repository: approvedDictionaryRepository()
             ).deleteAllLocalLearningData()
+        } catch {
+            presentError(error)
+        }
+    }
+
+    @objc private func deleteLocalContextModel() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Delete local context model?"
+        alert.informativeText = "This removes the learned context model used for STT hints and post-STT transforms. Approved dictionary entries and bundled seed terms are not deleted."
+        alert.addButton(withTitle: "Delete")
+        alert.addButton(withTitle: "Cancel")
+
+        guard alert.runModal() == .alertFirstButtonReturn else {
+            return
+        }
+
+        do {
+            try LocalContextModelDataUseCase(
+                repository: localContextModelRepository()
+            ).deleteLocalContextModel()
         } catch {
             presentError(error)
         }

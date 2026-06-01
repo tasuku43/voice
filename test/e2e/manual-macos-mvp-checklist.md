@@ -106,9 +106,13 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 1. Choose `Export Local Dictionary...` and save a JSON file.
 2. Verify the exported JSON contains approved dictionary entries only.
 3. Choose `Import Local Dictionary...` and import the JSON file.
-4. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
-5. Choose `Delete Local Dictionary...`.
-6. Verify later previews no longer use deleted local entries unless they come from seed or repository vocabulary.
+4. Choose `Export Local Context Model...` and save a JSON file.
+5. Verify the exported JSON contains `schemaVersion` and `model`.
+6. Choose `Import Local Context Model...` and import the JSON file.
+7. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
+8. Choose `Delete Local Dictionary...`.
+9. Choose `Delete Local Context Model...`.
+10. Verify later previews no longer use deleted local entries unless they come from seed or a rebuilt local context model.
 
 ## Repository Vocabulary
 
