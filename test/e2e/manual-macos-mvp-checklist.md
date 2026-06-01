@@ -96,9 +96,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
 6. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
 7. Choose `Local Context Model Status...` and verify the saved status shows the last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
-8. Choose `Train Dictionary From Sources...`, select the same sources, then verify candidates are shown only after explicit approval.
-9. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
-10. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
+8. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
 
 ## Local Data Controls
 

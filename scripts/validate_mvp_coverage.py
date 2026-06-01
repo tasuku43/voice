@@ -210,10 +210,7 @@ REQUIRED_COVERAGE = {
             "Rebuild Local Context Model...",
             "rebuildLocalContextModelFromSources",
             "showLocalContextModelRebuiltAlert",
-            "Learn From Agent History...",
-            "Train Dictionary From Sources...",
             "promptForLearningSourceSelection",
-            "runDictionaryTraining",
             "rebuildLocalContextModel(selection:",
             "Codex / Claude local sessions",
             "Git repository vocabulary",
@@ -224,6 +221,7 @@ REQUIRED_COVERAGE = {
         "docs/17-learning-goal-audit.md": [
             "Learning Goal Audit",
             "Keep ordinary hotkey dictation mostly rule-based and fast.",
+            "without candidate approval",
             "testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails",
             "DetectorBackedLearningCandidateReviewer",
             "local Foundation Models only",

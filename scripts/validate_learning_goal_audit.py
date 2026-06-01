@@ -26,7 +26,7 @@ REQUIRED_SNIPPETS = {
         "LocalContextModelStatusUseCase",
         "Local Context Model Status...",
         "Rebuild Local Context Model...",
-        "Train Dictionary From Sources...",
+        "without candidate approval",
         "source text counts",
         "RepositoryVocabularyLearningSource",
         "global hotkey runtime behavior is not implicitly repository-specific",
@@ -143,8 +143,6 @@ REQUIRED_SNIPPETS = {
         "Rebuild Local Context Model...",
         "rebuildLocalContextModelFromSources",
         "showLocalContextModelRebuiltAlert",
-        "Learn From Agent History...",
-        "Train Dictionary From Sources...",
         "Codex / Claude local sessions",
         "Git repository vocabulary",
         "localContextModelRepository: try localContextModelRepository()",
@@ -221,9 +219,9 @@ REQUIRED_SNIPPETS = {
         "testCandidateExtractorCanUseReplaceableMisrecognitionDetector",
     ],
     "test/e2e/manual-macos-mvp-checklist.md": [
-        "Learn From Agent History...",
-        "bounded local Codex/Claude history scanning",
-        "history-derived project identifier",
+        "Rebuild Local Context Model...",
+        "without opening candidate approval",
+        "rebuilt local context model",
     ],
 }
 

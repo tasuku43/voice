@@ -160,8 +160,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
-        "Learn From Agent History...",
-        "Train Dictionary From Sources...",
+        "Rebuild Local Context Model...",
         "AgentHistoryLearningModeUseCase",
     ],
     "src/VoiceAgentInputApp/PreviewWindowController.swift": [

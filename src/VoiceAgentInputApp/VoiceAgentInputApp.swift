@@ -99,8 +99,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Local Context Model Status...", action: #selector(showLocalContextModelStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Train Dictionary From Sources...", action: #selector(trainDictionaryFromSources), keyEquivalent: "t"))
-        menu.addItem(NSMenuItem(title: "Learn From Agent History...", action: #selector(learnFromAgentHistory), keyEquivalent: "l"))
         menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
         menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
         menu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
@@ -1145,39 +1143,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc private func learnFromAgentHistory() {
-        do {
-            try runDictionaryTraining(
-                selection: LearningSourceSelection(includeAgentHistory: true),
-                emptyMessage: "No new repeated developer terms were found in the bounded local Codex/Claude history scan."
-            )
-        } catch {
-            presentError(error)
-        }
-    }
-
-    @objc private func trainDictionaryFromSources() {
-        do {
-            guard let selection = try promptForLearningSourceSelection(
-                title: "Train dictionary from sources",
-                informativeText: "Selected local sources refresh the local context model. Nothing is uploaded; approved dictionary entries are saved only after approval.",
-                confirmButtonTitle: "Train"
-            ) else {
-                return
-            }
-            guard !selection.isEmpty else {
-                showNoLearningSourceSelectedAlert()
-                return
-            }
-            try runDictionaryTraining(
-                selection: selection,
-                emptyMessage: "No new dictionary candidates were found in the selected local learning sources."
-            )
-        } catch {
-            presentError(error)
-        }
-    }
-
     @objc private func rebuildLocalContextModelFromSources() {
         do {
             guard let selection = try promptForLearningSourceSelection(
@@ -1263,25 +1228,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         alert.messageText = "No learning sources selected"
         alert.informativeText = "Choose at least one local source to scan."
         alert.runModal()
-    }
-
-    private func runDictionaryTraining(
-        selection: LearningSourceSelection,
-        emptyMessage: String
-    ) throws {
-        let run = try rebuildLocalContextModel(selection: selection)
-
-        guard !run.result.candidates.isEmpty else {
-            let alert = NSAlert()
-            alert.alertStyle = .informational
-            alert.messageText = "No dictionary candidates found"
-            alert.informativeText = emptyMessage + " The local context model was refreshed from the selected sources."
-            alert.runModal()
-            return
-        }
-
-        try CandidateApprovalDialogController()
-            .approveCandidatesIfRequested(run.result.candidates, maximumVisibleCandidates: 24)
     }
 
     private func rebuildLocalContextModel(
