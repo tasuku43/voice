@@ -35,6 +35,8 @@ REQUIRED_SNIPPETS = {
     ],
     "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
         "public struct LocalContextModel",
+        "lastRebuiltAt",
+        "sourceKinds",
         "postSTTEntries",
         "recognitionHints",
         "public struct LocalContextModelBuildUseCase",

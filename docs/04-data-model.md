@@ -21,6 +21,8 @@ Current code represents this with `LocalContextModel` in the App layer. It wraps
 - `model.entries`
 - `model.sourceTextCounts`
 - `model.generatedCandidateCount`
+- `model.lastRebuiltAt`
+- `model.sourceKinds`
 
 The app rebuilds and persists this model after an explicit learning-source run. The same saved model supports two runtime uses:
 

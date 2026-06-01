@@ -97,7 +97,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 6. Optionally set a trusted local reviewer command and verify it only runs after preview confirmation in `Learning Preview`.
 7. Verify the trusted local reviewer command does not run during `Quick Paste`.
 8. With a repository folder configured, edit a `Learning Preview` prompt so it creates a candidate and verify the candidate is still suggested with user scope by default.
-9. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval.
+9. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
 10. Choose `Train Dictionary From Sources...`, select the same sources, then verify candidates are shown only after explicit approval.
 11. Choose `Learn From Agent History...` and verify bounded local Codex/Claude history scanning presents repeated developer term candidates.
 12. Approve a history-derived project identifier candidate, then run a later preview using its spoken form and verify the rule-based dictionary normalization uses the approved entry.
@@ -108,7 +108,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 2. Verify the exported JSON contains approved dictionary entries only.
 3. Choose `Import Local Dictionary...` and import the JSON file.
 4. Choose `Export Local Context Model...` and save a JSON file.
-5. Verify the exported JSON contains `schemaVersion` and `model`.
+5. Verify the exported JSON contains `schemaVersion`, `model`, `lastRebuiltAt`, and `sourceKinds`.
 6. Choose `Import Local Context Model...` and import the JSON file.
 7. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
 8. Choose `Delete Local Dictionary...`.

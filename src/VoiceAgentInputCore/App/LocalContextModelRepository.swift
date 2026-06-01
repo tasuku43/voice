@@ -28,11 +28,13 @@ public struct LocalContextModelDataUseCase {
     @discardableResult
     public func rebuildModel(
         learningResult: AgentHistoryLearningModeResult?,
-        includeGeneratedCandidates: Bool = true
+        includeGeneratedCandidates: Bool = true,
+        rebuiltAt: Date = Date()
     ) throws -> LocalContextModel {
         let model = buildUseCase.build(
             learningResult: learningResult,
-            includeGeneratedCandidates: includeGeneratedCandidates
+            includeGeneratedCandidates: includeGeneratedCandidates,
+            rebuiltAt: rebuiltAt
         )
         try repository.saveModel(model)
         return model

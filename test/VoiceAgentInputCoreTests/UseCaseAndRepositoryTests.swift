@@ -858,9 +858,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let model = LocalContextModelBuildUseCase(
             seedEntries: [],
             approvedEntries: [approvedEntry]
-        ).build(learningResult: learningResult)
+        ).build(learningResult: learningResult, rebuiltAt: Date(timeIntervalSince1970: 1_800))
 
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 2)
+        XCTAssertEqual(model.sourceKinds, ["agentHistory"])
+        XCTAssertEqual(model.lastRebuiltAt, Date(timeIntervalSince1970: 1_800))
         XCTAssertEqual(model.generatedCandidateCount, 1)
         XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["ProjectVoice", "SwiftUI"])
         XCTAssertEqual(
@@ -925,10 +927,12 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let model = try LocalContextModelDataUseCase(
             repository: repository,
             buildUseCase: LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [approvedEntry])
-        ).rebuildModel(learningResult: learningResult)
+        ).rebuildModel(learningResult: learningResult, rebuiltAt: Date(timeIntervalSince1970: 2_400))
 
         XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["VoiceAgentInput", "main"])
         XCTAssertEqual(model.sourceTextCounts["repositoryVocabulary"], 1)
+        XCTAssertEqual(model.sourceKinds, ["repositoryVocabulary"])
+        XCTAssertEqual(model.lastRebuiltAt, Date(timeIntervalSince1970: 2_400))
         XCTAssertEqual(try repository.loadModel(), model)
     }
 
@@ -946,7 +950,9 @@ final class UseCaseAndRepositoryTests: XCTestCase {
                 )
             ],
             sourceTextCounts: ["agentHistory": 2],
-            generatedCandidateCount: 1
+            generatedCandidateCount: 1,
+            lastRebuiltAt: Date(timeIntervalSince1970: 3_600),
+            sourceKinds: ["agentHistory"]
         )
 
         let data = try LocalContextModelDocumentCodec().encode(model)
@@ -954,6 +960,29 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(decoded, model)
         XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"schemaVersion\" : 1") == true)
+        XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"lastRebuiltAt\"") == true)
+    }
+
+    func testLocalContextModelDocumentCodecDecodesLegacyModelWithoutRebuildMetadata() throws {
+        let legacyJSON = """
+        {
+          "schemaVersion": 1,
+          "model": {
+            "entries": [],
+            "sourceTextCounts": {
+              "agentHistory": 2
+            },
+            "generatedCandidateCount": 1
+          }
+        }
+        """
+
+        let decoded = try LocalContextModelDocumentCodec().decode(Data(legacyJSON.utf8))
+
+        XCTAssertEqual(decoded.sourceTextCounts["agentHistory"], 2)
+        XCTAssertEqual(decoded.generatedCandidateCount, 1)
+        XCTAssertNil(decoded.lastRebuiltAt)
+        XCTAssertTrue(decoded.sourceKinds.isEmpty)
     }
 
     func testJSONLocalContextModelRepositoryRoundTripAndDelete() throws {

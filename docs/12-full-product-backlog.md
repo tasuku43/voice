@@ -2,7 +2,7 @@
 
 ## Core
 
-- Add stale-model and last-rebuilt metadata to the local context model document.
+- Add a local context model status panel for inspecting last rebuild metadata without rebuilding.
 - Split built-in vocabulary transforms from personal context transforms.
 - Improve phrase alignment in candidate extraction.
 - Add confidence accumulation for repeated corrections.

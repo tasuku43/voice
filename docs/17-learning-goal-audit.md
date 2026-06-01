@@ -24,7 +24,7 @@ This audit maps the current implementation to the product goal of a fully local,
 
 - Manual macOS E2E evidence for real microphone capture, Apple Speech behavior, Accessibility paste, candidate approval UI, `Learning Settings...`, and local filesystem privacy inspection.
 - Real-world trial of a trusted local reviewer command, such as `/usr/bin/python3` plus `scripts/local_learning_reviewer_example.py`, through the app UI.
-- Clearer stale-model metadata and last-rebuilt timestamps.
+- A local context model status panel for inspecting last rebuild metadata without rebuilding.
 - Future GitHub, Slack, and Chatwork learning-source adapters.
 - Future local Foundation Model adapter for model education and explicit fallback conversion.
 - If Apple Speech never emits missing earlier speech in any partial or final snapshot, the current accumulator cannot reconstruct it; that would require chunk-level audio segmentation or another local STT strategy.

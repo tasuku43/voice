@@ -90,6 +90,8 @@ REQUIRED_COVERAGE = {
         ],
         "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
             "public struct LocalContextModel",
+            "lastRebuiltAt",
+            "sourceKinds",
             "postSTTEntries",
             "recognitionHints",
             "LocalContextModelBuildUseCase",
@@ -468,7 +470,7 @@ REQUIRED_COVERAGE = {
             "Preview/edit UI is an optional curation surface",
             "Any requirement that the default hotkey path show a preview before insertion",
             "Local context model rebuild/export/import/delete UI is implemented",
-            "last-rebuilt timestamps",
+            "last rebuild time",
             "local Foundation Model adapter",
         ],
         "docs/codex-sessions/local-context-model-session.md": [

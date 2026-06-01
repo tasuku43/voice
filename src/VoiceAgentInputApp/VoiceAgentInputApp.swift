@@ -1356,13 +1356,23 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.alertStyle = .informational
         alert.messageText = "Local context model rebuilt"
+        let rebuiltText = model.lastRebuiltAt.map(Self.localContextModelDateFormatter.string(from:)) ?? "unknown"
+        let sourceText = model.sourceKinds.isEmpty ? "none" : model.sourceKinds.joined(separator: ", ")
         alert.informativeText = """
+        Last rebuilt: \(rebuiltText).
+        Sources: \(sourceText).
         Scanned \(result.scannedTextCount) local source texts.
         Added \(result.candidates.count) generated candidates to the local context model.
         Runtime model entries: \(model.entries.count).
         """
         alert.runModal()
     }
+
+    private static let localContextModelDateFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
+        return formatter
+    }()
 
     private func configuredLearningSources(
         selection: LearningSourceSelection,
