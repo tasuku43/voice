@@ -31,8 +31,8 @@ Implementations:
 
 Current app orchestration:
 
-- `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, a `PromptRefiner`, and `NormalizationContext`.
-- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
+- `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, and `NormalizationContext`.
+- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
 - `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
 

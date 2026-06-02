@@ -11,7 +11,7 @@ May touch:
 - Output adapters and paste tests.
 
 Avoid:
-- Speech, normalization, prompt refinement, learning.
+- Speech, normalization, learning.
 
 Contract:
 - Insert only user-action-completed prompt text.

@@ -20,7 +20,7 @@
 ## Forbidden
 - Speech recognition.
 - Dictionary correction.
-- Prompt refinement.
+- Post-STT text conversion.
 - Preview, paste, or learning.
 - Persist raw audio by default.
 

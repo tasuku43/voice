@@ -18,7 +18,7 @@
 
 ## Forbidden
 - Dictionary correction.
-- Prompt refinement or summarization.
+- Post-STT text conversion or summarization.
 - Preview, paste, learning, or persistence.
 
 ## Read First

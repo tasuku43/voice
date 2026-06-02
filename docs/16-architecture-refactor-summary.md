@@ -21,9 +21,9 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Dictionary and repository vocabulary loading moved toward `DictionaryContextLoadingUseCase`.
 - Capture/STT orchestration is represented by `VoiceInputPipeline`.
 - Post-STT text processing is represented by `PromptProcessingPipeline`.
-- Dictionary replacement and refinement also expose `PromptTextTransform` for simple `String -> String` composition.
+- Dictionary replacement exposes `PromptTextTransform` for simple `String -> String` composition.
 - Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`; local persistence is behind `LocalContextModelRepository` with `JSONLocalContextModelRepository` as the filesystem adapter.
-- Deterministic local prompt cleanup is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`. Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default refiner.
+- Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default hotkey processing path.
 - Local context model rebuilds moved into `LocalContextModelDataUseCase`, leaving the UI to choose sources and trigger rebuilds.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
@@ -46,10 +46,7 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 
 - `Transcript`
 - `NormalizedPrompt`
-- `RefinedPrompt`
-- `PromptRefinementChange`
 - `PromptNormalizer`
-- `PromptRefiner`
 - `PromptTextTransform`
 - `LocalContextModel`
 - `LocalContextModelDocumentCodec`
@@ -68,7 +65,6 @@ Component contracts:
 - `docs/contracts/speech-to-text.md`
 - `docs/contracts/local-context-model.md`
 - `docs/contracts/normalization.md`
-- `docs/contracts/prompt-refinement.md`
 - `docs/contracts/voice-input-pipeline.md`
 - `docs/contracts/learning.md`
 - `docs/contracts/output.md`
@@ -79,7 +75,6 @@ Future Codex session prompts:
 - `docs/codex-sessions/speech-to-text-session.md`
 - `docs/codex-sessions/local-context-model-session.md`
 - `docs/codex-sessions/normalization-session.md`
-- `docs/codex-sessions/prompt-refinement-session.md`
 - `docs/codex-sessions/repository-vocabulary-session.md`
 - `docs/codex-sessions/learning-session.md`
 - `docs/codex-sessions/output-session.md`
@@ -98,11 +93,9 @@ Future Codex session prompts:
 ## Remaining Limitations
 
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
-- The prompt-refinement layer remains deterministic by default; local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
+- Local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
 - Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, local data menus, and privacy filesystem checks.
 
 ## Next Recommended Session
 
-Prioritize `docs/codex-sessions/local-context-model-session.md` if the goal is to align implementation with the product direction. Make learned context explicit, rebuildable, and usable for both STT recognition hints and post-STT transforms.
-
-Prioritize `docs/codex-sessions/prompt-refinement-session.md` if the goal is to add real local prompt cleanup. Keep the default no-op path and preserve the `PromptTextTransform` shape.
+Prioritize `docs/codex-sessions/local-context-model-session.md` when improving model education. Preserve the default dictionary-only hotkey path.

@@ -8,18 +8,15 @@ public enum VoiceInputPipelineError: Error, Equatable {
 public struct VoiceInputPipelineResult: Equatable, Sendable {
     public var transcript: Transcript
     public var normalizedPrompt: NormalizedPrompt
-    public var refinedPrompt: RefinedPrompt
     public var insertion: PromptInsertion
 
     public init(
         transcript: Transcript,
         normalizedPrompt: NormalizedPrompt,
-        refinedPrompt: RefinedPrompt,
         insertion: PromptInsertion
     ) {
         self.transcript = transcript
         self.normalizedPrompt = normalizedPrompt
-        self.refinedPrompt = refinedPrompt
         self.insertion = insertion
     }
 
@@ -27,7 +24,6 @@ public struct VoiceInputPipelineResult: Equatable, Sendable {
         self.init(
             transcript: promptProcessingResult.transcript,
             normalizedPrompt: promptProcessingResult.normalizedPrompt,
-            refinedPrompt: promptProcessingResult.refinedPrompt,
             insertion: promptProcessingResult.insertion
         )
     }
@@ -38,7 +34,6 @@ public struct VoiceInputPipeline {
     public var microphonePermissionProvider: (any MicrophonePermissionProvider)?
     public var speechEngine: any SpeechToTextEngine
     public var normalizer: any PromptNormalizer
-    public var refiner: any PromptRefiner
     public var normalizationContext: NormalizationContext
     public var recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)?
 
@@ -47,7 +42,6 @@ public struct VoiceInputPipeline {
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
         normalizer: any PromptNormalizer = DictionaryPromptNormalizer(),
-        refiner: any PromptRefiner = NoOpPromptRefiner(),
         normalizationContext: NormalizationContext,
         recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)? = nil
     ) {
@@ -55,7 +49,6 @@ public struct VoiceInputPipeline {
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.normalizer = normalizer
-        self.refiner = refiner
         self.normalizationContext = normalizationContext
         self.recordedAudioHandler = recordedAudioHandler
     }
@@ -93,7 +86,6 @@ public struct VoiceInputPipeline {
     private func promptProcessingPipeline() -> PromptProcessingPipeline {
         PromptProcessingPipeline(
             normalizer: normalizer,
-            refiner: refiner,
             normalizationContext: normalizationContext
         )
     }

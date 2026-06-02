@@ -351,39 +351,28 @@ REQUIRED_COVERAGE = {
             "Next Recommended Session",
         ],
         "src/VoiceAgentInputCore/App/PromptContracts.swift": [
-            "protocol PromptRefiner",
-            "NoOpPromptRefiner",
             "normalizeText",
-            "refineText",
             "NormalizedPrompt",
-            "RefinedPrompt",
         ],
         "src/VoiceAgentInputCore/App/PromptTextTransform.swift": [
             "protocol PromptTextTransform",
             "PromptTextTransformPipeline",
             "DictionaryPromptTextTransform",
-            "RefinementPromptTextTransform",
             "transform(_ text: String) async throws -> String",
         ],
         "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
             "PromptProcessingPipelineResult",
             "PromptProcessingPipeline",
             "process(transcript: Transcript)",
-            "PromptInsertion(text: refined.refinedText)",
+            "PromptInsertion(text: normalized.normalizedText)",
             "normalizer.normalize",
-            "refiner.refine",
         ],
         "src/VoiceAgentInputCore/App/VoiceInputPipeline.swift": [
             "VoiceInputPipelineResult",
             "transcript",
             "normalizedPrompt",
-            "refinedPrompt",
             "insertion",
             "promptProcessingPipeline().process",
-        ],
-        "docs/contracts/prompt-refinement.md": [
-            "PromptRefiner",
-            "NoOpPromptRefiner",
         ],
         "docs/contracts/audio-capture.md": [
             "Audio Capture Contract",
@@ -421,11 +410,6 @@ REQUIRED_COVERAGE = {
             "local context model",
             "STT recognition hints",
             "post-STT transforms",
-        ],
-        "docs/codex-sessions/prompt-refinement-session.md": [
-            "Purpose",
-            "Tests",
-            "Done",
         ],
         "docs/codex-sessions/repository-vocabulary-session.md": [
             "bounded repository vocabulary",

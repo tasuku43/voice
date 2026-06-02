@@ -147,7 +147,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     audioRecorder: audioRecorder,
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
                     speechEngine: speechEngine,
-                    refiner: JapanesePunctuationPromptRefiner(),
                     normalizationContext: NormalizationContext(entries: entries),
                     recordedAudioHandler: { [debugLogger] audio in
                         debugLogger.log(

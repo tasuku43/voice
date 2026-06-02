@@ -8,10 +8,7 @@ ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
 REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/PromptContracts.swift": [
         "public struct NormalizedPrompt",
-        "public struct RefinedPrompt",
         "public protocol PromptNormalizer",
-        "public protocol PromptRefiner",
-        "public struct NoOpPromptRefiner",
     ],
     "src/VoiceAgentInputCore/App/Transcript.swift": [
         "public struct Transcript",
@@ -20,7 +17,6 @@ REQUIRED_SNIPPETS = {
         "public protocol PromptTextTransform",
         "PromptTextTransformPipeline",
         "DictionaryPromptTextTransform",
-        "RefinementPromptTextTransform",
     ],
     "src/VoiceAgentInputCore/App/VoiceInputPipeline.swift": [
         "public struct VoiceInputPipeline",
@@ -31,7 +27,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
         "public struct PromptProcessingPipeline",
         "normalizer.normalize",
-        "refiner.refine",
+        "PromptInsertion(text: normalized.normalizedText)",
     ],
     "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
         "public struct LocalContextModel",
@@ -162,7 +158,6 @@ REQUIRED_CONTRACTS = [
     "speech-to-text.md",
     "local-context-model.md",
     "normalization.md",
-    "prompt-refinement.md",
     "voice-input-pipeline.md",
     "learning.md",
     "output.md",
@@ -173,7 +168,6 @@ REQUIRED_SESSIONS = [
     "speech-to-text-session.md",
     "local-context-model-session.md",
     "normalization-session.md",
-    "prompt-refinement-session.md",
     "repository-vocabulary-session.md",
     "learning-session.md",
     "output-session.md",

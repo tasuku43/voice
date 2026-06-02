@@ -48,17 +48,3 @@ public struct DictionaryPromptTextTransform: PromptTextTransform {
         try normalizer.normalizeText(text, context: context)
     }
 }
-
-public struct RefinementPromptTextTransform: PromptTextTransform {
-    public var refiner: any PromptRefiner
-
-    public init(
-        refiner: any PromptRefiner = NoOpPromptRefiner()
-    ) {
-        self.refiner = refiner
-    }
-
-    public func transform(_ text: String) async throws -> String {
-        try await refiner.refineText(text)
-    }
-}

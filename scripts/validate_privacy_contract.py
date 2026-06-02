@@ -58,12 +58,6 @@ REQUIRED_DOC_SNIPPETS = {
         "must not introduce network IO",
         "using LLM rewriting as the default hotkey conversion path",
     ],
-    "docs/contracts/prompt-refinement.md": [
-        "Network IO",
-        "Cloud LLM calls",
-        "LLM-backed rewriting in the default hotkey path",
-        "Foundation Model conversion belongs to an explicit local-only fallback stage",
-    ],
     "docs/contracts/voice-input-pipeline.md": [
         "optional local Foundation Model fallback",
         "Network IO",

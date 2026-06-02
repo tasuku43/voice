@@ -26,7 +26,7 @@
 
 ## Forbidden
 - Speech recognition.
-- Prompt refinement.
+- Hotkey-path text conversion.
 - Automatic context model updates from voice-input edits.
 - Paste or automatic submit.
 - Network IO.

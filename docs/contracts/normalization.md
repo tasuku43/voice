@@ -37,4 +37,4 @@
 
 ## Done
 - Dictionary-only corrections are deterministic and fixture-backed.
-- No prompt refinement or learning side effect is introduced.
+- No learning side effect is introduced.

@@ -17,7 +17,7 @@ May touch:
 - Source learning, candidate generation, and local context model tests.
 
 Avoid:
-- Speech engines, prompt refinement, output adapters.
+- Speech engines and output adapters.
 
 Contract:
 - Candidates include a reason.

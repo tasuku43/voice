@@ -10,7 +10,7 @@ REQUIRED_SNIPPETS = {
     "docs/17-learning-goal-audit.md": [
         "mostly rule-based voice input tool",
         "`Quick Paste` is the only normal voice input mode",
-        "no learning reviewer and no candidate approval dialog",
+        "no learning reviewer, prompt refiner, or candidate approval dialog",
         "Reuse learned context before and after ASR.",
         "SpeechRecognitionHintsUseCase",
         "contextualStrings",

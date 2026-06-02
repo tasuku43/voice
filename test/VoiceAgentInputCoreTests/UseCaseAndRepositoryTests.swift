@@ -63,10 +63,9 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(capturedAudio.value, audio)
     }
 
-    func testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndInsertionStages() async throws {
+    func testVoiceInputPipelineKeepsTranscriptNormalizationAndInsertionStages() async throws {
         let pipeline = VoiceInputPipeline(
             speechEngine: MockSpeechEngine(),
-            refiner: SuffixPromptRefiner(suffix: " please"),
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
@@ -75,8 +74,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
-        XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
-        XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
+        XCTAssertEqual(result.insertion.text, result.normalizedPrompt.normalizedText)
     }
 
     func testSpeechTranscriptAccumulatorMergesPauseSplitSnapshots() {
@@ -167,24 +165,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
     }
 
-    func testJapanesePunctuationPromptRefinerPunctuatesPauseSeparatedRecordingScenario() async throws {
-        let normalized = NormalizedPrompt(
-            rawText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
-            normalizedText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
-            corrections: []
-        )
-
-        let refined = try await JapanesePunctuationPromptRefiner().refine(normalized)
-
-        XCTAssertEqual(
-            refined.refinedText,
-            "使い勝手はだいぶ良くなっている気がする。というのも、今ってレコードからストップまで全部見てくれているんですよね"
-        )
-    }
-
     func testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies() async throws {
         let pipeline = PromptProcessingPipeline(
-            refiner: SuffixPromptRefiner(suffix: " please"),
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
@@ -195,38 +177,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトを確認")
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
-        XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
-        XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
-    }
-
-    func testNoOpPromptRefinerPreservesNormalizedPrompt() async throws {
-        let normalized = NormalizedPrompt(
-            rawText: "こーでっくす",
-            normalizedText: "Codex",
-            corrections: []
-        )
-
-        let refined = try await NoOpPromptRefiner().refine(normalized)
-
-        XCTAssertEqual(refined.normalizedText, "Codex")
-        XCTAssertEqual(refined.refinedText, "Codex")
-        XCTAssertEqual(refined.changes, [])
-    }
-
-    func testJapanesePunctuationPromptRefinerAddsLightweightPunctuation() async throws {
-        let normalized = NormalizedPrompt(
-            rawText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
-            normalizedText: "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね",
-            corrections: []
-        )
-
-        let refined = try await JapanesePunctuationPromptRefiner().refine(normalized)
-
-        XCTAssertEqual(
-            refined.refinedText,
-            "使い勝手はだいぶ良くなっている気がする。というのも、今ってレコードからストップまで全部見てくれているんですよね"
-        )
-        XCTAssertEqual(refined.changes.count, 1)
+        XCTAssertEqual(result.insertion.text, result.normalizedPrompt.normalizedText)
     }
 
     func testPromptTransformsExposeTextToTextConvenience() async throws {
@@ -235,18 +186,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             "くらのコードでタイプスクリプトを確認",
             context: context
         )
-        let refinedText = try await NoOpPromptRefiner().refineText(normalizedText)
 
         XCTAssertTrue(normalizedText.contains("Claude Code"))
         XCTAssertTrue(normalizedText.contains("TypeScript"))
-        XCTAssertEqual(refinedText, normalizedText)
     }
 
-    func testPromptTextTransformPipelineComposesDictionaryAndRefinementLayers() async throws {
+    func testPromptTextTransformPipelineComposesDictionaryAndCustomLayers() async throws {
         let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         let pipeline = PromptTextTransformPipeline(transforms: [
             DictionaryPromptTextTransform(context: context),
-            RefinementPromptTextTransform(refiner: SuffixPromptRefiner(suffix: " please"))
+            AnyPromptTextTransform { text in "\(text) please" }
         ])
 
         let output = try await pipeline.transform("くらのコードでタイプスクリプトを確認")
@@ -1454,24 +1403,6 @@ private final class RecordedAudioCapture: @unchecked Sendable {
         lock.lock()
         storedValue = audio
         lock.unlock()
-    }
-}
-
-private struct SuffixPromptRefiner: PromptRefiner {
-    var suffix: String
-
-    func refine(_ prompt: NormalizedPrompt) async throws -> RefinedPrompt {
-        RefinedPrompt(
-            normalizedText: prompt.normalizedText,
-            refinedText: prompt.normalizedText + suffix,
-            changes: [
-                PromptRefinementChange(
-                    before: prompt.normalizedText,
-                    after: prompt.normalizedText + suffix,
-                    reason: "test suffix"
-                )
-            ]
-        )
     }
 }
 

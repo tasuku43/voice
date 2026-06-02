@@ -16,7 +16,7 @@
 ## Forbidden
 - Speech recognition.
 - Dictionary correction.
-- Prompt refinement.
+- Text conversion.
 - Learning.
 - Automatic submit or command execution.
 

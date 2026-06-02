@@ -4,13 +4,12 @@
 - Optional `AudioRecorder`
 - `SpeechToTextEngine`
 - `PromptNormalizer`
-- `PromptRefiner`
 - `NormalizationContext`
 - Local context model recognition hints.
 
 ## Outputs
 - `VoiceInputPipelineResult`
-- Stage data: `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, `PromptInsertion`
+- Stage data: `Transcript`, `NormalizedPrompt`, `PromptInsertion`
 
 `VoiceInputPipeline` owns capture and STT orchestration. `PromptProcessingPipeline` owns the post-STT text path:
 
@@ -23,7 +22,7 @@ RecordedAudio
 -> corrected transcript for insertion
 ```
 
-Dictionary and refinement layers also expose the common `PromptTextTransform` shape:
+Dictionary layers also expose the common `PromptTextTransform` shape:
 
 ```text
 PromptTextTransform.transform(String) async throws -> String
@@ -32,7 +31,7 @@ PromptTextTransform.transform(String) async throws -> String
 Use `PromptTextTransformPipeline` when a session only needs function composition and does not need correction metadata.
 
 ## Allowed
-- Orchestrate audio, speech, normalization, refinement, and insertion text creation.
+- Orchestrate audio, speech, normalization, and insertion text creation.
 - Pass local recognition hints into STT adapters that support contextual strings.
 - Keep local Foundation Model conversion as an optional fallback stage.
 - Preserve stage outputs for debugging and component tests.

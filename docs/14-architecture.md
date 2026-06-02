@@ -82,7 +82,7 @@ Use-case orchestration:
 - produce results for UI or CLI.
 - keep capture/STT stage outputs through `VoiceInputPipeline`.
 - keep post-STT text processing through `PromptProcessingPipeline`.
-- keep future local prompt refinement behind `PromptRefiner`.
+- keep future local Foundation Model conversion behind an explicit optional fallback protocol.
 
 ### Infra
 
@@ -121,7 +121,7 @@ The UI must call app use cases and avoid embedding core logic.
 
 - Add STT engines behind `SpeechToTextEngine`.
 - Add recognition-hint builders from the local context model.
-- Add local prompt cleanup behind `PromptRefiner`; `NoOpPromptRefiner` is the default.
+- Add local Foundation Model conversion only behind an explicit optional fallback protocol.
 - Add persistence behind dictionary repository protocols.
 - Add context providers behind scoped vocabulary and learning-source protocols.
 - Add local Foundation Model transforms behind optional protocols.
@@ -134,7 +134,6 @@ Short component contracts live in `docs/contracts/`:
 - speech-to-text,
 - local-context-model,
 - normalization,
-- prompt-refinement,
 - voice-input-pipeline,
 - pasteboard fallback,
 - learning,
