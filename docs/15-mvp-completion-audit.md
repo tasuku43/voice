@@ -5,12 +5,12 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 ## Current automated evidence
 
 - `make check` runs Swift tests, fixture evals, app build, app bundle creation, app launch smoke, required-file validation, eval coverage validation, architecture boundary validation, app contract validation, privacy contract validation, MVP coverage validation, and manual E2E artifact validation.
-- `make check` also smoke-runs the built `voice-agent-input-demo` command and verifies JSON preview output for Claude Code, TypeScript, error, current confirmation-mode compatibility, and local history-learning candidates.
+- `make check` also smoke-runs the built `voice-agent-input-demo` command and verifies JSON preview output for Claude Code, TypeScript, error, and local history-learning candidates.
 - Eval coverage validation requires realistic mixed Japanese-English developer terms such as Claude Code, Codex, Cursor, TypeScript, Swift, pnpm, npm, MCP, GitHub, branch, and error.
 - Architecture boundary validation ensures Domain and App remain free of UI/macOS framework dependencies while framework-specific work stays in Infra.
 - Component contract validation through required-file and MVP coverage checks ensures `PromptRefiner`, `VoiceInputPipeline`, `docs/contracts/`, and `docs/codex-sessions/` stay present.
 - Privacy contract validation includes direct networking/cloud guards and an allowlist for Swift file writes so raw transcript or raw audio persistence cannot be added silently.
-- `DemoCLITests` exercise process-level preview, confirm, and history-learning flows.
+- `DemoCLITests` exercise process-level preview and history-learning flows.
 - `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local context model persistence, repository vocabulary, STT recognition hints, and temporary audio cleanup.
 - `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, explicit-confirmation enforcement, and automatic-submit rejection.
 - `EvalHarnessTests` covers fixture-driven normalization cases and history-derived context learning cases.

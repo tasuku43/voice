@@ -34,21 +34,13 @@ Default output is still a preview JSON object for CI stability and debugging:
 }
 ```
 
-Confirm mode simulates the current optional preview confirmation step without submitting:
-
-```bash
-swift run voice-agent-input-demo --mode confirm --edited "Claude Code で TypeScript error を直して" "くらのコードでタイプスクリプトエラーを直して"
-```
-
-Confirm output includes `confirmed.promptToInsert` and `confirmed.shouldSubmitAutomatically = false`.
-
 History learning mode previews local context model candidates without saving them:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history --scope repository
 ```
 
-History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the requested scope for generated candidates, and does not persist dictionary entries.
+History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the requested scope for generated candidates, and does not persist local context model data.
 
 History learning normalize mode simulates rebuilding from generated history candidates and immediately normalizes a later utterance without writing local files:
 

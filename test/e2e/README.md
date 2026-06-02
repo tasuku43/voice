@@ -7,8 +7,6 @@ Manual macOS MVP coverage is specified in `manual-macos-mvp-checklist.md`. Use `
 Current process-level coverage lives in `DemoCLITests` and runs the built `voice-agent-input-demo` executable for:
 
 - preview mode,
-- confirm mode,
-- explicit no-submit behavior,
 - local history-learning candidate output.
 
 Current automated coverage builds the menu bar app bundle and validates the source-level app contract for the menu, configurable voice-input hotkey, press-and-hold and toggle hotkey behavior, local recording settings, Quick Paste as the daily input mode, permission status display, on-device Apple Speech wiring, preview fallback, local voice input history, local context model rebuild, and local context model data controls. Manual macOS E2E should still verify microphone permission prompts, real speech transcription, Accessibility paste into another app, hotkey setting changes, recording setting changes, permission status values, Quick Paste without preview or candidate approval UI, local context model learning, repository vocabulary, privacy expectations, voice input history recall, and the export/import/delete menu actions.

@@ -14,21 +14,6 @@ final class DemoCLITests: XCTestCase {
         XCTAssertEqual(preview["rawTranscript"] as? String, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue((preview["correctedPrompt"] as? String)?.contains("Claude Code") == true)
         XCTAssertEqual(preview["requiresExplicitConfirmation"] as? Bool, true)
-        XCTAssertNil(output["confirmed"] as? [String: Any])
-    }
-
-    func testDemoConfirmModeNeverSubmitsAutomatically() throws {
-        let output = try runDemo(arguments: [
-            "--mode", "confirm",
-            "--edited", "Claude Code で TypeScript error を直して",
-            "くらのコードでタイプスクリプトエラーを直して"
-        ])
-
-        XCTAssertEqual(output["mode"] as? String, "confirm")
-        let confirmed = try XCTUnwrap(output["confirmed"] as? [String: Any])
-        XCTAssertEqual(confirmed["promptToInsert"] as? String, "Claude Code で TypeScript error を直して")
-        XCTAssertEqual(confirmed["shouldSubmitAutomatically"] as? Bool, false)
-        XCTAssertNil(confirmed["candidates"])
     }
 
     func testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving() throws {
@@ -48,7 +33,6 @@ final class DemoCLITests: XCTestCase {
 
         XCTAssertEqual(output["mode"] as? String, "learn-history")
         XCTAssertNil(output["preview"] as? [String: Any])
-        XCTAssertNil(output["confirmed"] as? [String: Any])
         let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
         XCTAssertEqual(historyLearning["scannedTextCount"] as? Int, 1)
         let candidates = try XCTUnwrap(historyLearning["candidates"] as? [[String: Any]])
