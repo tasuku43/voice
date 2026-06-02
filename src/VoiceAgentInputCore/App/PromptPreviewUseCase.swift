@@ -16,16 +16,11 @@ public struct PromptPreview: Codable, Equatable, Sendable {
     }
 }
 
-public struct ConfirmedPrompt: Codable, Equatable, Sendable {
-    public var promptToInsert: String
-    public var shouldSubmitAutomatically: Bool
+public struct PromptInsertion: Codable, Equatable, Sendable {
+    public var text: String
 
-    public init(
-        promptToInsert: String,
-        shouldSubmitAutomatically: Bool = false
-    ) {
-        self.promptToInsert = promptToInsert
-        self.shouldSubmitAutomatically = shouldSubmitAutomatically
+    public init(text: String) {
+        self.text = text
     }
 }
 
@@ -49,8 +44,8 @@ public struct PromptPreviewUseCase: Sendable {
         )
     }
 
-    public func confirm(preview: PromptPreview, finalEditedPrompt: String? = nil) -> ConfirmedPrompt {
-        let promptToInsert = finalEditedPrompt ?? preview.correctedPrompt
-        return ConfirmedPrompt(promptToInsert: promptToInsert)
+    public func makeInsertion(preview: PromptPreview, finalEditedPrompt: String? = nil) -> PromptInsertion {
+        let text = finalEditedPrompt ?? preview.correctedPrompt
+        return PromptInsertion(text: text)
     }
 }

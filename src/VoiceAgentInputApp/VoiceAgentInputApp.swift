@@ -275,9 +275,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 }
                 await MainActor.run {
                     do {
-                        try self.insertConfirmedPrompt(ConfirmedPrompt(
-                            promptToInsert: result.preview.correctedPrompt
-                        ))
+                        try self.insertPrompt(PromptInsertion(text: result.preview.correctedPrompt))
                     } catch {
                         self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
                         self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
@@ -544,9 +542,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let controller = PreviewWindowController(
             preview: preview,
             previewUseCase: previewUseCase,
-            onConfirmedPaste: { [weak self] confirmed in
+            onPromptInserted: { [weak self] prompt in
                 self?.recordVoiceInputHistory(
-                    prompt: confirmed.promptToInsert
+                    prompt: prompt.text
                 )
             }
         )
@@ -556,16 +554,16 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func insertConfirmedPrompt(_ confirmed: ConfirmedPrompt) throws {
+    private func insertPrompt(_ prompt: PromptInsertion) throws {
         do {
             let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
-            try insertion.insert(confirmed, explicitConfirmation: true)
-            recordVoiceInputHistory(prompt: confirmed.promptToInsert)
+            try insertion.insert(prompt, afterUserAction: true)
+            recordVoiceInputHistory(prompt: prompt.text)
         } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
             try PromptInsertionUseCase(
                 insertionController: PasteboardTextInsertionController()
-            ).insert(confirmed, explicitConfirmation: true)
-            recordVoiceInputHistory(prompt: confirmed.promptToInsert)
+            ).insert(prompt, afterUserAction: true)
+            recordVoiceInputHistory(prompt: prompt.text)
             showAccessibilityFallbackAlert()
         }
     }
@@ -736,9 +734,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 return
             }
 
-            try insertConfirmedPrompt(
-                ConfirmedPrompt(promptToInsert: prompt)
-            )
+            try insertPrompt(PromptInsertion(text: prompt))
         } catch {
             presentError(error)
         }

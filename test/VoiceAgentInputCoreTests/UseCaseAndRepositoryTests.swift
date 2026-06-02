@@ -10,7 +10,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.correctedText.contains("pnpm"))
     }
 
-    func testPreviewConfirmationReturnsPromptWithoutSubmitting() {
+    func testPreviewFallbackBuildsPromptInsertionText() {
         let useCase = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
         let preview = useCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
 
@@ -18,9 +18,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
         XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
 
-        let confirmed = useCase.confirm(preview: preview)
-        XCTAssertEqual(confirmed.promptToInsert, preview.correctedPrompt)
-        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
+        let insertion = useCase.makeInsertion(preview: preview)
+        XCTAssertEqual(insertion.text, preview.correctedPrompt)
     }
 
     func testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing() async throws {
@@ -1049,13 +1048,13 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(preview.correctedPrompt, "ProjectSpecificName の設定を直して")
     }
 
-    func testPromptInsertionRequiresExplicitConfirmation() throws {
+    func testPromptInsertionRequiresCompletedUserAction() throws {
         let insertionController = MockTextInsertionController()
         let useCase = PromptInsertionUseCase(insertionController: insertionController)
-        let confirmed = ConfirmedPrompt(promptToInsert: "Claude Code で確認して")
+        let prompt = PromptInsertion(text: "Claude Code で確認して")
 
-        XCTAssertThrowsError(try useCase.insert(confirmed, explicitConfirmation: false)) { error in
-            XCTAssertEqual(error as? PromptInsertionError, .explicitConfirmationRequired)
+        XCTAssertThrowsError(try useCase.insert(prompt, afterUserAction: false)) { error in
+            XCTAssertEqual(error as? PromptInsertionError, .userActionRequired)
         }
         XCTAssertTrue(insertionController.insertedRequests.isEmpty)
     }
@@ -1063,27 +1062,13 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     func testPromptInsertionUsesPromptTextWithoutSubmitting() throws {
         let insertionController = MockTextInsertionController()
         let useCase = PromptInsertionUseCase(insertionController: insertionController)
-        let confirmed = ConfirmedPrompt(promptToInsert: "Claude Code で確認して")
+        let prompt = PromptInsertion(text: "Claude Code で確認して")
 
-        try useCase.insert(confirmed, explicitConfirmation: true)
+        try useCase.insert(prompt, afterUserAction: true)
 
         XCTAssertEqual(insertionController.insertedRequests, [
             TextInsertionRequest(text: "Claude Code で確認して", submitAutomatically: false)
         ])
-    }
-
-    func testPromptInsertionRejectsAutomaticSubmitEvenIfRequestedByCaller() throws {
-        let insertionController = MockTextInsertionController()
-        let useCase = PromptInsertionUseCase(insertionController: insertionController)
-        let confirmed = ConfirmedPrompt(
-            promptToInsert: "Claude Code で確認して",
-            shouldSubmitAutomatically: true
-        )
-
-        XCTAssertThrowsError(try useCase.insert(confirmed, explicitConfirmation: true)) { error in
-            XCTAssertEqual(error as? PromptInsertionError, .automaticSubmitRejected)
-        }
-        XCTAssertTrue(insertionController.insertedRequests.isEmpty)
     }
 
     func testLocalAppDataStoreCreatesRepositoryDirectoryForSettings() throws {

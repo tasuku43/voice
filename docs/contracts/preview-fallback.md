@@ -8,7 +8,7 @@ Preview fallback is an optional safety surface when direct paste cannot be compl
 - Corrections.
 
 ## Outputs
-- `ConfirmedPrompt`
+- `PromptInsertion`
 - Final edited text.
 
 ## Allowed
@@ -33,9 +33,9 @@ Preview fallback is an optional safety surface when direct paste cannot be compl
 - Speech and repository vocabulary adapters.
 
 ## Tests
-- `swift test --filter UseCaseAndRepositoryTests/testPreviewConfirmationReturnsPromptWithoutSubmitting`
+- `swift test --filter UseCaseAndRepositoryTests/testPreviewFallbackBuildsPromptInsertionText`
 - `make check`
 
 ## Done
-- Paste requires explicit confirmation when this optional workflow is used.
+- Paste requires a completed user action when this optional workflow is used.
 - Preview fallback does not open candidate approval.

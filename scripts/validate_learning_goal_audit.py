@@ -135,7 +135,7 @@ REQUIRED_SNIPPETS = {
         "Git repository vocabulary",
         "localContextModelRepository: try localContextModelRepository()",
         "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
-        "promptToInsert: result.preview.correctedPrompt",
+        "PromptInsertion(text: result.preview.correctedPrompt)",
     ],
     "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
         "testLocalAgentHistoryTextProviderExtractsUserTextFromStructuredJSONL",

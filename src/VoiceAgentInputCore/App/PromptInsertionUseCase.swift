@@ -1,8 +1,7 @@
 import Foundation
 
 public enum PromptInsertionError: Error, Equatable {
-    case explicitConfirmationRequired
-    case automaticSubmitRejected
+    case userActionRequired
 }
 
 public struct PromptInsertionUseCase {
@@ -12,17 +11,14 @@ public struct PromptInsertionUseCase {
         self.insertionController = insertionController
     }
 
-    public func insert(_ confirmedPrompt: ConfirmedPrompt, explicitConfirmation: Bool) throws {
-        guard explicitConfirmation else {
-            throw PromptInsertionError.explicitConfirmationRequired
-        }
-        guard !confirmedPrompt.shouldSubmitAutomatically else {
-            throw PromptInsertionError.automaticSubmitRejected
+    public func insert(_ prompt: PromptInsertion, afterUserAction: Bool) throws {
+        guard afterUserAction else {
+            throw PromptInsertionError.userActionRequired
         }
 
         try insertionController.insert(
             TextInsertionRequest(
-                text: confirmedPrompt.promptToInsert,
+                text: prompt.text,
                 submitAutomatically: false
             )
         )

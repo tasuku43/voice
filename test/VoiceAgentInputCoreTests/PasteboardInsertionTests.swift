@@ -16,9 +16,9 @@ final class PasteboardInsertionTests: XCTestCase {
         let pasteboard = NSPasteboard(name: NSPasteboard.Name("voice-agent-input-tests-\(UUID().uuidString)"))
         let controller = PasteboardTextInsertionController(pasteboard: pasteboard)
         let useCase = PromptInsertionUseCase(insertionController: controller)
-        let confirmed = ConfirmedPrompt(promptToInsert: "Codex で branch を確認して")
+        let prompt = PromptInsertion(text: "Codex で branch を確認して")
 
-        try useCase.insert(confirmed, explicitConfirmation: true)
+        try useCase.insert(prompt, afterUserAction: true)
 
         XCTAssertEqual(pasteboard.string(forType: .string), "Codex で branch を確認して")
     }

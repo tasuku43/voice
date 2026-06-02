@@ -59,7 +59,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "let voiceInputPipeline = VoiceInputPipeline(",
     "let result = try await voiceInputPipeline.run()",
     "mode=quickPaste",
-    "promptToInsert: result.preview.correctedPrompt",
+    "PromptInsertion(text: result.preview.correctedPrompt)",
     "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
@@ -112,7 +112,7 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
     )
     quick_paste_to_fallback = source_between(
         record_flow,
-        "promptToInsert: result.preview.correctedPrompt",
+        "PromptInsertion(text: result.preview.correctedPrompt)",
         "recordVoiceInput paste failed",
     )
     forbidden_quick_paste = [
@@ -126,7 +126,7 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
     open_preview = source_between(
         source,
         "private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase)",
-        "private func insertConfirmedPrompt",
+        "private func insertPrompt",
     )
     forbidden_preview = [
         "CandidateApprovalDialogController(",

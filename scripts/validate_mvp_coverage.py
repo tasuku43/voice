@@ -142,10 +142,10 @@ REQUIRED_COVERAGE = {
             "Corrected prompt",
         ],
     },
-    "explicit paste without submit": {
+    "user-action paste without submit": {
         "src/VoiceAgentInputCore/App/PromptInsertionUseCase.swift": [
-            "explicitConfirmation",
-            "automaticSubmitRejected",
+            "afterUserAction",
+            "userActionRequired",
             "submitAutomatically: false",
         ],
         "test/VoiceAgentInputCoreTests/PasteboardInsertionTests.swift": [
@@ -261,7 +261,7 @@ REQUIRED_COVERAGE = {
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         ],
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
-            "return ConfirmedPrompt(promptToInsert: promptToInsert)",
+            "return PromptInsertion(text: text)",
         ],
         "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
             "learningResult?.candidates.map(Self.entry(from:))",

@@ -6,16 +6,16 @@ final class PreviewWindowController: NSWindowController {
     private let preview: PromptPreview
     private let previewUseCase: PromptPreviewUseCase
     private let correctedTextView = NSTextView()
-    private let onConfirmedPaste: (ConfirmedPrompt) -> Void
+    private let onPromptInserted: (PromptInsertion) -> Void
 
     init(
         preview: PromptPreview,
         previewUseCase: PromptPreviewUseCase,
-        onConfirmedPaste: @escaping (ConfirmedPrompt) -> Void = { _ in }
+        onPromptInserted: @escaping (PromptInsertion) -> Void = { _ in }
     ) {
         self.preview = preview
         self.previewUseCase = previewUseCase
-        self.onConfirmedPaste = onConfirmedPaste
+        self.onPromptInserted = onPromptInserted
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 680, height: 420),
@@ -142,12 +142,12 @@ final class PreviewWindowController: NSWindowController {
     @objc private func confirm() {
         Task { @MainActor in
             do {
-                let confirmed = previewUseCase.confirm(
+                let insertion = previewUseCase.makeInsertion(
                     preview: preview,
                     finalEditedPrompt: correctedTextView.string
                 )
-                try insertConfirmedPrompt(confirmed)
-                onConfirmedPaste(confirmed)
+                try insertPrompt(insertion)
+                onPromptInserted(insertion)
                 close()
             } catch {
                 let alert = NSAlert(error: error)
@@ -156,14 +156,14 @@ final class PreviewWindowController: NSWindowController {
         }
     }
 
-    private func insertConfirmedPrompt(_ confirmed: ConfirmedPrompt) throws {
+    private func insertPrompt(_ prompt: PromptInsertion) throws {
         do {
-                let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
-                try insertion.insert(confirmed, explicitConfirmation: true)
+            let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
+            try insertion.insert(prompt, afterUserAction: true)
         } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
             try PromptInsertionUseCase(
                 insertionController: PasteboardTextInsertionController()
-            ).insert(confirmed, explicitConfirmation: true)
+            ).insert(prompt, afterUserAction: true)
             showAccessibilityFallbackAlert()
         }
     }
