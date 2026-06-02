@@ -13,11 +13,6 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/Transcript.swift": [
         "public struct Transcript",
     ],
-    "src/VoiceAgentInputCore/App/PromptTextTransform.swift": [
-        "public protocol PromptTextTransform",
-        "PromptTextTransformPipeline",
-        "DictionaryPromptTextTransform",
-    ],
     "src/VoiceAgentInputCore/App/VoiceInputPipeline.swift": [
         "public struct VoiceInputPipeline",
         "audioRecorder",

@@ -22,13 +22,7 @@ RecordedAudio
 -> corrected transcript for insertion
 ```
 
-Dictionary layers also expose the common `PromptTextTransform` shape:
-
-```text
-PromptTextTransform.transform(String) async throws -> String
-```
-
-Use `PromptTextTransformPipeline` when a session only needs function composition and does not need correction metadata.
+Dictionary normalization exposes `PromptNormalizer.normalizeText(_:context:)` for simple `String -> String` checks when correction metadata is not needed.
 
 ## Allowed
 - Orchestrate audio, speech, normalization, and insertion text creation.
@@ -46,7 +40,6 @@ Use `PromptTextTransformPipeline` when a session only needs function composition
 ## Read First
 - `src/VoiceAgentInputCore/App/VoiceInputPipeline.swift`
 - `src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift`
-- `src/VoiceAgentInputCore/App/PromptTextTransform.swift`
 - `src/VoiceAgentInputCore/App/DictionaryContextLoadingUseCase.swift`
 
 ## May Touch

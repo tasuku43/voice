@@ -1,6 +1,6 @@
 # Audio Capture Session
 
-Purpose: improve microphone recording without changing speech recognition, normalization, preview, learning, or output.
+Purpose: improve microphone recording without changing speech recognition, normalization, learning, or output.
 
 Read:
 - `docs/contracts/audio-capture.md`

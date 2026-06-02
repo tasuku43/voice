@@ -1,6 +1,6 @@
 # Speech To Text Session
 
-Purpose: improve speech recognition accuracy without changing normalization, preview, learning, or output.
+Purpose: improve speech recognition accuracy without changing normalization, learning, or output.
 
 Read:
 - `docs/contracts/speech-to-text.md`

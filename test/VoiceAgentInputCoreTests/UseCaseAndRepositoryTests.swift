@@ -180,29 +180,15 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(result.insertion.text, result.normalizedPrompt.normalizedText)
     }
 
-    func testPromptTransformsExposeTextToTextConvenience() async throws {
+    func testPromptNormalizerExposesTextToTextConvenience() throws {
         let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
-        let normalizedText = try DictionaryPromptNormalizer().normalizeText(
+        let output = try DictionaryPromptNormalizer().normalizeText(
             "くらのコードでタイプスクリプトを確認",
             context: context
         )
 
-        XCTAssertTrue(normalizedText.contains("Claude Code"))
-        XCTAssertTrue(normalizedText.contains("TypeScript"))
-    }
-
-    func testPromptTextTransformPipelineComposesDictionaryAndCustomLayers() async throws {
-        let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
-        let pipeline = PromptTextTransformPipeline(transforms: [
-            DictionaryPromptTextTransform(context: context),
-            AnyPromptTextTransform { text in "\(text) please" }
-        ])
-
-        let output = try await pipeline.transform("くらのコードでタイプスクリプトを確認")
-
         XCTAssertTrue(output.contains("Claude Code"))
         XCTAssertTrue(output.contains("TypeScript"))
-        XCTAssertTrue(output.hasSuffix(" please"))
     }
 
     func testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms() {

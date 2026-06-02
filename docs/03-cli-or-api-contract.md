@@ -33,7 +33,7 @@ Default output is a normalization JSON object for CI stability and debugging:
 }
 ```
 
-History learning mode previews local context model candidates without saving them:
+History learning mode reports local context model candidates without saving them:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history --scope repository
@@ -51,7 +51,7 @@ This output includes both `historyLearning` and `normalization`, so tests and ma
 
 ## Core API
 
-Primary text transform use case:
+Primary normalization use case:
 
 ```swift
 PromptNormalizationUseCase.normalize(rawText: String) -> NormalizationResult

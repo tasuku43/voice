@@ -33,7 +33,7 @@
 - Audio recorder protocols, temporary audio handling, and recorder tests.
 
 ## Avoid Touching
-- Speech, normalization, preview, learning, and output logic.
+- Speech, normalization, learning, and output logic.
 
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing`

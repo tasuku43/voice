@@ -4,7 +4,6 @@ Purpose: improve deterministic dictionary and repository-term correction.
 
 Read:
 - `docs/contracts/normalization.md`
-- `src/VoiceAgentInputCore/App/PromptTextTransform.swift`
 - `src/VoiceAgentInputCore/Domain/NormalizationEngine.swift`
 - `evals/normalization-cases.json`
 
@@ -16,7 +15,7 @@ Avoid:
 
 Contract:
 - Dictionary-only corrections, no LLM rewriting.
-- The simple layer shape is `PromptTextTransform.transform(String) async throws -> String`.
+- Use `PromptNormalizer.normalizeText(_:context:)` for simple `String -> String` checks.
 
 Tests:
 - `swift test --filter NormalizationEngineTests`

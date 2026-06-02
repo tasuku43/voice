@@ -354,12 +354,6 @@ REQUIRED_COVERAGE = {
             "normalizeText",
             "NormalizedPrompt",
         ],
-        "src/VoiceAgentInputCore/App/PromptTextTransform.swift": [
-            "protocol PromptTextTransform",
-            "PromptTextTransformPipeline",
-            "DictionaryPromptTextTransform",
-            "transform(_ text: String) async throws -> String",
-        ],
         "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
             "PromptProcessingPipelineResult",
             "PromptProcessingPipeline",
@@ -386,7 +380,7 @@ REQUIRED_COVERAGE = {
             "built-in vocabulary transform",
             "personal context model transform",
             "optional local Foundation Model fallback",
-            "PromptTextTransform.transform(String) async throws -> String",
+            "PromptNormalizer.normalizeText",
         ],
         "docs/contracts/local-context-model.md": [
             "Local Context Model Contract",

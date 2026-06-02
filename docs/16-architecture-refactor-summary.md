@@ -21,7 +21,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Dictionary and repository vocabulary loading moved toward `DictionaryContextLoadingUseCase`.
 - Capture/STT orchestration is represented by `VoiceInputPipeline`.
 - Post-STT text processing is represented by `PromptProcessingPipeline`.
-- Dictionary replacement exposes `PromptTextTransform` for simple `String -> String` composition.
+- Dictionary replacement exposes `PromptNormalizer.normalizeText` for simple `String -> String` checks.
 - Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`; local persistence is behind `LocalContextModelRepository` with `JSONLocalContextModelRepository` as the filesystem adapter.
 - Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default hotkey processing path.
 - Local context model rebuilds moved into `LocalContextModelDataUseCase`, leaving the UI to choose sources and trigger rebuilds.
@@ -47,7 +47,6 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 - `Transcript`
 - `NormalizedPrompt`
 - `PromptNormalizer`
-- `PromptTextTransform`
 - `LocalContextModel`
 - `LocalContextModelDocumentCodec`
 - `LocalContextModelRepository`
@@ -82,13 +81,13 @@ Future Codex session prompts:
 ## Tests And Gates
 
 - `make check` builds and smoke-launches the app bundle.
-- Swift tests cover pipeline stage preservation, post-STT processing, text transform composition, local context model learning, local data controls, permissions, insertion safety, and normalization evals.
+- Swift tests cover pipeline stage preservation, post-STT processing, local context model learning, local data controls, permissions, insertion safety, and normalization evals.
 - `validate_component_contracts.py` ensures contract and session docs keep the required short sections.
-- `validate_architecture_refactor.py` checks the core refactor success criteria in one place: contracts, pipelines, text transforms, responsibility moves, and session prompts.
+- `validate_architecture_refactor.py` checks the core refactor success criteria in one place: contracts, pipelines, responsibility moves, and session prompts.
 - `validate_architecture_boundaries.py` guards Domain and App use-case boundaries from macOS framework dependencies.
 - `validate_app_ui_split.py` guards against reintroducing preview/edit UI or candidate approval UI into the app source.
 - `validate_privacy_contract.py` guards against direct network/cloud snippets and unexpected file writes.
-- `validate_mvp_coverage.py` requires the new pipeline, transform, and session-boundary artifacts to stay present.
+- `validate_mvp_coverage.py` requires the new pipeline and session-boundary artifacts to stay present.
 
 ## Remaining Limitations
 
