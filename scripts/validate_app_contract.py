@@ -45,8 +45,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "let audioRecorder = AVFoundationAudioRecorder()",
     "activeAudioRecorder?.stopRecording()",
     "Stop Voice Input",
-    "Show Push-to-Talk Button",
-    "PushToTalkWindowController",
     "RecordingFeedbackWindowController",
     "currentInputLevel()",
     "Getting ready",
@@ -149,7 +147,7 @@ def validate_quick_paste_label(source: str) -> None:
     update_state = source_between(
         source,
         "private func updateRecordingState()",
-        "@objc private func showPushToTalkButton()",
+        "private func updateHotkeyMenuTitle",
     )
     required_label_snippets = [
         '"Quick Paste Voice Input"',

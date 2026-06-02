@@ -21,7 +21,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var launchWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
     private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
-    private var pushToTalkWindowController: PushToTalkWindowController?
     private var activeAudioRecorder: AVFoundationAudioRecorder?
     private var inputLevelTimer: Timer?
     private var hasDetectedVoiceInput = false
@@ -70,7 +69,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
         let recordItem = NSMenuItem(title: "Quick Paste Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r")
         menu.addItem(recordItem)
-        menu.addItem(NSMenuItem(title: "Show Push-to-Talk Button", action: #selector(showPushToTalkButton), keyEquivalent: "b"))
         let hotkeyItem = NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: "")
         menu.addItem(hotkeyItem)
         menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
@@ -274,31 +272,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Quick Paste Voice Input"
         recordMenuItem?.isEnabled = true
         launchRecordButton?.title = isRecording ? "Stop" : "Quick Paste"
-        pushToTalkWindowController?.setRecording(isRecording)
     }
 
     private func updateHotkeyMenuTitle(settings: AppSettings? = nil) {
         let currentSettings = settings ?? ((try? loadSettings()) ?? AppSettings())
         hotkeyMenuItem?.title = "Hotkey: \(currentSettings.voiceInputShortcut.displayName) (\(currentSettings.voiceInputTriggerMode.displayName))"
-    }
-
-    @objc private func showPushToTalkButton() {
-        if let pushToTalkWindowController {
-            pushToTalkWindowController.showWindow(nil)
-            return
-        }
-        let controller = PushToTalkWindowController(
-            startAction: { [weak self] in
-                self?.debugLogger.log("push-to-talk button pressed; starting")
-                self?.startVoiceInputFromShortcut()
-            },
-            stopAction: { [weak self] in
-                self?.debugLogger.log("push-to-talk button released; stopping")
-                self?.stopVoiceInputFromShortcut()
-            }
-        )
-        pushToTalkWindowController = controller
-        controller.showWindow(nil)
     }
 
     private func registerHotkeys(reason: String) {
