@@ -30,7 +30,7 @@
 
 ### Secondary workflows
 
-- Support preview/edit only as a fallback when direct paste cannot complete.
+- Support pasteboard copy fallback when direct paste cannot complete.
 - Support dictionary scopes such as global, user, repository, and session.
 - Provide import/export for dictionaries and context data.
 - Provide a delete-all-local-learning-data path.

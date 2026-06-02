@@ -10,18 +10,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.correctedText.contains("pnpm"))
     }
 
-    func testPreviewFallbackBuildsPromptInsertionText() {
-        let useCase = PreviewFallbackUseCase(entries: SeedDictionaries.codingAgentEntries)
-        let fallback = useCase.fallback(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
-
-        XCTAssertEqual(fallback.rawTranscript, "くらのコードでタイプスクリプトエラーを直して")
-        XCTAssertTrue(fallback.correctedPrompt.contains("Claude Code"))
-        XCTAssertTrue(fallback.correctedPrompt.contains("TypeScript"))
-
-        let insertion = useCase.makeInsertion(fallback: fallback)
-        XCTAssertEqual(insertion.text, fallback.correctedPrompt)
-    }
-
     func testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing() async throws {
         let speechEngine = MockSpeechEngine()
         let pipeline = VoiceInputPipeline(
@@ -1035,10 +1023,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let model = LocalContextModelBuildUseCase(seedEntries: [])
             .build(learningResult: learningResult)
-        let fallback = PreviewFallbackUseCase(entries: model.postSTTEntries)
-            .fallback(rawTranscript: "project specific nameの設定を直して")
+        let normalized = PromptNormalizationUseCase(entries: model.postSTTEntries)
+            .normalize(rawText: "project specific nameの設定を直して")
 
-        XCTAssertEqual(fallback.correctedPrompt, "ProjectSpecificName の設定を直して")
+        XCTAssertEqual(normalized.correctedText, "ProjectSpecificName の設定を直して")
     }
 
     func testPromptInsertionRequiresCompletedUserAction() throws {
@@ -1221,11 +1209,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let entries = try useCase.loadEntries()
-        let fallback = PreviewFallbackUseCase(entries: entries).fallback(rawTranscript: "こーでっくすでめいんを確認")
+        let normalized = PromptNormalizationUseCase(entries: entries).normalize(rawText: "こーでっくすでめいんを確認")
 
         XCTAssertEqual(entries.count, 2)
-        XCTAssertTrue(fallback.correctedPrompt.contains("Codex"))
-        XCTAssertTrue(fallback.correctedPrompt.contains("main"))
+        XCTAssertTrue(normalized.correctedText.contains("Codex"))
+        XCTAssertTrue(normalized.correctedText.contains("main"))
     }
 
     func testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries() throws {
@@ -1246,10 +1234,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let entries = try useCase.loadEntries()
-        let fallback = PreviewFallbackUseCase(entries: entries).fallback(rawTranscript: "ろーかるこんてきすとを読み込む")
+        let normalized = PromptNormalizationUseCase(entries: entries).normalize(rawText: "ろーかるこんてきすとを読み込む")
 
         XCTAssertEqual(entries, [modelEntry])
-        XCTAssertTrue(fallback.correctedPrompt.contains("LocalContextModel"))
+        XCTAssertTrue(normalized.correctedText.contains("LocalContextModel"))
     }
 
     func testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries() throws {

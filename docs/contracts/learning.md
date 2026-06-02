@@ -21,13 +21,13 @@
 - Reuse deterministic developer-term speech rules across source learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
 - Build local context model entries without candidate approval UI.
-- Keep fallback preview edits out of model education.
+- Keep voice-input edits out of model education.
 - Keep model education separate from the ordinary voice-input app layer.
 
 ## Forbidden
 - Speech recognition.
 - Prompt refinement.
-- Automatic context model updates from fallback preview edits.
+- Automatic context model updates from voice-input edits.
 - Paste or automatic submit.
 - Network IO.
 - Cloud model calls.

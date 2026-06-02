@@ -58,7 +58,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "let result = try await voiceInputPipeline.run()",
     "mode=quickPaste",
     "try self.insertPrompt(result.insertion)",
-    "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
     "Export Local Context Model...",
@@ -108,31 +107,21 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "@objc private func recordVoiceInput()",
         "private func startVoiceInputFromShortcut()",
     )
-    quick_paste_to_fallback = source_between(
+    quick_paste_to_insert_error = source_between(
         record_flow,
         "try self.insertPrompt(result.insertion)",
-        "recordVoiceInput paste failed",
+        "recordVoiceInput insert failed",
     )
     forbidden_quick_paste = [
         "CandidateApprovalDialogController(",
         "approveCandidatesIfRequested",
+        "PreviewFallback",
+        "PreviewWindowController",
+        "openPreview",
     ]
-    found_quick_paste = [snippet for snippet in forbidden_quick_paste if snippet in quick_paste_to_fallback]
+    found_quick_paste = [snippet for snippet in forbidden_quick_paste if snippet in quick_paste_to_insert_error]
     if found_quick_paste:
-        fail("Quick Paste recording flow must not enter candidate learning or approval before paste fallback: " + ", ".join(found_quick_paste))
-
-    open_preview = source_between(
-        source,
-        "private func openPreview(fallback: PreviewFallback, fallbackUseCase: PreviewFallbackUseCase)",
-        "private func insertPrompt",
-    )
-    forbidden_preview = [
-        "CandidateApprovalDialogController(",
-        "approveCandidatesIfRequested",
-    ]
-    found_preview = [snippet for snippet in forbidden_preview if snippet in open_preview]
-    if found_preview:
-        fail("Preview fallback must not enter candidate learning or approval: " + ", ".join(found_preview))
+        fail("Quick Paste recording flow must not enter preview, candidate learning, or approval before insert error handling: " + ", ".join(found_quick_paste))
 
 
 def validate_quick_paste_label(source: str) -> None:

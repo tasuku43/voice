@@ -14,13 +14,13 @@
 ## Phase 2: macOS shell
 
 - Menu bar app. Minimal mock shell done.
-- Fallback preview panel. Editable fallback preview flow is available only when direct paste cannot complete.
+- Pasteboard fallback. When Accessibility paste cannot complete, the app copies the corrected prompt and asks the user to paste manually.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
 - Recording settings. App shell can set local recording duration and Speech locale for later recordings.
 - Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
 - Focused cursor insertion or copy fallback.
-- Direct paste first; fallback preview only when insertion cannot complete.
+- Direct paste first; pasteboard copy fallback only when insertion cannot complete.
 
 ## Phase 3: input loop
 

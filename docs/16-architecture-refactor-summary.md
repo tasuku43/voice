@@ -12,7 +12,7 @@ VoiceAgentInputApp/main.swift
     -> Infra adapters through protocols
 ```
 
-Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, preview window, and paste-entry user actions. `main.swift` only starts `NSApplication` and installs `VoiceAgentInputApp` as the delegate. `PreviewWindowController` is isolated from the app delegate, so focused AppKit work can stay inside one boundary at a time.
+Domain remains deterministic. App owns orchestration contracts and use cases. Infra owns framework, filesystem, git, and macOS adapters. The macOS shell owns menus, hotkey, dialogs, recording HUD, and paste-entry user actions. `main.swift` only starts `NSApplication` and installs `VoiceAgentInputApp` as the delegate.
 
 ## Responsibility Moves
 
@@ -26,7 +26,6 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Deterministic local prompt cleanup is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`. Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default refiner.
 - Local context model rebuilds moved into `LocalContextModelDataUseCase`, leaving the UI to choose sources and trigger rebuilds.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
-- Preview window rendering moved into `PreviewWindowController.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
 - Local app data storage is represented by `LocalAppDataStore`, which creates settings and local context model repositories.
 - Repository path and recording setting updates moved into `AppSettingsUseCase`.
@@ -38,7 +37,6 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Optional local debug log.
 - macOS permission status display and privacy-settings shortcut.
 - Recording settings dialog.
-- Preview window rendering and user edits in `PreviewWindowController.swift`.
 - Export/import/delete/open local learning menu actions.
 - Error presentation.
 
@@ -72,7 +70,6 @@ Component contracts:
 - `docs/contracts/normalization.md`
 - `docs/contracts/prompt-refinement.md`
 - `docs/contracts/voice-input-pipeline.md`
-- `docs/contracts/preview-fallback.md`
 - `docs/contracts/learning.md`
 - `docs/contracts/output.md`
 
@@ -84,7 +81,6 @@ Future Codex session prompts:
 - `docs/codex-sessions/normalization-session.md`
 - `docs/codex-sessions/prompt-refinement-session.md`
 - `docs/codex-sessions/repository-vocabulary-session.md`
-- `docs/codex-sessions/preview-fallback-session.md`
 - `docs/codex-sessions/learning-session.md`
 - `docs/codex-sessions/output-session.md`
 
@@ -95,21 +91,18 @@ Future Codex session prompts:
 - `validate_component_contracts.py` ensures contract and session docs keep the required short sections.
 - `validate_architecture_refactor.py` checks the core refactor success criteria in one place: contracts, pipelines, text transforms, responsibility moves, and session prompts.
 - `validate_architecture_boundaries.py` guards Domain and App use-case boundaries from macOS framework dependencies.
-- `validate_app_ui_split.py` guards the menu-bar entrypoint from absorbing preview UI implementation again.
+- `validate_app_ui_split.py` guards against reintroducing preview/edit UI or candidate approval UI into the app source.
 - `validate_privacy_contract.py` guards against direct network/cloud snippets and unexpected file writes.
 - `validate_mvp_coverage.py` requires the new pipeline, transform, and session-boundary artifacts to stay present.
 
 ## Remaining Limitations
 
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
-- `PreviewWindowController.swift` still contains insertion fallback UI.
 - The prompt-refinement layer remains deterministic by default; local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
 - Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, local data menus, and privacy filesystem checks.
 
 ## Next Recommended Session
 
 Prioritize `docs/codex-sessions/local-context-model-session.md` if the goal is to align implementation with the product direction. Make learned context explicit, rebuildable, and usable for both STT recognition hints and post-STT transforms.
-
-Prioritize `docs/codex-sessions/preview-fallback-session.md` if the goal is to make the AppKit shell thinner. Split menu command handlers or insertion fallback presentation into AppKit boundary types while keeping learning and insertion in Core use cases.
 
 Prioritize `docs/codex-sessions/prompt-refinement-session.md` if the goal is to add real local prompt cleanup. Keep the default no-op path and preserve the `PromptTextTransform` shape.

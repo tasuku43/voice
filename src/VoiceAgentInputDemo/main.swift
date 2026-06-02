@@ -3,7 +3,6 @@ import VoiceAgentInputCore
 
 struct DemoOutput: Codable {
     var mode: String
-    var fallback: PreviewFallback?
     var normalization: NormalizationResult?
     var historyLearning: AgentHistoryLearningModeResult?
 }
@@ -65,7 +64,6 @@ switch arguments.mode {
 case "normalize":
     output = DemoOutput(
         mode: "normalize",
-        fallback: nil,
         normalization: normalizationUseCase.normalize(rawText: arguments.rawText),
         historyLearning: nil
     )
@@ -76,7 +74,6 @@ case "learn-history":
     let provider = LocalAgentHistoryTextProvider(homeDirectory: homeDirectory)
     output = DemoOutput(
         mode: "learn-history",
-        fallback: nil,
         normalization: nil,
         historyLearning: try AgentHistoryLearningModeUseCase(
             historyProvider: provider
@@ -102,24 +99,14 @@ case "learn-history-normalize":
     }
     output = DemoOutput(
         mode: "learn-history-normalize",
-        fallback: nil,
         normalization: PromptNormalizationUseCase(
             entries: SeedDictionaries.codingAgentEntries + learnedEntries
         ).normalize(rawText: arguments.rawText),
         historyLearning: historyLearning
     )
-case "preview-fallback":
-    let fallbackUseCase = PreviewFallbackUseCase(normalizationUseCase: normalizationUseCase)
-    output = DemoOutput(
-        mode: "preview-fallback",
-        fallback: fallbackUseCase.fallback(rawTranscript: arguments.rawText),
-        normalization: nil,
-        historyLearning: nil
-    )
 default:
     output = DemoOutput(
         mode: "normalize",
-        fallback: nil,
         normalization: normalizationUseCase.normalize(rawText: arguments.rawText),
         historyLearning: nil
     )

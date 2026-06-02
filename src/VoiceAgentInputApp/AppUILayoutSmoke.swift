@@ -16,18 +16,6 @@ enum AppUILayoutSmoke {
             return 1
         }
 
-        let fallback = PreviewFallback(
-            rawTranscript: String(repeating: "くらのコードでタイプスクリプトエラーを直して。", count: 10),
-            correctedPrompt: String(repeating: "Claude Code で TypeScript エラーを直して。", count: 10),
-            corrections: []
-        )
-        let previewController = PreviewWindowController(
-            fallback: fallback,
-            fallbackUseCase: PreviewFallbackUseCase(entries: SeedDictionaries.codingAgentEntries)
-        )
-        failures.append(contentsOf: auditWindow(previewController.window, name: "preview"))
-        renderWindow(previewController.window, name: "preview", outputDirectory: outputDirectory)
-
         let feedbackController = RecordingFeedbackWindowController(triggerMode: .toggleRecording) {}
         feedbackController.update(level: 0.45, hasDetectedVoice: true, elapsedSeconds: 127)
         failures.append(contentsOf: auditWindow(feedbackController.window, name: "recording-feedback"))

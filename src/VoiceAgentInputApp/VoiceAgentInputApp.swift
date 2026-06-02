@@ -17,7 +17,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var recordMenuItem: NSMenuItem?
     private var hotkeyMenuItem: NSMenuItem?
-    private var previewWindowController: PreviewWindowController?
     private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
     private var activeAudioRecorder: AVFoundationAudioRecorder?
     private var inputLevelTimer: Timer?
@@ -173,15 +172,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     do {
                         try self.insertPrompt(result.insertion)
                     } catch {
-                        self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
-                        self.openPreview(
-                            fallback: PreviewFallback(
-                                rawTranscript: result.transcript.text,
-                                correctedPrompt: result.refinedPrompt.refinedText,
-                                corrections: result.normalizedPrompt.corrections
-                            ),
-                            fallbackUseCase: PreviewFallbackUseCase(entries: entries)
-                        )
+                        self.debugLogger.log("recordVoiceInput insert failed: \(error)")
+                        self.presentError(error)
                     }
                 }
             } catch {
@@ -355,18 +347,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             hasDetectedVoice: hasDetectedVoiceInput,
             elapsedSeconds: recordingStartedAt.map { Date().timeIntervalSince($0) } ?? 0
         )
-    }
-
-    private func openPreview(fallback: PreviewFallback, fallbackUseCase: PreviewFallbackUseCase) {
-        debugLogger.log("openPreview rawLength=\(fallback.rawTranscript.count) correctedLength=\(fallback.correctedPrompt.count)")
-        let controller = PreviewWindowController(
-            fallback: fallback,
-            fallbackUseCase: fallbackUseCase
-        )
-        previewWindowController = controller
-        controller.showWindow(nil)
-        controller.window?.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func insertPrompt(_ prompt: PromptInsertion) throws {

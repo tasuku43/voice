@@ -32,7 +32,7 @@ Implementations:
 Current app orchestration:
 
 - `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, a `PromptRefiner`, and `NormalizationContext`.
-- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptInsertion` stage outputs. Preview data is built only by the app fallback path when direct paste fails.
+- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
 - `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
 
@@ -89,7 +89,7 @@ Current adapter:
 
 Current use cases:
 
-- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime and fallback preview normalization.
+- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime normalization.
 - `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
 - `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete controls.
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.

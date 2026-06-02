@@ -148,11 +148,6 @@ REQUIRED_SNIPPETS = {
         "Rebuild Local Context Model...",
         "AgentHistoryLearningModeUseCase",
     ],
-    "src/VoiceAgentInputApp/PreviewWindowController.swift": [
-        "final class PreviewWindowController",
-        "Raw transcript",
-        "Corrected prompt",
-    ],
     "docs/16-architecture-refactor-summary.md": [
         "Responsibility Moves",
         "App Responsibilities Still Present",
@@ -169,7 +164,6 @@ REQUIRED_CONTRACTS = [
     "normalization.md",
     "prompt-refinement.md",
     "voice-input-pipeline.md",
-    "preview-fallback.md",
     "learning.md",
     "output.md",
 ]
@@ -181,7 +175,6 @@ REQUIRED_SESSIONS = [
     "normalization-session.md",
     "prompt-refinement-session.md",
     "repository-vocabulary-session.md",
-    "preview-fallback-session.md",
     "learning-session.md",
     "output-session.md",
 ]
@@ -193,11 +186,6 @@ FORBIDDEN_SNIPPETS = {
         "Corrected prompt",
         "Approve dictionary candidates?",
         "CandidateApprovalDialogController",
-    ],
-    "src/VoiceAgentInputApp/PreviewWindowController.swift": [
-        "Approve dictionary candidates?",
-        "CandidateApprovalDialogController",
-        "approveCandidatesIfRequested",
     ],
     "src/VoiceAgentInputCore/App/PromptContracts.swift": [
         "import AppKit",

@@ -104,7 +104,7 @@ Use the menu bar `Hotkey Settings...` item to change the voice-input key, modifi
 Manual macOS MVP verification lives at `test/e2e/manual-macos-mvp-checklist.md`.
 The current completion evidence and remaining manual proof are tracked in `docs/15-mvp-completion-audit.md`.
 
-Component contracts live under `docs/contracts/`, and short next-session prompts live under `docs/codex-sessions/`. Use those when continuing focused work on speech, normalization, prompt refinement, repository vocabulary, preview UI, learning, or output.
+Component contracts live under `docs/contracts/`, and short next-session prompts live under `docs/codex-sessions/`. Use those when continuing focused work on speech, normalization, prompt refinement, repository vocabulary, learning, or output.
 
 ## Product boundary
 

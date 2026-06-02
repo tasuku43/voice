@@ -57,7 +57,7 @@ The first working app should support:
 4. App passes local context model hints to STT when supported.
 5. App applies deterministic dictionary and local context model normalization.
 6. App inserts corrected text at the focused cursor when the user releases or stops recording.
-7. App copies to the pasteboard or opens an editable fallback preview if direct paste cannot complete.
+7. App copies to the pasteboard if direct paste cannot complete.
 8. User can explicitly rebuild the local context model from selected local learning sources.
 9. Later voice input reuses the rebuilt local context model as STT hints and post-STT transforms.
 

@@ -132,16 +132,6 @@ REQUIRED_COVERAGE = {
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",
         ],
     },
-    "fallback preview before insertion": {
-        "src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift": [
-            "rawTranscript",
-            "correctedPrompt",
-        ],
-        "src/VoiceAgentInputApp/PreviewWindowController.swift": [
-            "Raw transcript",
-            "Corrected prompt",
-        ],
-    },
     "user-action paste with no submit option": {
         "src/VoiceAgentInputCore/App/PromptInsertionUseCase.swift": [
             "afterUserAction",
@@ -249,8 +239,9 @@ REQUIRED_COVERAGE = {
             "testRuntimeDictionaryLoadingDefaultsToSeedEntriesOnly",
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         ],
-        "src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift": [
-            "return PromptInsertion(text: text)",
+        "src/VoiceAgentInputCore/App/PromptInsertionUseCase.swift": [
+            "public struct PromptInsertion",
+            "public init(text: String)",
         ],
         "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
             "learningResult?.candidates.map(Self.entry(from:))",
@@ -418,7 +409,7 @@ REQUIRED_COVERAGE = {
         ],
         "docs/18-spec-trim-audit.md": [
             "Spec trim audit",
-            "Preview/edit UI is a direct-paste fallback",
+            "Preview/edit UI has been removed from the current app",
             "Any requirement that the default hotkey path show a preview before insertion",
             "Local context model status/rebuild/export/import/delete UI is implemented",
             "source freshness checks",
@@ -446,9 +437,8 @@ REQUIRED_COVERAGE = {
             "component contracts ok",
         ],
         "scripts/validate_app_ui_split.py": [
-            "ENTRYPOINT_FORBIDDEN",
-            "PREVIEW_REQUIRED",
             "PREVIEW_FORBIDDEN",
+            "deleted_preview_files",
             "app UI split ok",
         ],
         "scripts/validate_architecture_refactor.py": [

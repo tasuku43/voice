@@ -4,6 +4,14 @@ public enum PromptInsertionError: Error, Equatable {
     case userActionRequired
 }
 
+public struct PromptInsertion: Codable, Equatable, Sendable {
+    public var text: String
+
+    public init(text: String) {
+        self.text = text
+    }
+}
+
 public struct PromptInsertionUseCase {
     public var insertionController: any TextInsertionController
 

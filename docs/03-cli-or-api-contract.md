@@ -8,7 +8,7 @@ The production app will be a macOS menu bar utility. The scaffold also includes 
 swift run voice-agent-input-app
 ```
 
-The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted. If direct paste fails, the app falls back to the editable preview window before insertion.
+The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
 
 The shell also includes local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
 
@@ -31,12 +31,6 @@ Default output is a normalization JSON object for CI stability and debugging:
     "corrections": [...]
   }
 }
-```
-
-An explicit fallback-preview mode is available for the optional paste fallback surface:
-
-```sh
-swift run voice-agent-input-demo --mode preview-fallback "くらのコードでタイプスクリプトエラーを直して"
 ```
 
 History learning mode previews local context model candidates without saving them:
@@ -63,14 +57,13 @@ Primary text transform use case:
 PromptNormalizationUseCase.normalize(rawText: String) -> NormalizationResult
 ```
 
-Preview use case:
+Insertion value:
 
 ```swift
-PreviewFallbackUseCase.fallback(rawTranscript: String) -> PreviewFallback
-PreviewFallbackUseCase.makeInsertion(fallback: PreviewFallback, finalEditedPrompt: String?) -> PromptInsertion
+PromptInsertion(text: String)
 ```
 
-`PromptInsertion` is the normal Quick Paste output. `PreviewFallback` remains available for paste fallback. `PromptInsertion` returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
+`PromptInsertion` is the normal Quick Paste output. It returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
 
 Voice-input orchestration:
 
@@ -91,14 +84,6 @@ AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLe
 ```
 
 The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and candidate metadata. `LocalContextModelDataUseCase.rebuildModel(...)` persists a rebuilt model after explicit learning-source runs. `DictionaryEntryLoadingUseCase` loads seed entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
-
-Preview fallback insertion use case:
-
-```swift
-PreviewFallbackUseCase.makeInsertion(fallback: PreviewFallback, finalEditedPrompt: String?) -> PromptInsertion
-```
-
-This returns only the prompt text to insert. It does not generate learning candidates, persist entries, or submit automatically.
 
 Insertion use case:
 

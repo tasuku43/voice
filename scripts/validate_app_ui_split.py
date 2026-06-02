@@ -5,9 +5,9 @@ import sys
 
 ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
 APP_DIR = ROOT / "src" / "VoiceAgentInputApp"
+CORE_APP_DIR = ROOT / "src" / "VoiceAgentInputCore" / "App"
 MAIN = APP_DIR / "main.swift"
 ENTRYPOINT = APP_DIR / "VoiceAgentInputApp.swift"
-PREVIEW = APP_DIR / "PreviewWindowController.swift"
 
 MAIN_REQUIRED = [
     "NSApplication.shared",
@@ -18,27 +18,20 @@ MAIN_REQUIRED = [
 ENTRYPOINT_REQUIRED = [
     "installMenuBarItem",
     "recordVoiceInput",
-    "openPreview(fallback:",
-]
-
-ENTRYPOINT_FORBIDDEN = [
-    "final class PreviewWindowController",
-    "Raw transcript",
-    "Corrected prompt",
-    "Approve dictionary candidates?",
-    "CandidateApprovalDialogController",
-]
-
-PREVIEW_REQUIRED = [
-    "final class PreviewWindowController",
-    "Raw transcript",
-    "Corrected prompt",
-    "highlightedString",
-    "NSColor.systemYellow.withAlphaComponent(0.24)",
-    "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
+    "insertPrompt(result.insertion)",
 ]
 
 PREVIEW_FORBIDDEN = [
+    "PreviewFallback",
+    "PreviewFallbackUseCase",
+    "PreviewWindowController",
+    "openPreview",
+    "Raw transcript",
+    "Corrected prompt",
+    "correctedTextView",
+]
+
+CANDIDATE_UI_FORBIDDEN = [
     "Approve dictionary candidates?",
     "CandidateApprovalDialogController",
     "approveCandidatesIfRequested",
@@ -55,47 +48,34 @@ def main() -> None:
         fail(f"missing app main: {MAIN}")
     if not ENTRYPOINT.exists():
         fail(f"missing app delegate: {ENTRYPOINT}")
-    if not PREVIEW.exists():
-        fail(f"missing preview controller: {PREVIEW}")
+
+    deleted_preview_files = [
+        APP_DIR / "PreviewWindowController.swift",
+        CORE_APP_DIR / "PreviewFallbackUseCase.swift",
+    ]
+    existing_preview_files = [str(path.relative_to(ROOT)) for path in deleted_preview_files if path.exists()]
+    if existing_preview_files:
+        fail("preview fallback files should not exist: " + ", ".join(existing_preview_files))
 
     main_source = MAIN.read_text()
     entrypoint = ENTRYPOINT.read_text()
-    preview = PREVIEW.read_text()
+    app_sources = "\n".join(path.read_text() for path in sorted(APP_DIR.glob("*.swift")))
 
-    missing_main = [
-        snippet for snippet in MAIN_REQUIRED
-        if snippet not in main_source
-    ]
+    missing_main = [snippet for snippet in MAIN_REQUIRED if snippet not in main_source]
     if missing_main:
         fail("app main missing snippets: " + ", ".join(missing_main))
 
-    missing_entrypoint = [
-        snippet for snippet in ENTRYPOINT_REQUIRED
-        if snippet not in entrypoint
-    ]
+    missing_entrypoint = [snippet for snippet in ENTRYPOINT_REQUIRED if snippet not in entrypoint]
     if missing_entrypoint:
         fail("app delegate missing snippets: " + ", ".join(missing_entrypoint))
 
-    forbidden_entrypoint = [
-        snippet for snippet in ENTRYPOINT_FORBIDDEN
-        if snippet in entrypoint
-    ]
-    if forbidden_entrypoint:
-        fail("app entrypoint contains preview UI snippets: " + ", ".join(forbidden_entrypoint))
-
-    missing_preview = [
-        snippet for snippet in PREVIEW_REQUIRED
-        if snippet not in preview
-    ]
-    if missing_preview:
-        fail("preview controller missing snippets: " + ", ".join(missing_preview))
-
-    forbidden_preview = [
-        snippet for snippet in PREVIEW_FORBIDDEN
-        if snippet in preview
-    ]
+    forbidden_preview = [snippet for snippet in PREVIEW_FORBIDDEN if snippet in app_sources]
     if forbidden_preview:
-        fail("preview controller contains candidate approval snippets: " + ", ".join(forbidden_preview))
+        fail("app source contains preview fallback snippets: " + ", ".join(forbidden_preview))
+
+    forbidden_candidate_ui = [snippet for snippet in CANDIDATE_UI_FORBIDDEN if snippet in app_sources]
+    if forbidden_candidate_ui:
+        fail("app source contains candidate approval snippets: " + ", ".join(forbidden_candidate_ui))
 
     print("app UI split ok")
 

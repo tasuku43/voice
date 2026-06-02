@@ -2,7 +2,7 @@
 
 ## Inputs
 - Corrected transcript from the voice input pipeline.
-- Optional final prompt from a preview fallback workflow.
+- Final prompt from Quick Paste.
 - Output target settings or adapter.
 
 ## Outputs

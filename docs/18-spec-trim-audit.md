@@ -30,7 +30,7 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 
 ## Demote
 
-- Preview/edit UI is a direct-paste fallback, not the primary experience or a learning-review surface.
+- Preview/edit UI has been removed from the current app; Accessibility failures use pasteboard copy fallback.
 - Generic learning reviewer commands are removed; detectors and future local Foundation Model helpers belong in the model education path, not the hotkey STT path.
 - Repository folders configure learning sources; they should not silently broaden the runtime dictionary without an explicit model rebuild.
 

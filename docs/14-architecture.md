@@ -106,7 +106,7 @@ Future SwiftUI/AppKit app:
 - cursor-adjacent recording HUD,
 - focused cursor insertion,
 - settings for hotkey, STT locale, learning sources, and local data controls,
-- optional preview fallback panel.
+- pasteboard copy fallback.
 
 The UI must call app use cases and avoid embedding core logic.
 
@@ -136,7 +136,7 @@ Short component contracts live in `docs/contracts/`:
 - normalization,
 - prompt-refinement,
 - voice-input-pipeline,
-- preview-fallback,
+- pasteboard fallback,
 - learning,
 - output.
 
