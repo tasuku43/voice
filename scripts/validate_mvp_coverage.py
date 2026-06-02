@@ -252,7 +252,7 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
             "AppSettingsUseCase",
             "saveRepositoryPath",
-            "saveRecordingSettings",
+            "saveVoiceInputHotkey",
         ],
         "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
             "exportModel",

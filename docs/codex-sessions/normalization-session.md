@@ -12,7 +12,7 @@ May touch:
 - Normalization domain types, seed dictionaries, eval fixtures, normalization tests.
 
 Avoid:
-- Speech engines, preview UI, output adapters.
+- Speech engines and output adapters.
 
 Contract:
 - Dictionary-only corrections, no LLM rewriting.

@@ -1072,16 +1072,12 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         try repository.saveSettings(AppSettings(
             repositoryPath: "/tmp/repo",
-            recordingDurationSeconds: 6,
-            speechLocaleIdentifier: "en-US",
             voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
             voiceInputTriggerMode: .toggleRecording
         ))
 
         XCTAssertEqual(try repository.loadSettings(), AppSettings(
             repositoryPath: "/tmp/repo",
-            recordingDurationSeconds: 6,
-            speechLocaleIdentifier: "en-US",
             voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
             voiceInputTriggerMode: .toggleRecording
         ))
@@ -1100,33 +1096,19 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(settings.voiceInputTriggerMode, .pressAndHold)
     }
 
-    func testAppSettingsEffectiveValuesClampUnsafeInput() {
-        let tooShort = AppSettings(recordingDurationSeconds: 0.2, speechLocaleIdentifier: "   ")
-        let tooLong = AppSettings(recordingDurationSeconds: 60, speechLocaleIdentifier: " en-US ")
-
-        XCTAssertEqual(tooShort.effectiveRecordingDurationSeconds, 1)
-        XCTAssertEqual(tooShort.effectiveSpeechLocaleIdentifier, "ja-JP")
-        XCTAssertEqual(tooLong.effectiveRecordingDurationSeconds, 30)
-        XCTAssertEqual(tooLong.effectiveSpeechLocaleIdentifier, "en-US")
+    func testAppSettingsKeepsLearningScopeFixedToUser() {
         XCTAssertEqual(AppSettings().preferredLearningScope, .user)
         XCTAssertEqual(AppSettings(repositoryPath: "/tmp/repo").preferredLearningScope, .user)
     }
 
-    func testAppSettingsUseCaseSavesRepositoryAndClampedRecordingSettings() throws {
+    func testAppSettingsUseCaseSavesRepositoryAndHotkeySettings() throws {
         let repository = InMemoryAppSettingsRepository()
         let useCase = AppSettingsUseCase(repository: repository)
 
         let repositorySettings = try useCase.saveRepositoryPath("/tmp/repo")
-        let recordingSettings = try useCase.saveRecordingSettings(
-            recordingDurationSeconds: 99,
-            speechLocaleIdentifier: " en-US "
-        )
 
         XCTAssertEqual(repositorySettings.repositoryPath, "/tmp/repo")
-        XCTAssertEqual(recordingSettings.repositoryPath, "/tmp/repo")
-        XCTAssertEqual(recordingSettings.recordingDurationSeconds, 30)
-        XCTAssertEqual(recordingSettings.speechLocaleIdentifier, "en-US")
-        XCTAssertEqual(try repository.loadSettings(), recordingSettings)
+        XCTAssertEqual(try repository.loadSettings(), repositorySettings)
 
         let hotkeySettings = try useCase.saveVoiceInputHotkey(
             shortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),

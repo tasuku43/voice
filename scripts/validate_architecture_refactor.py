@@ -81,7 +81,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
         "public struct AppSettingsUseCase",
         "saveRepositoryPath",
-        "saveRecordingSettings",
+        "saveVoiceInputHotkey",
     ],
     "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
         "public protocol AgentHistoryTextProvider",

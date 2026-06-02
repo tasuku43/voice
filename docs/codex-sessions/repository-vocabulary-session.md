@@ -12,7 +12,7 @@ May touch:
 - Repository context providers, vocabulary use cases, tests.
 
 Avoid:
-- Speech, preview UI, output adapters.
+- Speech and output adapters.
 
 Contract:
 - Use bounded tracked files only.

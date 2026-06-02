@@ -10,7 +10,7 @@ swift run voice-agent-input-app
 
 The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
 
-The shell also includes local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
+The shell also includes local hotkey settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
 
 Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the implementation of that daily path. Model education happens through explicit local context model rebuilds, not a second voice input mode.
 
@@ -110,16 +110,14 @@ App settings:
 ```swift
 AppSettings(
     repositoryPath: String?,
-    recordingDurationSeconds: TimeInterval,
-    speechLocaleIdentifier: String,
     voiceInputShortcut: KeyboardShortcut,
     voiceInputTriggerMode: VoiceInputTriggerMode
 )
 ```
 
-Missing settings decode to local defaults: four seconds of recording, `ja-JP` speech recognition, Control-Option-Space voice-input hotkey, and press-and-hold trigger mode. Runtime use clamps recording duration to 1...30 seconds and falls back to `ja-JP` when the stored locale is blank.
+Missing settings decode to local defaults: Control-Option-Space voice-input hotkey and press-and-hold trigger mode. Speech currently uses the fixed local Japanese Speech locale by default.
 
-The macOS menu bar shell exposes recording settings locally through `Recording Settings...` and hotkey settings through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
+The macOS menu bar shell exposes hotkey settings locally through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
 
 Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so repository context is included through explicit source selection and bounded model rebuilds rather than implicit broad scans.
 

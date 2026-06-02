@@ -12,7 +12,7 @@ May touch:
 - Audio recorder adapters, temporary audio cleanup, and recording tests.
 
 Avoid:
-- Speech engines, dictionary correction, prompt refinement, preview UI, learning, output adapters.
+- Speech engines, dictionary correction, prompt refinement, learning, and output adapters.
 
 Contract:
 - Return `RecordedAudio` only.

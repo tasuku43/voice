@@ -13,8 +13,7 @@
 
 - Menu bar app shell.
 - Cursor-adjacent recording HUD.
-- Settings screen for hotkey, STT locale, learning sources, local data, and optional fallback conversion.
-- Optional floating preview panel.
+- Settings screen for hotkey, learning sources, local data, and optional fallback conversion.
 
 ## Input and insertion
 

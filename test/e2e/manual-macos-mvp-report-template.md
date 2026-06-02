@@ -41,11 +41,8 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - macOS permission prompts observed when needed: pass/fail/not applicable
 - Notes:
 
-## Recording Settings Evidence
+## Hotkey Settings Evidence
 
-- `Recording Settings...` opened: pass/fail
-- Recording duration saved and reloaded: pass/fail
-- Speech locale saved and reloaded: pass/fail
 - `Hotkey Settings...` opened: pass/fail
 - Custom voice input hotkey saved and menu label updated: pass/fail
 - Custom voice input hotkey starts recording: pass/fail

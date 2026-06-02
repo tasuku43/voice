@@ -20,20 +20,6 @@ public struct AppSettingsUseCase {
     }
 
     @discardableResult
-    public func saveRecordingSettings(
-        recordingDurationSeconds: TimeInterval,
-        speechLocaleIdentifier: String
-    ) throws -> AppSettings {
-        var settings = try repository.loadSettings()
-        settings.recordingDurationSeconds = recordingDurationSeconds
-        settings.speechLocaleIdentifier = speechLocaleIdentifier
-        settings.recordingDurationSeconds = settings.effectiveRecordingDurationSeconds
-        settings.speechLocaleIdentifier = settings.effectiveSpeechLocaleIdentifier
-        try repository.saveSettings(settings)
-        return settings
-    }
-
-    @discardableResult
     public func saveVoiceInputHotkey(
         shortcut: KeyboardShortcut,
         triggerMode: VoiceInputTriggerMode

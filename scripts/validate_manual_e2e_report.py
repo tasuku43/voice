@@ -20,7 +20,7 @@ REQUIRED_METADATA_FIELDS = [
 REQUIRED_SECTIONS = [
     "Setup Evidence",
     "Permission Status Evidence",
-    "Recording Settings Evidence",
+    "Hotkey Settings Evidence",
     "Quick Paste Voice Input Evidence",
     "Local Learning Evidence",
     "Local Data Controls Evidence",

@@ -15,7 +15,7 @@ Build a local-first desktop utility that:
 - uses local context model recognition hints during STT when supported,
 - applies deterministic system dictionary and custom local context model transforms,
 - inserts corrected text at the focused cursor after the user stops the hotkey recording,
-- falls back to pasteboard copy or an editable preview only when direct paste cannot complete,
+- falls back to pasteboard copy only when direct paste cannot complete,
 - educates the local context model from explicit bounded local sources such as Codex / Claude Code histories and Git repository vocabulary.
 
 The app must run fully locally. Do not build a cloud service, browser extension, full IME, meeting recorder, autonomous code executor, network-backed STT, network-backed LLM, transcript upload path, or cloud sync unless explicitly asked.

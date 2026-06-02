@@ -40,12 +40,6 @@ enum AppUILayoutSmoke {
         failures.append(contentsOf: auditView(hotkeyStack, name: "hotkey-settings"))
         renderView(hotkeyStack, size: NSSize(width: 560, height: 132), name: "hotkey-settings", outputDirectory: outputDirectory)
 
-        let recordingStack = AppLayout.formStack()
-        recordingStack.addArrangedSubview(AppLayout.formRow(label: "Recording seconds", view: AppLayout.textField("8")))
-        recordingStack.addArrangedSubview(AppLayout.formRow(label: "Speech locale", view: AppLayout.textField("ja-JP")))
-        failures.append(contentsOf: auditView(recordingStack, name: "recording-settings"))
-        renderView(recordingStack, size: NSSize(width: 560, height: 92), name: "recording-settings", outputDirectory: outputDirectory)
-
         let sourceStack = AppLayout.formStack()
         sourceStack.addArrangedSubview(NSButton(checkboxWithTitle: "Codex / Claude local sessions", target: nil, action: nil))
         sourceStack.addArrangedSubview(NSButton(checkboxWithTitle: "Git repository vocabulary", target: nil, action: nil))

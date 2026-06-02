@@ -1,7 +1,7 @@
 # Audio Capture Contract
 
 ## Inputs
-- Recording settings such as temporary directory.
+- Temporary recording location provided by the local recorder adapter.
 - A recording start request from the app or pipeline, including press-and-hold or toggle hotkey flows.
 - A user stop request.
 

@@ -54,7 +54,7 @@
 - `make check`
 
 ## Done
-- Fallback preview edits do not generate model education candidates.
+- Voice-input edits do not generate model education candidates.
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Learning-source adapters remain bounded and local.
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.

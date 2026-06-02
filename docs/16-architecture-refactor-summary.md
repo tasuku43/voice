@@ -36,7 +36,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Hotkey start/stop.
 - Optional local debug log.
 - macOS permission status display and privacy-settings shortcut.
-- Recording settings dialog.
+- Hotkey settings dialog.
 - Export/import/delete/open local learning menu actions.
 - Error presentation.
 

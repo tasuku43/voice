@@ -2,7 +2,7 @@
 
 ## Inputs
 - `RecordedAudio`
-- Speech locale from `AppSettings`
+- Fixed local Speech locale, currently `ja-JP`.
 - Optional `SpeechRecognitionHints` derived from loaded `DictionaryEntry.recognitionHints` values.
 
 ## Outputs

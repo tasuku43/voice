@@ -25,19 +25,14 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. If microphone or speech recognition is not authorized, continue to the recording flow and verify macOS prompts for the missing permission.
 6. If Accessibility paste is not trusted, keep the fallback behavior expectation below.
 
-## Recording Settings
+## Hotkey Settings
 
-1. Choose `Recording Settings...`.
-2. Set recording duration to `4`.
-3. Set Speech locale to `ja-JP`.
-4. Save the dialog.
-5. Reopen `Recording Settings...` and verify the saved values are shown.
-6. Choose `Hotkey Settings...`.
-7. Change the voice input key to Control-Option-S, save, and verify the menu label updates.
-8. Trigger voice input with Control-Option-S, then stop it with the Stop button.
-9. Reopen `Hotkey Settings...`, switch trigger mode to `Toggle Recording`, and save.
-10. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
-11. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the Quick Paste flow below.
+1. Choose `Hotkey Settings...`.
+2. Change the voice input key to Control-Option-S, save, and verify the menu label updates.
+3. Trigger voice input with Control-Option-S, then stop it with the Stop button.
+4. Reopen `Hotkey Settings...`, switch trigger mode to `Toggle Recording`, and save.
+5. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
+6. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the Quick Paste flow below.
 
 ## Quick Paste Voice Input
 

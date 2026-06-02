@@ -69,7 +69,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(hotkeyItem)
         menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
         menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Voice Input Permissions...", action: #selector(openVoiceInputPermissionSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Privacy Settings...", action: #selector(openPrivacySettings), keyEquivalent: ""))
@@ -137,7 +136,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     }
                 }
                 let speechEngine = AppleSpeechEngine(
-                    localeIdentifier: settings.effectiveSpeechLocaleIdentifier,
+                    localeIdentifier: AppSettings.defaultSpeechLocaleIdentifier,
                     requiresOnDeviceRecognition: true,
                     recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries),
                     recognitionSnapshotHandler: { [debugLogger] snapshot, isFinal in
@@ -590,40 +589,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc private func showRecordingSettings() {
-        do {
-            let settingsUseCase = try settingsUseCase()
-            let settings = try settingsUseCase.loadSettings()
-
-            let durationField = AppLayout.textField(
-                String(format: "%.0f", settings.effectiveRecordingDurationSeconds)
-            )
-            let localeField = AppLayout.textField(settings.effectiveSpeechLocaleIdentifier)
-            let stack = AppLayout.formStack()
-            stack.addArrangedSubview(AppLayout.formRow(label: "Recording seconds", view: durationField))
-            stack.addArrangedSubview(AppLayout.formRow(label: "Speech locale", view: localeField))
-
-            let alert = NSAlert()
-            alert.messageText = "Recording settings"
-            alert.informativeText = "These settings stay on this Mac and are used for the next recording."
-            alert.accessoryView = stack
-            alert.addButton(withTitle: "Save")
-            alert.addButton(withTitle: "Cancel")
-
-            guard alert.runModal() == .alertFirstButtonReturn else {
-                return
-            }
-
-            try settingsUseCase.saveRecordingSettings(
-                recordingDurationSeconds: Double(durationField.stringValue)
-                    ?? settings.effectiveRecordingDurationSeconds,
-                speechLocaleIdentifier: localeField.stringValue
-            )
-        } catch {
-            presentError(error)
-        }
-    }
-
     @objc private func showPermissionStatus() {
         let status = PermissionStatusUseCase(
             microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
@@ -989,7 +954,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 return """
                 No speech was detected in the recording.
 
-                Try again while speaking during the full recording window, or open Recording Settings and increase the recording seconds. Also check that macOS is using the expected microphone input.
+                Try again while speaking until you stop recording. Also check that macOS is using the expected microphone input.
                 """
             case let .transcriptionFailed(description):
                 return "Apple Speech could not transcribe the recording: \(description)"
