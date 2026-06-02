@@ -40,7 +40,7 @@ Adapters must be bounded, local-first, and explicit about what they read.
 ## Package layer diagram
 
 ```text
-Future macOS UI / CLI demo
+macOS menu bar app / CLI demo
           |
           v
 App use cases
@@ -77,12 +77,11 @@ Use-case orchestration:
 - build or load local context model data,
 - choose recognition hints for STT,
 - apply system vocabulary and personal context transforms,
-- keep local Foundation Model fallback behind an optional protocol,
 - combine stores and engines,
 - produce results for UI or CLI.
 - keep capture/STT stage outputs through `VoiceInputPipeline`.
 - keep post-STT text processing through `PromptProcessingPipeline`.
-- keep future local Foundation Model conversion behind an explicit optional fallback protocol.
+- keep any future local Foundation Model conversion behind an explicit optional fallback protocol.
 
 ### Infra
 
@@ -92,20 +91,20 @@ Adapters:
 - pasteboard and Accessibility insertion adapters,
 - git context provider,
 - local learning source providers,
-- future GitHub / Slack / Chatwork local archive/cache adapters,
-- future local Foundation Model adapter.
+- deferred GitHub / Slack / Chatwork local archive/cache adapters,
+- deferred local Foundation Model adapter.
 
 Infra adapters must not introduce network IO. GitHub, Slack, Chatwork, and similar learning sources must be represented as local archives, exports, caches, or checked-out files before this app reads them. Process-backed adapters are limited to local read-only commands; network-capable operations such as `git fetch`, `git pull`, and `git clone` are excluded.
 
 ### UI boundary
 
-Future SwiftUI/AppKit app:
+Current AppKit menu bar app:
 
 - menu bar,
 - hotkey,
 - cursor-adjacent recording HUD,
 - focused cursor insertion,
-- settings for hotkey, STT locale, learning sources, and local data controls,
+- settings for hotkey, learning sources, and local data controls,
 - pasteboard copy fallback.
 
 The UI must call app use cases and avoid embedding core logic.
@@ -124,7 +123,6 @@ The UI must call app use cases and avoid embedding core logic.
 - Add local Foundation Model conversion only behind an explicit optional fallback protocol.
 - Add persistence behind dictionary repository protocols.
 - Add context providers behind scoped vocabulary and learning-source protocols.
-- Add local Foundation Model transforms behind optional protocols.
 - Add UI views without changing normalization internals.
 
 ## Component Contracts
@@ -154,4 +152,4 @@ Focused future Codex prompts live in `docs/codex-sessions/` so a session can imp
 
 ## Why this architecture
 
-The product will need native macOS integration, STT adapters, local persistence, repository context, chat and agent-history adapters, deterministic learning, and eventually local Foundation Model support. These concerns evolve independently. A layered architecture lets coding agents safely extend one area without breaking privacy, insertion behavior, or dictionary behavior.
+The product combines native macOS integration, STT adapters, local persistence, repository context, agent-history adapters, and deterministic learning. Deferred chat/archive adapters and local Foundation Model support must evolve behind the same boundaries. A layered architecture lets coding agents safely extend one area without breaking privacy, insertion behavior, or dictionary behavior.

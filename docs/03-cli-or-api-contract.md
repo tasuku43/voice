@@ -1,6 +1,6 @@
 # CLI / API contract
 
-The production app will be a macOS menu bar utility. The scaffold also includes a small CLI demo so core behavior can be tested in CI and by coding agents.
+The production app is a macOS menu bar utility. The package also includes a small CLI demo so core behavior can be tested in CI and by coding agents.
 
 ## macOS app shell
 
