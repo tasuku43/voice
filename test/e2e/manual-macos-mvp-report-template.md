@@ -37,7 +37,6 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Accessibility paste shown: pass/fail
 - Input monitoring hotkeys shown: pass/fail
 - `Open Voice Input Permissions...` opens missing permission settings: pass/fail
-- `Open Privacy Settings...` opens Privacy & Security: pass/fail
 - macOS permission prompts observed when needed: pass/fail/not applicable
 - Notes:
 

@@ -20,7 +20,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Requirement | Current evidence | Status |
 | --- | --- | --- |
 | Invoke voice input from macOS | `AppKitKeyboardShortcutMonitor`, Control-Option-Space wiring, `Quick Paste Voice Input` menu item label, app launch smoke | Implemented, needs manual hotkey confirmation |
-| Configure macOS permissions | `Permission Status...`, `Open Privacy Settings...`, permission provider use cases, app contract validation | Implemented, needs manual settings confirmation |
+| Configure macOS permissions | `Permission Status...`, `Open Voice Input Permissions...`, permission provider use cases, app contract validation | Implemented, needs manual settings confirmation |
 | Record microphone input | `AVFoundationAudioRecorder`, microphone permission use case, app contract validation | Implemented, needs real microphone confirmation |
 | Transcribe speech | `AppleSpeechEngine`, on-device default, speech permission use case, app contract validation | Implemented, needs real speech confirmation |
 | Normalize developer terms | domain normalization tests, fixture evals, eval coverage validation | Verified |

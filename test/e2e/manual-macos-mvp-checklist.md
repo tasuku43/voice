@@ -21,9 +21,8 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
    - `Accessibility paste`
    - `Input monitoring hotkeys`
 3. Choose `Open Voice Input Permissions...` and verify macOS opens the missing Accessibility and/or Input Monitoring settings.
-4. Choose `Open Privacy Settings...` and verify macOS opens Privacy & Security settings.
-5. If microphone or speech recognition is not authorized, continue to the recording flow and verify macOS prompts for the missing permission.
-6. If Accessibility paste is not trusted, keep the fallback behavior expectation below.
+4. If microphone or speech recognition is not authorized, continue to the recording flow and verify macOS prompts for the missing permission.
+5. If Accessibility paste is not trusted, keep the fallback behavior expectation below.
 
 ## Hotkey Settings
 

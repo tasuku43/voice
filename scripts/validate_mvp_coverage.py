@@ -43,8 +43,8 @@ REQUIRED_COVERAGE = {
             "Toggle Recording",
             "recordVoiceInput",
             "Open Voice Input Permissions...",
-            "Open Privacy Settings...",
             "Privacy_Accessibility",
+            "Privacy_ListenEvent",
         ],
     },
     "record and transcribe": {
@@ -432,7 +432,7 @@ REQUIRED_COVERAGE = {
             "Completion rule",
             "eval coverage validation",
             "Architecture boundary validation",
-            "Open Privacy Settings",
+            "Open Voice Input Permissions",
             "Open Local Data Folder",
             "make check",
             "manual macOS MVP report",

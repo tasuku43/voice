@@ -21,7 +21,6 @@ REQUIRED_SNIPPETS = [
     "debug.log",
     "make manual-e2e-launch",
     "Open Voice Input Permissions...",
-    "Open Privacy Settings...",
     "Hotkey Settings",
     "Hotkey Settings...",
     "Quick Paste",
