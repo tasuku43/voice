@@ -18,7 +18,7 @@ MAIN_REQUIRED = [
 ENTRYPOINT_REQUIRED = [
     "installMenuBarItem",
     "recordVoiceInput",
-    "openPreview(preview:",
+    "openPreview(fallback:",
 ]
 
 ENTRYPOINT_FORBIDDEN = [

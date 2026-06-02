@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PromptPreview: Codable, Equatable, Sendable {
+public struct PreviewFallback: Codable, Equatable, Sendable {
     public var rawTranscript: String
     public var correctedPrompt: String
     public var corrections: [AppliedCorrection]
@@ -24,7 +24,7 @@ public struct PromptInsertion: Codable, Equatable, Sendable {
     }
 }
 
-public struct PromptPreviewUseCase: Sendable {
+public struct PreviewFallbackUseCase: Sendable {
     public var normalizationUseCase: PromptNormalizationUseCase
 
     public init(normalizationUseCase: PromptNormalizationUseCase) {
@@ -35,17 +35,17 @@ public struct PromptPreviewUseCase: Sendable {
         self.normalizationUseCase = PromptNormalizationUseCase(entries: entries)
     }
 
-    public func preview(rawTranscript: String) -> PromptPreview {
+    public func fallback(rawTranscript: String) -> PreviewFallback {
         let result = normalizationUseCase.normalize(rawText: rawTranscript)
-        return PromptPreview(
+        return PreviewFallback(
             rawTranscript: result.rawText,
             correctedPrompt: result.correctedText,
             corrections: result.corrections
         )
     }
 
-    public func makeInsertion(preview: PromptPreview, finalEditedPrompt: String? = nil) -> PromptInsertion {
-        let text = finalEditedPrompt ?? preview.correctedPrompt
+    public func makeInsertion(fallback: PreviewFallback, finalEditedPrompt: String? = nil) -> PromptInsertion {
+        let text = finalEditedPrompt ?? fallback.correctedPrompt
         return PromptInsertion(text: text)
     }
 }

@@ -125,7 +125,7 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
 
     open_preview = source_between(
         source,
-        "private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase)",
+        "private func openPreview(fallback: PreviewFallback, fallbackUseCase: PreviewFallbackUseCase)",
         "private func insertPrompt",
     )
     forbidden_preview = [

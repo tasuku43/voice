@@ -11,15 +11,15 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     }
 
     func testPreviewFallbackBuildsPromptInsertionText() {
-        let useCase = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
-        let preview = useCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
+        let useCase = PreviewFallbackUseCase(entries: SeedDictionaries.codingAgentEntries)
+        let fallback = useCase.fallback(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
 
-        XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトエラーを直して")
-        XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
-        XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
+        XCTAssertEqual(fallback.rawTranscript, "くらのコードでタイプスクリプトエラーを直して")
+        XCTAssertTrue(fallback.correctedPrompt.contains("Claude Code"))
+        XCTAssertTrue(fallback.correctedPrompt.contains("TypeScript"))
 
-        let insertion = useCase.makeInsertion(preview: preview)
-        XCTAssertEqual(insertion.text, preview.correctedPrompt)
+        let insertion = useCase.makeInsertion(fallback: fallback)
+        XCTAssertEqual(insertion.text, fallback.correctedPrompt)
     }
 
     func testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing() async throws {
@@ -1041,10 +1041,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let model = LocalContextModelBuildUseCase(seedEntries: [])
             .build(learningResult: learningResult)
-        let preview = PromptPreviewUseCase(entries: model.postSTTEntries)
-            .preview(rawTranscript: "project specific nameの設定を直して")
+        let fallback = PreviewFallbackUseCase(entries: model.postSTTEntries)
+            .fallback(rawTranscript: "project specific nameの設定を直して")
 
-        XCTAssertEqual(preview.correctedPrompt, "ProjectSpecificName の設定を直して")
+        XCTAssertEqual(fallback.correctedPrompt, "ProjectSpecificName の設定を直して")
     }
 
     func testPromptInsertionRequiresCompletedUserAction() throws {
@@ -1227,11 +1227,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let entries = try useCase.loadEntries()
-        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "こーでっくすでめいんを確認")
+        let fallback = PreviewFallbackUseCase(entries: entries).fallback(rawTranscript: "こーでっくすでめいんを確認")
 
         XCTAssertEqual(entries.count, 2)
-        XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
-        XCTAssertTrue(preview.correctedPrompt.contains("main"))
+        XCTAssertTrue(fallback.correctedPrompt.contains("Codex"))
+        XCTAssertTrue(fallback.correctedPrompt.contains("main"))
     }
 
     func testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries() throws {
@@ -1252,10 +1252,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let entries = try useCase.loadEntries()
-        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "ろーかるこんてきすとを読み込む")
+        let fallback = PreviewFallbackUseCase(entries: entries).fallback(rawTranscript: "ろーかるこんてきすとを読み込む")
 
         XCTAssertEqual(entries, [modelEntry])
-        XCTAssertTrue(preview.correctedPrompt.contains("LocalContextModel"))
+        XCTAssertTrue(fallback.correctedPrompt.contains("LocalContextModel"))
     }
 
     func testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries() throws {

@@ -16,14 +16,14 @@ enum AppUILayoutSmoke {
             return 1
         }
 
-        let preview = PromptPreview(
+        let fallback = PreviewFallback(
             rawTranscript: String(repeating: "くらのコードでタイプスクリプトエラーを直して。", count: 10),
             correctedPrompt: String(repeating: "Claude Code で TypeScript エラーを直して。", count: 10),
             corrections: []
         )
         let previewController = PreviewWindowController(
-            preview: preview,
-            previewUseCase: PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
+            fallback: fallback,
+            fallbackUseCase: PreviewFallbackUseCase(entries: SeedDictionaries.codingAgentEntries)
         )
         failures.append(contentsOf: auditWindow(previewController.window, name: "preview"))
         renderWindow(previewController.window, name: "preview", outputDirectory: outputDirectory)

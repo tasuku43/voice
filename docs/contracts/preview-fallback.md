@@ -23,7 +23,7 @@ Preview fallback is an optional safety surface when direct paste cannot be compl
 - Candidate approval UI.
 
 ## Read First
-- `src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift`
+- `src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift`
 - `src/VoiceAgentInputApp/PreviewWindowController.swift`
 
 ## May Touch

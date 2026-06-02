@@ -4,7 +4,7 @@ Purpose: improve the fallback preview shown only when direct paste cannot comple
 
 Read:
 - `docs/contracts/preview-fallback.md`
-- `src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift`
+- `src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift`
 - `src/VoiceAgentInputApp/PreviewWindowController.swift`
 
 May touch:

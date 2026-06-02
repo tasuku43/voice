@@ -278,12 +278,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     } catch {
                         self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
                         self.openPreview(
-                            preview: PromptPreview(
+                            fallback: PreviewFallback(
                                 rawTranscript: result.transcript.text,
                                 correctedPrompt: result.refinedPrompt.refinedText,
                                 corrections: result.normalizedPrompt.corrections
                             ),
-                            previewUseCase: PromptPreviewUseCase(entries: entries)
+                            fallbackUseCase: PreviewFallbackUseCase(entries: entries)
                         )
                     }
                 }
@@ -530,11 +530,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         )
     }
 
-    private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
-        debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
+    private func openPreview(fallback: PreviewFallback, fallbackUseCase: PreviewFallbackUseCase) {
+        debugLogger.log("openPreview rawLength=\(fallback.rawTranscript.count) correctedLength=\(fallback.correctedPrompt.count)")
         let controller = PreviewWindowController(
-            preview: preview,
-            previewUseCase: previewUseCase,
+            fallback: fallback,
+            fallbackUseCase: fallbackUseCase,
             onPromptInserted: { [weak self] prompt in
                 self?.recordVoiceInputHistory(
                     prompt: prompt.text

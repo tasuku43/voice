@@ -9,7 +9,7 @@ final class DemoCLITests: XCTestCase {
         ])
 
         XCTAssertEqual(output["mode"] as? String, "normalize")
-        XCTAssertNil(output["preview"] as? [String: Any])
+        XCTAssertNil(output["fallback"] as? [String: Any])
         let normalization = try XCTUnwrap(output["normalization"] as? [String: Any])
         XCTAssertEqual(normalization["rawText"] as? String, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue((normalization["correctedText"] as? String)?.contains("Claude Code") == true)
@@ -31,7 +31,7 @@ final class DemoCLITests: XCTestCase {
         ])
 
         XCTAssertEqual(output["mode"] as? String, "learn-history")
-        XCTAssertNil(output["preview"] as? [String: Any])
+        XCTAssertNil(output["fallback"] as? [String: Any])
         let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
         XCTAssertEqual(historyLearning["scannedTextCount"] as? Int, 1)
         let candidates = try XCTUnwrap(historyLearning["candidates"] as? [[String: Any]])

@@ -66,11 +66,11 @@ PromptNormalizationUseCase.normalize(rawText: String) -> NormalizationResult
 Preview use case:
 
 ```swift
-PromptPreviewUseCase.preview(rawTranscript: String) -> PromptPreview
-PromptPreviewUseCase.makeInsertion(preview: PromptPreview, finalEditedPrompt: String?) -> PromptInsertion
+PreviewFallbackUseCase.fallback(rawTranscript: String) -> PreviewFallback
+PreviewFallbackUseCase.makeInsertion(fallback: PreviewFallback, finalEditedPrompt: String?) -> PromptInsertion
 ```
 
-`PromptInsertion` is the normal Quick Paste output. `PromptPreview` remains available for paste fallback. `PromptInsertion` returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
+`PromptInsertion` is the normal Quick Paste output. `PreviewFallback` remains available for paste fallback. `PromptInsertion` returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
 
 Voice-input orchestration:
 
@@ -95,7 +95,7 @@ The current concrete model is represented by dictionary entries, recognition hin
 Preview fallback insertion use case:
 
 ```swift
-PromptPreviewUseCase.makeInsertion(preview: PromptPreview, finalEditedPrompt: String?) -> PromptInsertion
+PreviewFallbackUseCase.makeInsertion(fallback: PreviewFallback, finalEditedPrompt: String?) -> PromptInsertion
 ```
 
 This returns only the prompt text to insert. It does not generate learning candidates, persist entries, or submit automatically.

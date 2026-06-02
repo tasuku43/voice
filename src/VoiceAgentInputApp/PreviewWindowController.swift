@@ -3,18 +3,18 @@ import VoiceAgentInputCore
 
 @MainActor
 final class PreviewWindowController: NSWindowController {
-    private let preview: PromptPreview
-    private let previewUseCase: PromptPreviewUseCase
+    private let fallback: PreviewFallback
+    private let fallbackUseCase: PreviewFallbackUseCase
     private let correctedTextView = NSTextView()
     private let onPromptInserted: (PromptInsertion) -> Void
 
     init(
-        preview: PromptPreview,
-        previewUseCase: PromptPreviewUseCase,
+        fallback: PreviewFallback,
+        fallbackUseCase: PreviewFallbackUseCase,
         onPromptInserted: @escaping (PromptInsertion) -> Void = { _ in }
     ) {
-        self.preview = preview
-        self.previewUseCase = previewUseCase
+        self.fallback = fallback
+        self.fallbackUseCase = fallbackUseCase
         self.onPromptInserted = onPromptInserted
 
         let window = NSWindow(
@@ -42,9 +42,9 @@ final class PreviewWindowController: NSWindowController {
         container.translatesAutoresizingMaskIntoConstraints = false
 
         let rawLabel = NSTextField(labelWithString: "Raw transcript")
-        let rawText = textBox(preview.rawTranscript, editable: false, highlights: rawHighlights())
+        let rawText = textBox(fallback.rawTranscript, editable: false, highlights: rawHighlights())
         let correctedLabel = NSTextField(labelWithString: "Corrected prompt")
-        let correctedScrollView = textBox(preview.correctedPrompt, editable: true, highlights: correctedHighlights())
+        let correctedScrollView = textBox(fallback.correctedPrompt, editable: true, highlights: correctedHighlights())
 
         if let textView = correctedScrollView.documentView as? NSTextView {
             correctedTextView.textStorage?.setAttributedString(textView.attributedString())
@@ -103,11 +103,11 @@ final class PreviewWindowController: NSWindowController {
     }
 
     private func rawHighlights() -> [String] {
-        preview.corrections.map(\.original)
+        fallback.corrections.map(\.original)
     }
 
     private func correctedHighlights() -> [String] {
-        preview.corrections.map { correction in
+        fallback.corrections.map { correction in
             correction.replacement.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
@@ -142,8 +142,8 @@ final class PreviewWindowController: NSWindowController {
     @objc private func confirm() {
         Task { @MainActor in
             do {
-                let insertion = previewUseCase.makeInsertion(
-                    preview: preview,
+                let insertion = fallbackUseCase.makeInsertion(
+                    fallback: fallback,
                     finalEditedPrompt: correctedTextView.string
                 )
                 try insertPrompt(insertion)

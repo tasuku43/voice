@@ -133,7 +133,7 @@ REQUIRED_COVERAGE = {
         ],
     },
     "fallback preview before insertion": {
-        "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
+        "src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift": [
             "rawTranscript",
             "correctedPrompt",
         ],
@@ -249,7 +249,7 @@ REQUIRED_COVERAGE = {
             "testRuntimeDictionaryLoadingDefaultsToSeedEntriesOnly",
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         ],
-        "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
+        "src/VoiceAgentInputCore/App/PreviewFallbackUseCase.swift": [
             "return PromptInsertion(text: text)",
         ],
         "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
