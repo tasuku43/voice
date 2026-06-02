@@ -31,7 +31,7 @@
 - Reliability: no automatic sending or unsafe command execution.
 - Agent usability: spoken developer text becomes accurate enough for coding agents and work chat.
 - Contract stability: output and data models remain test-covered.
-- Human usability: preview is fast and low-friction.
+- Human usability: focused-cursor insertion is fast and low-friction; preview appears only as a paste fallback.
 - Privacy: local-only by default.
 
 ## Quality bar

@@ -2,9 +2,9 @@
 
 ## Project
 
-`voice-agent-input` is a macOS-native voice input application for coding-agent prompts.
+`voice-agent-input` is a macOS-native hotkey voice input application for developer text fields.
 
-The product goal is not to replace macOS Dictation directly. The goal is to convert spoken Japanese / mixed Japanese-English developer instructions into clean, agent-ready prompts for tools such as Codex, Claude Code, Cursor, terminal-based coding agents, and IDE assistants.
+The product goal is not to replace macOS Dictation directly. The goal is to convert spoken Japanese / mixed Japanese-English developer instructions into accurate text for tools such as Codex, Claude Code, Cursor, terminal-based coding agents, IDE assistants, Slack, Chatwork, and browser text fields by using a local context model built from the user's environment.
 
 ## Product boundary
 
@@ -12,13 +12,15 @@ Build a local-first desktop utility that:
 
 - captures voice input on macOS,
 - transcribes speech,
-- normalizes developer terminology,
-- shows a preview before insertion,
-- learns dictionary candidates from user edits,
-- stores approved dictionaries locally,
-- inserts the corrected prompt only after explicit confirmation.
+- uses local context model recognition hints during STT when supported,
+- applies deterministic system dictionary and custom local context model transforms,
+- inserts corrected text at the focused cursor after the user stops the hotkey recording,
+- falls back to pasteboard copy or an editable preview only when direct paste cannot complete,
+- educates the local context model from explicit bounded local sources such as Codex / Claude Code histories and Git repository vocabulary.
 
-Do not build a cloud service, browser extension, full IME, meeting recorder, or autonomous code executor unless explicitly asked.
+The app must run fully locally. Do not build a cloud service, browser extension, full IME, meeting recorder, autonomous code executor, network-backed STT, network-backed LLM, transcript upload path, or cloud sync unless explicitly asked.
+
+If LLM-style assistance is introduced, it must be a local Foundation Model adapter. It may help model education, and may be used as an explicit last-resort conversion fallback only after deterministic transforms are insufficient. It must not introduce network IO and must not be the default hotkey path.
 
 ## Architecture
 
@@ -52,12 +54,12 @@ The first working app should support:
 1. User invokes a hotkey.
 2. App records microphone input.
 3. App transcribes speech.
-4. App applies deterministic dictionary normalization.
-5. App shows raw transcript and corrected prompt.
-6. User may edit the corrected prompt.
-7. User confirms paste.
-8. App extracts dictionary candidates from the edit.
-9. User approves or rejects candidates.
+4. App passes local context model hints to STT when supported.
+5. App applies deterministic dictionary and local context model normalization.
+6. App inserts corrected text at the focused cursor when the user releases or stops recording.
+7. App copies to the pasteboard or opens an editable fallback preview if direct paste cannot complete.
+8. User can explicitly rebuild the local context model from selected local learning sources.
+9. Later voice input reuses the rebuilt local context model as STT hints and post-STT transforms.
 
 Do not implement real-time character-by-character insertion in the MVP.
 
@@ -89,7 +91,10 @@ Do not implement:
 - speaker diarization,
 - automatic sending or submission,
 - LLM-based autonomous code editing inside this app,
-- cloud STT or transcript upload.
+- cloud STT,
+- network-backed LLM calls,
+- transcript upload,
+- preview-first candidate approval UI.
 
 ## Privacy requirements
 
@@ -98,8 +103,8 @@ Default behavior:
 - Do not persist raw audio.
 - Do not upload audio or transcripts.
 - Do not persist raw transcripts unless the user enables it.
-- Persist approved dictionary entries.
-- Persist candidates only as needed for local learning.
+- Persist the local context model and app settings locally.
+- Persist generated candidates only as part of explicit local context model rebuild data.
 - Provide export/import and delete-all-local-learning-data paths.
 
 ## Change checklist
@@ -121,6 +126,7 @@ Avoid:
 - coupling UI to STT directly,
 - silent automatic prompt submission,
 - storing raw audio by default,
+- network IO in voice input, model education, or fallback conversion,
 - uncontrolled recursive repo scans,
-- broad semantic rewriting before dictionary learning works,
+- using LLM rewriting as the default hotkey conversion path,
 - auto-applying dangerous command substitutions.
