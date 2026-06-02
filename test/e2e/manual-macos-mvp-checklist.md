@@ -66,16 +66,12 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 ## Local Data Controls
 
-1. Choose `Export Local Dictionary...` and save a JSON file.
-2. Verify the exported JSON contains approved dictionary entries only.
-3. Choose `Import Local Dictionary...` and import the JSON file.
-4. Choose `Export Local Context Model...` and save a JSON file.
-5. Verify the exported JSON contains `schemaVersion`, `model`, `lastRebuiltAt`, and `sourceKinds`.
-6. Choose `Import Local Context Model...` and import the JSON file.
-7. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
-8. Choose `Delete Local Dictionary...`.
-9. Choose `Delete Local Context Model...`.
-10. Verify later Quick Paste runs no longer use deleted local entries unless they come from seed or a rebuilt local context model.
+1. Choose `Export Local Context Model...` and save a JSON file.
+2. Verify the exported JSON contains `schemaVersion`, `model`, `lastRebuiltAt`, and `sourceKinds`.
+3. Choose `Import Local Context Model...` and import the JSON file.
+4. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
+5. Choose `Delete Local Context Model...`.
+6. Verify later Quick Paste runs no longer use deleted local model entries unless they come from seed terms or a rebuilt local context model.
 
 ## Repository Vocabulary
 
@@ -89,5 +85,5 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 1. Verify no raw audio file remains in the selected repository after recording.
 2. Verify raw transcripts are not written to Application Support by default.
-3. Verify approved dictionary entries and settings are local files only.
+3. Verify settings, voice input history, and local context model data are local files only.
 4. Verify `debug.log` contains operational diagnostics only and does not become the local learning data source.

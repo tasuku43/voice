@@ -19,7 +19,7 @@ Cover orchestration:
 - normalize raw transcript,
 - build context from local learning sources,
 - generate STT recognition hints from learned context,
-- persist approved entries through repository adapters.
+- persist local context model data through repository adapters.
 
 ### Infra tests
 
@@ -42,8 +42,8 @@ Cover the real executable path where practical:
 - `make check` runs the app executable with `--ui-layout-smoke`, renders representative optional Preview, learning settings, and recording HUD layouts to `.build/ui-layout-smoke/`, and fails on ambiguous or empty view frames.
 - `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms and history-derived learning eval coverage.
 - `make check` validates architecture boundaries: Domain and App stay free of UI/macOS framework dependencies while framework-specific adapters remain in Infra.
-- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, local learning source controls, local dictionary data controls, and absence of obvious network calls.
-- `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local learning data controls.
+- `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, local learning source controls, local context model data controls, and absence of obvious network calls.
+- `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local context model data controls.
 - `make check` validates MVP coverage snippets across source, tests, docs, and manual E2E artifacts so the main success criteria remain represented.
 - `make check` validates that the manual macOS MVP checklist covers real permission prompts, speech transcription, Accessibility paste/fallback, recording settings, focused-cursor insertion through the current Quick Paste path, local context model learning, repository vocabulary, and privacy expectations.
 

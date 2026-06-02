@@ -88,42 +88,6 @@ def main() -> None:
         ):
             fail("demo history learning command missing ProjectSpecificName candidate")
 
-        approved_dictionary = Path(temporary_home) / "approved-dictionary.json"
-        approved_dictionary.write_text(json.dumps([
-            {
-                "id": "00000000-0000-0000-0000-000000000001",
-                "spokenForms": ["project specific name"],
-                "canonical": "ProjectSpecificName",
-                "kind": "projectTerm",
-                "scope": "repository",
-                "confidence": 0.9,
-                "autoApply": True,
-                "createdAt": "1970-01-01T00:00:00Z",
-                "updatedAt": "1970-01-01T00:00:00Z",
-            }
-        ]), encoding="utf-8")
-        skipped_history_result = subprocess.run(
-            [
-                str(EXECUTABLE),
-                "--mode", "learn-history",
-                "--home", temporary_home,
-                "--scope", "repository",
-                "--approved-dictionary", str(approved_dictionary),
-            ],
-            cwd=ROOT,
-            text=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=10,
-            check=False,
-        )
-        if skipped_history_result.returncode != 0:
-            fail("demo history learning skip command failed:\n" + skipped_history_result.stderr)
-        skipped_payload = json.loads(skipped_history_result.stdout)
-        skipped_learning = skipped_payload.get("historyLearning") or {}
-        if skipped_learning.get("skippedExistingCandidateCount") != 1:
-            fail("demo history learning command did not skip approved-dictionary candidate")
-
         normalized_history_result = subprocess.run(
             [
                 str(EXECUTABLE),

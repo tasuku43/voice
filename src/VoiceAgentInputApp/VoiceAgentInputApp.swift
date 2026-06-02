@@ -97,12 +97,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
         menu.addItem(NSMenuItem(title: "Local Context Model Status...", action: #selector(showLocalContextModelStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Export Local Dictionary...", action: #selector(exportLocalDictionary), keyEquivalent: "e"))
-        menu.addItem(NSMenuItem(title: "Import Local Dictionary...", action: #selector(importLocalDictionary), keyEquivalent: "i"))
         menu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Import Local Context Model...", action: #selector(importLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
-        menu.addItem(NSMenuItem(title: "Delete Local Dictionary...", action: #selector(deleteLocalDictionary), keyEquivalent: "d"))
         menu.addItem(NSMenuItem(title: "Delete Local Context Model...", action: #selector(deleteLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
@@ -591,7 +588,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func loadDictionaryEntries() throws -> [DictionaryEntry] {
         try DictionaryEntryLoadingUseCase(
-            repository: try approvedDictionaryRepository(),
             localContextModelRepository: try localContextModelRepository()
         ).loadEntries()
     }
@@ -612,7 +608,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func settingsRepository() throws -> JSONAppSettingsRepository {
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        let store = LocalAppDataStore(directoryURL: try LocalAppDataStore.defaultDirectoryURL())
         return try store.settingsRepository()
     }
 
@@ -621,17 +617,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func voiceInputHistoryUseCase() throws -> VoiceInputHistoryUseCase {
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        let store = LocalAppDataStore(directoryURL: try LocalAppDataStore.defaultDirectoryURL())
         return try VoiceInputHistoryUseCase(repository: store.voiceInputHistoryRepository())
     }
 
-    private func approvedDictionaryRepository() throws -> JSONDictionaryRepository {
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
-        return try store.repository()
-    }
-
     private func localContextModelRepository() throws -> JSONLocalContextModelRepository {
-        let store = LocalLearningDictionaryStore(directoryURL: try LocalLearningDictionaryStore.defaultDirectoryURL())
+        let store = LocalAppDataStore(directoryURL: try LocalAppDataStore.defaultDirectoryURL())
         return try store.localContextModelRepository()
     }
 
@@ -951,52 +942,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         NSWorkspace.shared.open(url)
     }
 
-    @objc private func exportLocalDictionary() {
-        do {
-            let entries = try LocalLearningDataUseCase(
-                repository: approvedDictionaryRepository()
-            ).exportApprovedEntries()
-
-            let panel = NSSavePanel()
-            panel.allowedContentTypes = [.json]
-            panel.nameFieldStringValue = "voice-agent-input-dictionary.json"
-            panel.message = "Export approved local dictionary entries."
-
-            guard panel.runModal() == .OK, let url = panel.url else {
-                return
-            }
-
-            try LocalLearningDataDocumentCodec()
-                .encode(entries)
-                .write(to: url, options: [.atomic])
-        } catch {
-            presentError(error)
-        }
-    }
-
-    @objc private func importLocalDictionary() {
-        let panel = NSOpenPanel()
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-        panel.allowsMultipleSelection = false
-        panel.allowedContentTypes = [.json]
-        panel.message = "Import approved local dictionary entries from JSON."
-
-        guard panel.runModal() == .OK, let url = panel.url else {
-            return
-        }
-
-        do {
-            let entries = try LocalLearningDataDocumentCodec()
-                .decode(try Data(contentsOf: url))
-            try LocalLearningDataUseCase(
-                repository: approvedDictionaryRepository()
-            ).importApprovedEntries(entries, merge: true)
-        } catch {
-            presentError(error)
-        }
-    }
-
     @objc private func exportLocalContextModel() {
         do {
             let model = try LocalContextModelDataUseCase(
@@ -1061,7 +1006,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     @objc private func openLocalDataFolder() {
         do {
-            let url = try LocalLearningDictionaryStore.defaultDirectoryURL()
+            let url = try LocalAppDataStore.defaultDirectoryURL()
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
             NSWorkspace.shared.open(url)
         } catch {
@@ -1161,7 +1106,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     ) throws -> (result: AgentHistoryLearningModeResult, model: LocalContextModel) {
         let historyProvider = LocalAgentHistoryTextProvider()
         let existingEntries = try loadDictionaryEntries()
-        let approvedEntries = try approvedDictionaryRepository().loadEntries()
         let learningScope = try loadSettings().preferredLearningScope
         let learningSources = try configuredLearningSources(
             selection: selection,
@@ -1176,8 +1120,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         debugLogger.log("dictionary training scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
         let localContextModel = try LocalContextModelDataUseCase(
-            repository: localContextModelRepository(),
-            buildUseCase: LocalContextModelBuildUseCase(approvedEntries: approvedEntries)
+            repository: localContextModelRepository()
         ).rebuildModel(learningResult: result)
         debugLogger.log("local context model rebuilt with \(localContextModel.entries.count) entries and \(localContextModel.generatedCandidateCount) generated candidates")
 
@@ -1252,27 +1195,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             ))
         }
         return sources
-    }
-
-    @objc private func deleteLocalDictionary() {
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        alert.messageText = "Delete local dictionary?"
-        alert.informativeText = "This removes approved local learning entries stored on this Mac. Repository context and bundled seed terms are not deleted."
-        alert.addButton(withTitle: "Delete")
-        alert.addButton(withTitle: "Cancel")
-
-        guard alert.runModal() == .alertFirstButtonReturn else {
-            return
-        }
-
-        do {
-            try LocalLearningDataUseCase(
-                repository: approvedDictionaryRepository()
-            ).deleteAllLocalLearningData()
-        } catch {
-            presentError(error)
-        }
     }
 
     @objc private func deleteLocalContextModel() {

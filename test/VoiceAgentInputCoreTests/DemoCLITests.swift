@@ -59,40 +59,6 @@ final class DemoCLITests: XCTestCase {
         XCTAssertEqual(candidate["suggestedScope"] as? String, "repository")
     }
 
-    func testDemoHistoryLearningModeCanSkipApprovedDictionaryEntries() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let home = directory.appendingPathComponent("home")
-        let codexDirectory = home.appendingPathComponent(".codex")
-        try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
-        try """
-        {"role":"user","content":"ProjectSpecificName appears in this repository prompt."}
-        {"role":"user","content":"Please preserve ProjectSpecificName when editing docs."}
-        """.write(to: codexDirectory.appendingPathComponent("history.jsonl"), atomically: true, encoding: .utf8)
-
-        let dictionaryURL = directory.appendingPathComponent("approved-dictionary.json")
-        try JSONDictionaryRepository(fileURL: dictionaryURL).saveEntries([
-            DictionaryEntry(
-                spokenForms: ["project specific name"],
-                canonical: "ProjectSpecificName",
-                kind: .projectTerm,
-                scope: .repository,
-                confidence: 0.9,
-                autoApply: true
-            )
-        ])
-
-        let output = try runDemo(arguments: [
-            "--mode", "learn-history",
-            "--home", home.path,
-            "--scope", "repository",
-            "--approved-dictionary", dictionaryURL.path
-        ])
-
-        let historyLearning = try XCTUnwrap(output["historyLearning"] as? [String: Any])
-        XCTAssertEqual(historyLearning["skippedExistingCandidateCount"] as? Int, 1)
-        XCTAssertEqual((historyLearning["candidates"] as? [[String: Any]])?.isEmpty, true)
-    }
-
     func testDemoHistoryLearningNormalizeModeShowsApprovedCandidatesAffectLaterRules() throws {
         let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let codexDirectory = home.appendingPathComponent(".codex")

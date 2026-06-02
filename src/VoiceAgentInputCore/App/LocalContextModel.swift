@@ -50,14 +50,11 @@ public struct LocalContextModel: Codable, Equatable, Sendable {
 
 public struct LocalContextModelBuildUseCase: Sendable {
     public var seedEntries: [DictionaryEntry]
-    public var approvedEntries: [DictionaryEntry]
 
     public init(
-        seedEntries: [DictionaryEntry] = SeedDictionaries.codingAgentEntries,
-        approvedEntries: [DictionaryEntry] = []
+        seedEntries: [DictionaryEntry] = SeedDictionaries.codingAgentEntries
     ) {
         self.seedEntries = seedEntries
-        self.approvedEntries = approvedEntries
     }
 
     public func build(
@@ -69,7 +66,7 @@ public struct LocalContextModelBuildUseCase: Sendable {
             ? (learningResult?.candidates.map(Self.entry(from:)) ?? [])
             : []
         return LocalContextModel(
-            entries: seedEntries + approvedEntries + generatedEntries,
+            entries: seedEntries + generatedEntries,
             sourceTextCounts: learningResult?.sourceTextCounts ?? [:],
             generatedCandidateCount: learningResult?.candidates.count ?? 0,
             lastRebuiltAt: rebuiltAt,

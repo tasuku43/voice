@@ -28,7 +28,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Preview window rendering moved into `PreviewWindowController.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
-- Local dictionary import/export JSON encoding moved into `LocalLearningDataDocumentCodec`.
+- Local app data storage is represented by `LocalAppDataStore`, which creates settings, history, and local context model repositories.
 - Repository path and recording setting updates moved into `AppSettingsUseCase`.
 
 ## App Responsibilities Still Present
@@ -59,7 +59,7 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 - `VoiceInputPipeline`
 - `PromptProcessingPipeline`
 - `DictionaryContextLoadingUseCase`
-- `LocalLearningDataDocumentCodec`
+- `LocalAppDataStore`
 - `AppSettingsUseCase`
 
 ## Added Documentation

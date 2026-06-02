@@ -11,7 +11,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 - Component contract validation through required-file and MVP coverage checks ensures `PromptRefiner`, `VoiceInputPipeline`, `docs/contracts/`, and `docs/codex-sessions/` stay present.
 - Privacy contract validation includes direct networking/cloud guards and an allowlist for Swift file writes so raw transcript or raw audio persistence cannot be added silently.
 - `DemoCLITests` exercise process-level preview, confirm, and history-learning flows.
-- `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local dictionary import/export/delete, repository vocabulary, STT recognition hints, and temporary audio cleanup.
+- `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local context model persistence, repository vocabulary, STT recognition hints, and temporary audio cleanup.
 - `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, explicit-confirmation enforcement, and automatic-submit rejection.
 - `EvalHarnessTests` covers fixture-driven normalization cases and history-derived context learning cases.
 
@@ -29,8 +29,8 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Quick Paste daily input compatibility | direct recording-flow insertion of `result.preview.correctedPrompt`, app contract validation | Implemented, needs manual target-app confirmation |
 | Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
 | Extract dictionary candidates for model education | source learning tests and candidate extractor tests | Verified |
-| Persist approved local dictionaries | JSON repository tests and local learning data tests | Verified |
-| Export/import/open/delete local learning data | local learning data tests, local context model tests, `Open Local Data Folder...`, app contract validation | Implemented for approved dictionary and local context model data, needs manual menu confirmation |
+| Persist local context model data | local context model repository tests and rebuild tests | Verified |
+| Export/import/open/delete local model data | local context model tests, `Open Local Data Folder...`, app contract validation | Implemented for local context model data, needs manual menu confirmation |
 | Repository vocabulary as a learning source | git context tests, repository vocabulary tests, app contract validation | Implemented, needs manual folder selection confirmation |
 | Local context model boundary | `LocalContextModel`, `LocalContextModelBuildUseCase`, `LocalContextModelDataUseCase.rebuildModel`, `LocalContextModelDocumentCodec`, `JSONLocalContextModelRepository`, `DictionaryEntryLoadingUseCase`, `LocalContextModelStatusUseCase`, app model status/rebuild/export/import/delete menu actions, `docs/contracts/local-context-model.md`, `docs/codex-sessions/local-context-model-session.md`, `SpeechRecognitionHintsUseCase`, learning source tests | Implemented with a versioned local JSON document including source kinds and last rebuild time; the app can inspect status with stale-source warnings, rebuild the saved model without candidate approval, hotkey runtime loads saved post-STT entries, and the app can export/import/delete the model |
 | Local Foundation Model only if LLM is used | product docs, contracts, privacy validator network guards | Documented; adapter remains future work |

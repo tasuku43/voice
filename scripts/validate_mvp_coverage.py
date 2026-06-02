@@ -120,14 +120,13 @@ REQUIRED_COVERAGE = {
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
             "testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings",
             "testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms",
-            "testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints",
             "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
             "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
             "testLocalContextModelDataUseCaseRebuildsAndPersistsModel",
             "testLocalContextModelDocumentCodecRoundTrip",
             "testJSONLocalContextModelRepositoryRoundTripAndDelete",
             "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",
-            "testDictionaryEntryLoadingDeduplicatesSavedLocalContextModelEntries",
+            "testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries",
             "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
             "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
             "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",
@@ -259,7 +258,7 @@ REQUIRED_COVERAGE = {
             "testAgentHistoryLearningModeSkipsExistingDictionaryEntries",
             "testAgentHistoryLearningModeCanGenerateRepositoryScopedCandidates",
             "testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources",
-            "testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly",
+            "testRuntimeDictionaryLoadingDefaultsToSeedEntriesOnly",
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         ],
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
@@ -270,21 +269,11 @@ REQUIRED_COVERAGE = {
             "generatedCandidateCount",
         ],
     },
-    "local learning data controls": {
+    "local data controls": {
         "src/VoiceAgentInputCore/App/AppSettingsUseCase.swift": [
             "AppSettingsUseCase",
             "saveRepositoryPath",
             "saveRecordingSettings",
-        ],
-        "src/VoiceAgentInputCore/App/LocalLearningDataUseCase.swift": [
-            "exportApprovedEntries",
-            "importApprovedEntries",
-            "deleteAllLocalLearningData",
-        ],
-        "src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift": [
-            "LocalLearningDataDocumentCodec",
-            "dateEncodingStrategy = .iso8601",
-            "dateDecodingStrategy = .iso8601",
         ],
         "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
             "exportModel",
@@ -299,12 +288,9 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "Local Context Model Status...",
             "Status warnings",
-            "Export Local Dictionary...",
-            "Import Local Dictionary...",
             "Export Local Context Model...",
             "Import Local Context Model...",
             "Open Local Data Folder...",
-            "Delete Local Dictionary...",
             "Delete Local Context Model...",
         ],
     },
@@ -349,7 +335,6 @@ REQUIRED_COVERAGE = {
             "learn-history",
             "learn-history-normalize",
             "ProjectSpecificName",
-            "approved-dictionary",
         ],
         "scripts/validate_eval_coverage.py": [
             "MIN_CASES",

@@ -46,7 +46,6 @@ REQUIRED_EVIDENCE_LABELS = [
     "Rebuild Local Context Model works without candidate approval and shows rebuild metadata",
     "Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding",
     "Rebuilt Local Context Model affects later Quick Paste normalization without candidate approval",
-    "Export Local Dictionary works",
     "Export Local Context Model works",
     "Exported Local Context Model contains schemaVersion, model, lastRebuiltAt, and sourceKinds",
     "Import Local Context Model works",

@@ -63,8 +63,6 @@ REQUIRED_SOURCE_SNIPPETS = [
     "correctedTextView.string",
     "PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())",
     "PasteboardTextInsertionController()",
-    "Export Local Dictionary...",
-    "Import Local Dictionary...",
     "Export Local Context Model...",
     "Import Local Context Model...",
     "LocalContextModelDocumentCodec",
@@ -76,9 +74,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "local context model rebuilt",
     "preferredLearningScope",
     "Open Local Data Folder...",
-    "Delete Local Dictionary...",
     "Delete Local Context Model...",
-    "LocalLearningDataUseCase",
 ]
 
 REQUIRED_PLIST_KEYS = [

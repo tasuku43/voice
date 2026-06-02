@@ -82,32 +82,24 @@ Current macOS adapter:
 
 - `AVFoundationMicrophonePermissionProvider`
 
-## DictionaryRepository
+## LocalAppDataStore
 
 Current adapter:
 
-- `JSONDictionaryRepository`
-- `LocalLearningDictionaryStore` creates the Application Support-backed JSON repository used by the macOS shell.
+- `LocalAppDataStore` creates the Application Support-backed repositories used by the macOS shell.
 
 Current use cases:
 
-- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, approved local entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime, preview, and confirmation flows.
+- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime, preview, and confirmation flows.
 - `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
-- `LocalLearningDataUseCase` exports, imports, and deletes approved local dictionary entries; the macOS shell exposes these as menu actions.
-- `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete separately from approved dictionary controls.
-- `LocalLearningDataDocumentCodec` owns the JSON document shape for local dictionary import/export.
+- `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete controls.
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
-- Dangerous command candidates may be stored after explicit approval, but they are saved with `autoApply = false`.
 
 Product direction:
 
-- The dictionary repository is one storage mechanism for the broader local context model.
+- The saved local context model is the primary storage mechanism for learned context.
 - Learned context should be usable before STT as recognition hints and after STT as deterministic transforms.
 - Model rebuild flows are explicit curation surfaces, not part of the core hotkey input path.
-
-Future adapter:
-
-- SQLite-backed repository if candidate history becomes large.
 
 ## TextInsertionController
 

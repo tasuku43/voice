@@ -603,15 +603,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     }
 
     func testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries() {
-        let approvedEntry = DictionaryEntry(
-            spokenForms: ["ぷろじぇくとぼいす"],
-            canonical: "ProjectVoice",
-            recognitionHints: ["ProjectVoice", "プロジェクトボイス"],
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
         let learningResult = AgentHistoryLearningModeResult(
             scannedTextCount: 2,
             sourceTextCounts: ["agentHistory": 2],
@@ -629,18 +620,17 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let model = LocalContextModelBuildUseCase(
-            seedEntries: [],
-            approvedEntries: [approvedEntry]
+            seedEntries: []
         ).build(learningResult: learningResult, rebuiltAt: Date(timeIntervalSince1970: 1_800))
 
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 2)
         XCTAssertEqual(model.sourceKinds, ["agentHistory"])
         XCTAssertEqual(model.lastRebuiltAt, Date(timeIntervalSince1970: 1_800))
         XCTAssertEqual(model.generatedCandidateCount, 1)
-        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["ProjectVoice", "SwiftUI"])
+        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["SwiftUI"])
         XCTAssertEqual(
             model.recognitionHints().contextualStrings,
-            ["ProjectVoice", "プロジェクトボイス", "SwiftUI", "すいふとゆーあい"]
+            ["SwiftUI", "すいふとゆーあい"]
         )
     }
 
@@ -661,7 +651,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             ]
         )
 
-        let model = LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [])
+        let model = LocalContextModelBuildUseCase(seedEntries: [])
             .build(learningResult: learningResult, includeGeneratedCandidates: false)
 
         XCTAssertTrue(model.postSTTEntries.isEmpty)
@@ -671,15 +661,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     }
 
     func testLocalContextModelDataUseCaseRebuildsAndPersistsModel() throws {
-        let approvedEntry = DictionaryEntry(
-            spokenForms: ["ぼいす"],
-            canonical: "VoiceAgentInput",
-            recognitionHints: ["VoiceAgentInput"],
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
         let learningResult = AgentHistoryLearningModeResult(
             scannedTextCount: 1,
             sourceTextCounts: ["repositoryVocabulary": 1],
@@ -699,10 +680,10 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let model = try LocalContextModelDataUseCase(
             repository: repository,
-            buildUseCase: LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [approvedEntry])
+            buildUseCase: LocalContextModelBuildUseCase(seedEntries: [])
         ).rebuildModel(learningResult: learningResult, rebuiltAt: Date(timeIntervalSince1970: 2_400))
 
-        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["VoiceAgentInput", "main"])
+        XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["main"])
         XCTAssertEqual(model.sourceTextCounts["repositoryVocabulary"], 1)
         XCTAssertEqual(model.sourceKinds, ["repositoryVocabulary"])
         XCTAssertEqual(model.lastRebuiltAt, Date(timeIntervalSince1970: 2_400))
@@ -1063,7 +1044,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             return XCTFail("Expected ProjectSpecificName learning candidate")
         }
 
-        let model = LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [])
+        let model = LocalContextModelBuildUseCase(seedEntries: [])
             .build(learningResult: learningResult)
         let preview = PromptPreviewUseCase(entries: model.postSTTEntries)
             .preview(rawTranscript: "project specific nameの設定を直して")
@@ -1108,136 +1089,20 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(insertionController.insertedRequests.isEmpty)
     }
 
-    func testLocalLearningDataExportImportAndDeleteAll() throws {
-        let existingEntry = DictionaryEntry(
-            spokenForms: ["くらのコード"],
-            canonical: "Claude Code",
-            kind: .toolName,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
-        let importedEntry = DictionaryEntry(
-            spokenForms: ["りぽ"],
-            canonical: "repo",
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.8,
-            autoApply: true
-        )
-        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
-        let useCase = LocalLearningDataUseCase(repository: repository)
-
-        XCTAssertEqual(try useCase.exportApprovedEntries(), [existingEntry])
-
-        try useCase.importApprovedEntries([existingEntry, importedEntry])
-        XCTAssertEqual(try repository.loadEntries(), [existingEntry, importedEntry])
-
-        try useCase.deleteAllLocalLearningData()
-        XCTAssertEqual(try repository.loadEntries(), [])
-    }
-
-    func testLocalLearningDataImportCanReplaceExistingEntries() throws {
-        let existingEntry = DictionaryEntry(
-            spokenForms: ["くらのコード"],
-            canonical: "Claude Code",
-            kind: .toolName,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
-        let replacementEntry = DictionaryEntry(
-            spokenForms: ["こーでっくす"],
-            canonical: "Codex",
-            kind: .toolName,
-            scope: .user,
-            confidence: 0.85,
-            autoApply: true
-        )
-        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
-        let useCase = LocalLearningDataUseCase(repository: repository)
-
-        try useCase.importApprovedEntries([replacementEntry], merge: false)
-
-        XCTAssertEqual(try repository.loadEntries(), [replacementEntry])
-    }
-
-    func testLocalLearningDataDocumentCodecRoundTrip() throws {
-        let entries = [
-            DictionaryEntry(
-                spokenForms: ["くらのコード"],
-                canonical: "Claude Code",
-                kind: .toolName,
-                scope: .user,
-                confidence: 0.9,
-                autoApply: true,
-                createdAt: Date(timeIntervalSince1970: 1),
-                updatedAt: Date(timeIntervalSince1970: 2)
-            )
-        ]
-        let codec = LocalLearningDataDocumentCodec()
-
-        let data = try codec.encode(entries)
-        let text = String(data: data, encoding: .utf8) ?? ""
-        let decoded = try codec.decode(data)
-
-        XCTAssertTrue(text.contains("Claude Code"))
-        XCTAssertTrue(text.contains("recognitionHints"))
-        XCTAssertTrue(text.contains("1970-01-01T00:00:01Z"))
-        XCTAssertEqual(decoded, entries)
-    }
-
-    func testLocalLearningDataDocumentCodecDecodesLegacyEntriesWithoutRecognitionHints() throws {
-        let data = """
-        [
-          {
-            "id": "00000000-0000-0000-0000-000000000001",
-            "spokenForms": ["くらのコード"],
-            "canonical": "Claude Code",
-            "kind": "toolName",
-            "scope": "user",
-            "confidence": 0.9,
-            "autoApply": true,
-            "createdAt": "1970-01-01T00:00:01Z",
-            "updatedAt": "1970-01-01T00:00:02Z"
-          }
-        ]
-        """.data(using: .utf8)!
-
-        let decoded = try LocalLearningDataDocumentCodec().decode(data)
-
-        XCTAssertEqual(decoded.count, 1)
-        XCTAssertEqual(decoded[0].spokenForms, ["くらのコード"])
-        XCTAssertEqual(decoded[0].canonical, "Claude Code")
-        XCTAssertTrue(decoded[0].recognitionHints.contains("Claude Code"))
-        XCTAssertFalse(decoded[0].recognitionHints.contains("くらのコード"))
-    }
-
-    func testJSONDictionaryRepositoryRoundTrip() throws {
+    func testLocalAppDataStoreCreatesRepositoryDirectoryForSettings() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let fileURL = directory.appendingPathComponent("dictionary.json")
-        let repository = JSONDictionaryRepository(fileURL: fileURL)
-        let entries = [DictionaryEntry(spokenForms: ["テスト"], canonical: "test", kind: .command, scope: .user, confidence: 0.9, autoApply: true)]
-        try repository.saveEntries(entries)
-        let loaded = try repository.loadEntries()
-        XCTAssertEqual(loaded, entries)
-    }
+        let store = LocalAppDataStore(directoryURL: directory)
+        let repository = try store.settingsRepository()
 
-    func testLocalLearningDictionaryStoreCreatesRepositoryDirectory() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let store = LocalLearningDictionaryStore(directoryURL: directory)
-        let repository = try store.repository()
-        let entries = [DictionaryEntry(spokenForms: ["くらのコード"], canonical: "Claude Code", kind: .toolName, scope: .user, confidence: 0.9, autoApply: true)]
-
-        try repository.saveEntries(entries)
+        try repository.saveSettings(AppSettings())
 
         XCTAssertTrue(FileManager.default.fileExists(atPath: directory.path))
-        XCTAssertEqual(try repository.loadEntries(), entries)
+        XCTAssertEqual(try repository.loadSettings(), AppSettings())
     }
 
     func testJSONAppSettingsRepositoryRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let store = LocalLearningDictionaryStore(directoryURL: directory)
+        let store = LocalAppDataStore(directoryURL: directory)
         let repository = try store.settingsRepository()
 
         XCTAssertEqual(try repository.loadSettings(), AppSettings())
@@ -1370,18 +1235,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(presentation.accessibilityLabel.contains("Press shortcut again to paste"))
     }
 
-    func testDictionaryEntryLoadingCombinesSeedAndApprovedLocalEntries() throws {
-        let localEntry = DictionaryEntry(
-            spokenForms: ["ぷろじぇくとぼいす"],
-            canonical: "voice-agent-input",
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
-        let repository = InMemoryDictionaryRepository(entries: [localEntry])
+    func testDictionaryEntryLoadingCombinesSeedAndContextualEntries() throws {
         let useCase = DictionaryEntryLoadingUseCase(
-            repository: repository,
             seedEntries: [
                 DictionaryEntry(spokenForms: ["こーでっくす"], canonical: "Codex", kind: .toolName, scope: .global, confidence: 0.95, autoApply: true)
             ],
@@ -1391,11 +1246,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         )
 
         let entries = try useCase.loadEntries()
-        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "こーでっくすでぷろじぇくとぼいすを確認")
+        let preview = PromptPreviewUseCase(entries: entries).preview(rawTranscript: "こーでっくすでめいんを確認")
 
-        XCTAssertEqual(entries.count, 3)
+        XCTAssertEqual(entries.count, 2)
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
-        XCTAssertTrue(preview.correctedPrompt.contains("voice-agent-input"))
+        XCTAssertTrue(preview.correctedPrompt.contains("main"))
     }
 
     func testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries() throws {
@@ -1409,7 +1264,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             autoApply: true
         )
         let useCase = DictionaryEntryLoadingUseCase(
-            repository: InMemoryDictionaryRepository(),
             localContextModelRepository: InMemoryLocalContextModelRepository(
                 model: LocalContextModel(entries: [modelEntry])
             ),
@@ -1423,8 +1277,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.correctedPrompt.contains("LocalContextModel"))
     }
 
-    func testDictionaryEntryLoadingDeduplicatesSavedLocalContextModelEntries() throws {
-        let approvedEntry = DictionaryEntry(
+    func testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries() throws {
+        let seedEntry = DictionaryEntry(
             spokenForms: ["ぼいすえーじぇんと"],
             canonical: "VoiceAgentInput",
             recognitionHints: ["VoiceAgentInput"],
@@ -1443,34 +1297,22 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             autoApply: true
         )
         let useCase = DictionaryEntryLoadingUseCase(
-            repository: InMemoryDictionaryRepository(entries: [approvedEntry]),
             localContextModelRepository: InMemoryLocalContextModelRepository(
                 model: LocalContextModel(entries: [duplicateModelEntry])
             ),
-            seedEntries: []
+            seedEntries: [seedEntry]
         )
 
         let entries = try useCase.loadEntries()
 
-        XCTAssertEqual(entries, [approvedEntry])
+        XCTAssertEqual(entries, [seedEntry])
     }
 
-    func testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly() throws {
-        let localEntry = DictionaryEntry(
-            spokenForms: ["ぼいすえーじぇんと"],
-            canonical: "VoiceAgentInput",
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
-        let useCase = DictionaryEntryLoadingUseCase(
-            repository: InMemoryDictionaryRepository(entries: [localEntry])
-        )
+    func testRuntimeDictionaryLoadingDefaultsToSeedEntriesOnly() throws {
+        let useCase = DictionaryEntryLoadingUseCase()
 
         let entries = try useCase.loadEntries()
 
-        XCTAssertTrue(entries.contains { $0.canonical == "VoiceAgentInput" && $0.scope == .user })
         XCTAssertTrue(entries.contains { $0.canonical == "Codex" && $0.scope == .global })
         XCTAssertFalse(entries.contains { $0.scope == .repository })
     }
@@ -1503,23 +1345,13 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     }
 
     func testDictionaryContextLoadingUseCaseKeepsRepositoryVocabularyOutOfRuntimeEntries() throws {
-        let localEntry = DictionaryEntry(
-            spokenForms: ["ろーかる"],
-            canonical: "local-term",
-            kind: .projectTerm,
-            scope: .user,
-            confidence: 0.9,
-            autoApply: true
-        )
         let useCase = DictionaryContextLoadingUseCase(
-            repository: InMemoryDictionaryRepository(entries: [localEntry]),
             repositoryContextProvider: StubRepositoryContextProvider(context: RepositoryContext(rootPath: "/tmp/voice", branchName: "feature/pipeline")),
             repositoryVocabularyFilePathProvider: StubRepositoryVocabularyFilePathProvider(filePaths: ["Package.swift"])
         )
 
         let entries = try useCase.loadEntries(startingAt: URL(fileURLWithPath: "/tmp/voice"))
 
-        XCTAssertTrue(entries.contains { $0.canonical == "local-term" && $0.scope == .user })
         XCTAssertTrue(entries.contains { $0.canonical == "Codex" && $0.scope == .global })
         XCTAssertFalse(entries.contains { $0.scope == .repository })
     }
@@ -1595,7 +1427,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
     func testJSONVoiceInputHistoryRepositoryRoundTrip() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let store = LocalLearningDictionaryStore(directoryURL: directory)
+        let store = LocalAppDataStore(directoryURL: directory)
         let repository = try store.voiceInputHistoryRepository()
         let entries = [
             VoiceInputHistoryEntry(
@@ -1640,22 +1472,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(triggerCount, 1)
         XCTAssertEqual(releaseCount, 1)
         XCTAssertNil(monitor.shortcut)
-    }
-}
-
-private final class InMemoryDictionaryRepository: DictionaryRepository {
-    private var entries: [DictionaryEntry]
-
-    init(entries: [DictionaryEntry] = []) {
-        self.entries = entries
-    }
-
-    func loadEntries() throws -> [DictionaryEntry] {
-        entries
-    }
-
-    func saveEntries(_ entries: [DictionaryEntry]) throws {
-        self.entries = entries
     }
 }
 

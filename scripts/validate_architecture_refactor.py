@@ -67,10 +67,10 @@ REQUIRED_SNIPPETS = {
         "public struct DictionaryContextLoadingUseCase",
         "RepositoryVocabularyFilePathProvider",
     ],
-    "src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift": [
-        "public struct LocalLearningDataDocumentCodec",
-        "dateEncodingStrategy = .iso8601",
-        "dateDecodingStrategy = .iso8601",
+    "src/VoiceAgentInputCore/Infra/LocalAppDataStore.swift": [
+        "public struct LocalAppDataStore",
+        "settingsRepository",
+        "localContextModelRepository",
     ],
     "src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift": [
         "public protocol VoiceMisrecognitionDetector",

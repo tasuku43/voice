@@ -10,7 +10,7 @@ swift run voice-agent-input-app
 
 The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button is explicit confirmation to paste the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after explicit confirmation and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted. If direct paste fails, the app falls back to the editable preview window before insertion.
 
-The shell also includes Control-Shift-V voice input history recall, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for approved local dictionary entries and local context model data.
+The shell also includes Control-Shift-V voice input history recall, local hotkey settings, local recording settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
 
 Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the implementation of that daily path. Model education happens through explicit local context model rebuilds, not a second voice input mode.
 
@@ -40,15 +40,15 @@ Confirm mode simulates the current optional preview confirmation step without su
 swift run voice-agent-input-demo --mode confirm --edited "Claude Code で TypeScript error を直して" "くらのコードでタイプスクリプトエラーを直して"
 ```
 
-Confirm output includes `confirmed.promptToInsert`, extracted learning `candidates`, and `confirmed.shouldSubmitAutomatically = false`.
+Confirm output includes `confirmed.promptToInsert` and `confirmed.shouldSubmitAutomatically = false`.
 
 History learning mode previews local dictionary candidates without approving or saving them:
 
 ```sh
-swift run voice-agent-input-demo --mode learn-history --scope repository --approved-dictionary /path/to/approved-dictionary.json
+swift run voice-agent-input-demo --mode learn-history --scope repository
 ```
 
-History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the requested scope for generated candidates, skips entries already represented by the optional approved dictionary JSON, and does not persist approved dictionary entries.
+History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the requested scope for generated candidates, and does not persist dictionary entries.
 
 History learning normalize mode simulates approving the generated history candidates and immediately normalizes a later utterance without writing local dictionary files:
 
@@ -93,7 +93,7 @@ LearningSource.learningTexts() throws -> [LearningText]
 AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLearningModeResult
 ```
 
-The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and candidate metadata. `LocalContextModelDataUseCase.rebuildModel(...)` persists a rebuilt model after explicit learning-source runs. `DictionaryEntryLoadingUseCase` loads seed entries, approved local entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
+The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and candidate metadata. `LocalContextModelDataUseCase.rebuildModel(...)` persists a rebuilt model after explicit learning-source runs. `DictionaryEntryLoadingUseCase` loads seed entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
 
 Preview confirmation use case:
 
@@ -111,16 +111,6 @@ PromptInsertionUseCase.insert(_ confirmedPrompt: ConfirmedPrompt, explicitConfir
 
 Insertion requires `explicitConfirmation = true`, always passes `submitAutomatically = false` to the insertion adapter, and rejects any `ConfirmedPrompt` that requests automatic submission.
 
-Local learning data use case:
-
-```swift
-LocalLearningDataUseCase.exportApprovedEntries() throws -> [DictionaryEntry]
-LocalLearningDataUseCase.importApprovedEntries(_ entries: [DictionaryEntry], merge: Bool) throws
-LocalLearningDataUseCase.deleteAllLocalLearningData() throws
-```
-
-These operations apply only to approved local dictionary entries. They do not export or persist raw audio or raw transcripts.
-
 Local context model data use case:
 
 ```swift
@@ -130,7 +120,7 @@ LocalContextModelDataUseCase.rebuildModel(...) throws -> LocalContextModel
 LocalContextModelDataUseCase.deleteLocalContextModel() throws
 ```
 
-These operations apply to the saved local context model document used for STT recognition hints and post-STT transforms. The app exposes export/import/delete separately from approved dictionary controls.
+These operations apply to the saved local context model document used for STT recognition hints and post-STT transforms.
 The app also exposes a status action that reads the saved model and shows last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
 
 Voice input history:
@@ -140,7 +130,7 @@ VoiceInputHistoryUseCase.record(prompt: String) throws
 VoiceInputHistoryUseCase.recentEntries() throws -> [VoiceInputHistoryEntry]
 ```
 
-Voice input history stores pasted final prompts locally for recall. It does not store raw audio or raw transcripts, and it is separate from approved dictionary learning data.
+Voice input history stores pasted final prompts locally for recall. It does not store raw audio or raw transcripts, and it is separate from local context model data.
 
 App settings:
 

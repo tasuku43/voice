@@ -46,7 +46,7 @@
 - Optional editable prompt preview.
 - Optional diff extraction.
 - Local dictionary persistence. JSON-backed Application Support store done.
-- Local learning data controls. App-shell menu can export, import, inspect, and delete approved local dictionary entries.
+- Local context model data controls. App-shell menu can export, import, inspect, and delete the saved local context model.
 
 ## Phase 6: repository context
 

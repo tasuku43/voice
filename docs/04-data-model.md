@@ -7,7 +7,6 @@ The local context model is the product-level container for environment-adaptive 
 Initial contents:
 
 - built-in developer vocabulary,
-- approved user dictionary entries,
 - repository vocabulary entries,
 - source-derived terms from local agent or chat history,
 - ASR-friendly recognition hints,

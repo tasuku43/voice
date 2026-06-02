@@ -14,7 +14,6 @@ struct Arguments {
     var rawText = "くらのコードでタイプスクリプトエラーを直して"
     var editedText: String?
     var homeDirectoryPath: String?
-    var approvedDictionaryPath: String?
     var scope: DictionaryScope = .user
 }
 
@@ -43,13 +42,6 @@ func parseArguments(_ rawArguments: [String]) -> Arguments {
         case "--home":
             if index + 1 < rawArguments.count {
                 arguments.homeDirectoryPath = rawArguments[index + 1]
-                index += 2
-            } else {
-                index += 1
-            }
-        case "--approved-dictionary":
-            if index + 1 < rawArguments.count {
-                arguments.approvedDictionaryPath = rawArguments[index + 1]
                 index += 2
             } else {
                 index += 1
@@ -101,9 +93,6 @@ case "learn-history":
     let homeDirectory = arguments.homeDirectoryPath.map {
         URL(fileURLWithPath: $0)
     } ?? FileManager.default.homeDirectoryForCurrentUser
-    let existingEntries = try arguments.approvedDictionaryPath.map {
-        try JSONDictionaryRepository(fileURL: URL(fileURLWithPath: $0)).loadEntries()
-    } ?? []
     let provider = LocalAgentHistoryTextProvider(homeDirectory: homeDirectory)
     output = DemoOutput(
         mode: "learn-history",
@@ -112,19 +101,16 @@ case "learn-history":
         normalization: nil,
         historyLearning: try AgentHistoryLearningModeUseCase(
             historyProvider: provider
-        ).generateCandidates(scope: arguments.scope, existingEntries: existingEntries)
+        ).generateCandidates(scope: arguments.scope)
     )
 case "learn-history-normalize":
     let homeDirectory = arguments.homeDirectoryPath.map {
         URL(fileURLWithPath: $0)
     } ?? FileManager.default.homeDirectoryForCurrentUser
-    let existingEntries = try arguments.approvedDictionaryPath.map {
-        try JSONDictionaryRepository(fileURL: URL(fileURLWithPath: $0)).loadEntries()
-    } ?? []
     let provider = LocalAgentHistoryTextProvider(homeDirectory: homeDirectory)
     let historyLearning = try AgentHistoryLearningModeUseCase(
         historyProvider: provider
-    ).generateCandidates(scope: arguments.scope, existingEntries: existingEntries)
+    ).generateCandidates(scope: arguments.scope)
     let learnedEntries = historyLearning.candidates.map { candidate in
         DictionaryEntry(
             spokenForms: [candidate.rawPhrase],
@@ -140,7 +126,7 @@ case "learn-history-normalize":
         preview: nil,
         confirmed: nil,
         normalization: PromptNormalizationUseCase(
-            entries: SeedDictionaries.codingAgentEntries + existingEntries + learnedEntries
+            entries: SeedDictionaries.codingAgentEntries + learnedEntries
         ).normalize(rawText: arguments.rawText),
         historyLearning: historyLearning
     )
