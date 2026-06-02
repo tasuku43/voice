@@ -21,7 +21,7 @@ Contract:
 - No local context model training from edits.
 
 Tests:
-- `swift test --filter UseCaseAndRepositoryTests/testPreviewRequiresExplicitConfirmationBeforeInsertion`
+- `swift test --filter UseCaseAndRepositoryTests/testPreviewConfirmationReturnsPromptWithoutSubmitting`
 - `make check`
 
 Done:

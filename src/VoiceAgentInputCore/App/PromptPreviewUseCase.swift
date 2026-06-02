@@ -4,18 +4,15 @@ public struct PromptPreview: Codable, Equatable, Sendable {
     public var rawTranscript: String
     public var correctedPrompt: String
     public var corrections: [AppliedCorrection]
-    public var requiresExplicitConfirmation: Bool
 
     public init(
         rawTranscript: String,
         correctedPrompt: String,
-        corrections: [AppliedCorrection],
-        requiresExplicitConfirmation: Bool = true
+        corrections: [AppliedCorrection]
     ) {
         self.rawTranscript = rawTranscript
         self.correctedPrompt = correctedPrompt
         self.corrections = corrections
-        self.requiresExplicitConfirmation = requiresExplicitConfirmation
     }
 }
 

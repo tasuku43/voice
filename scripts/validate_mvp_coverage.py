@@ -134,7 +134,6 @@ REQUIRED_COVERAGE = {
     },
     "fallback preview before insertion": {
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
-            "requiresExplicitConfirmation",
             "rawTranscript",
             "correctedPrompt",
         ],
@@ -331,7 +330,6 @@ REQUIRED_COVERAGE = {
         "scripts/smoke_demo_command.py": [
             "voice-agent-input-demo",
             "demo command smoke ok",
-            "requiresExplicitConfirmation",
             "learn-history",
             "learn-history-normalize",
             "ProjectSpecificName",

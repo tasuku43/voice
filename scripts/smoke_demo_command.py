@@ -44,9 +44,6 @@ def main() -> None:
     for expected in ["Claude Code", "TypeScript", "error"]:
         if expected not in corrected:
             fail(f"demo corrected prompt missing {expected}: {corrected}")
-    if preview.get("requiresExplicitConfirmation") is not True:
-        fail("demo preview does not require explicit confirmation")
-
     with tempfile.TemporaryDirectory() as temporary_home:
         codex_directory = Path(temporary_home) / ".codex"
         codex_directory.mkdir(parents=True)

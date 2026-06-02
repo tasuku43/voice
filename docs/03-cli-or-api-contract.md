@@ -28,8 +28,7 @@ Default output is still a preview JSON object for CI stability and debugging:
   "preview": {
     "rawTranscript": "...",
     "correctedPrompt": "...",
-    "corrections": [...],
-    "requiresExplicitConfirmation": true
+    "corrections": [...]
   }
 }
 ```

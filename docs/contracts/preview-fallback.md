@@ -33,7 +33,7 @@ Preview fallback is an optional safety surface when direct paste cannot be compl
 - Speech and repository vocabulary adapters.
 
 ## Tests
-- `swift test --filter UseCaseAndRepositoryTests/testPreviewRequiresExplicitConfirmationBeforeInsertion`
+- `swift test --filter UseCaseAndRepositoryTests/testPreviewConfirmationReturnsPromptWithoutSubmitting`
 - `make check`
 
 ## Done

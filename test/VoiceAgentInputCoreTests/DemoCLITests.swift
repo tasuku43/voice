@@ -13,7 +13,6 @@ final class DemoCLITests: XCTestCase {
         let preview = try XCTUnwrap(output["preview"] as? [String: Any])
         XCTAssertEqual(preview["rawTranscript"] as? String, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue((preview["correctedPrompt"] as? String)?.contains("Claude Code") == true)
-        XCTAssertEqual(preview["requiresExplicitConfirmation"] as? Bool, true)
     }
 
     func testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving() throws {

@@ -10,14 +10,13 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.correctedText.contains("pnpm"))
     }
 
-    func testPreviewRequiresExplicitConfirmationBeforeInsertion() {
+    func testPreviewConfirmationReturnsPromptWithoutSubmitting() {
         let useCase = PromptPreviewUseCase(entries: SeedDictionaries.codingAgentEntries)
         let preview = useCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
 
         XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
         XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
-        XCTAssertTrue(preview.requiresExplicitConfirmation)
 
         let confirmed = useCase.confirm(preview: preview)
         XCTAssertEqual(confirmed.promptToInsert, preview.correctedPrompt)
@@ -36,7 +35,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(preview.rawTranscript, "こーでっくすでブランチを確認して")
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
         XCTAssertTrue(preview.correctedPrompt.contains("branch"))
-        XCTAssertTrue(preview.requiresExplicitConfirmation)
     }
 
     func testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing() async throws {
@@ -93,7 +91,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
         XCTAssertEqual(result.preview.rawTranscript, result.transcript.text)
         XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
-        XCTAssertTrue(result.preview.requiresExplicitConfirmation)
     }
 
     func testSpeechTranscriptAccumulatorMergesPauseSplitSnapshots() {
