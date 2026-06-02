@@ -1376,6 +1376,28 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(runner.invocations[0].arguments, ["-C", "/repo", "ls-files"])
     }
 
+    func testProcessCommandRunnerRejectsNonGitExecutable() throws {
+        let runner = ProcessCommandRunner()
+
+        XCTAssertThrowsError(try runner.run(executable: "/usr/bin/curl", arguments: ["https://example.com"])) { error in
+            XCTAssertEqual(error as? GitRepositoryContextError, .disallowedCommand("/usr/bin/curl"))
+        }
+    }
+
+    func testProcessCommandRunnerRejectsNetworkCapableGitSubcommands() throws {
+        let runner = ProcessCommandRunner()
+
+        XCTAssertThrowsError(try runner.run(executable: "/usr/bin/git", arguments: ["-C", "/repo", "fetch"])) { error in
+            XCTAssertEqual(error as? GitRepositoryContextError, .disallowedCommand("-C /repo fetch"))
+        }
+        XCTAssertThrowsError(try runner.run(executable: "/usr/bin/git", arguments: ["-C", "/repo", "pull"])) { error in
+            XCTAssertEqual(error as? GitRepositoryContextError, .disallowedCommand("-C /repo pull"))
+        }
+        XCTAssertThrowsError(try runner.run(executable: "/usr/bin/git", arguments: ["-C", "/repo", "clone"])) { error in
+            XCTAssertEqual(error as? GitRepositoryContextError, .disallowedCommand("-C /repo clone"))
+        }
+    }
+
     func testRepositoryVocabularyEntriesUseRepositoryScope() {
         let context = RepositoryContext(
             rootPath: "/Users/tasuku/work/github.com/tasuku43/voice",

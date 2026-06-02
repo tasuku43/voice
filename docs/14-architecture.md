@@ -98,7 +98,7 @@ Adapters:
 - future GitHub / Slack / Chatwork local archive/cache adapters,
 - future local Foundation Model adapter.
 
-Infra adapters must not introduce network IO. GitHub, Slack, Chatwork, and similar learning sources must be represented as local archives, exports, caches, or checked-out files before this app reads them.
+Infra adapters must not introduce network IO. GitHub, Slack, Chatwork, and similar learning sources must be represented as local archives, exports, caches, or checked-out files before this app reads them. Process-backed adapters are limited to local read-only commands; network-capable operations such as `git fetch`, `git pull`, and `git clone` are excluded.
 
 ### UI boundary
 

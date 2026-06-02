@@ -305,6 +305,14 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/Infra/GitRepositoryContextProvider.swift": [
             "rev-parse",
             "ls-files",
+            'guard executable == "/usr/bin/git"',
+            "validateLocalReadOnlyGitArguments",
+        ],
+        "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
+            "testGitRepositoryContextProviderReadsRootAndBranch",
+            "testGitRepositoryContextProviderReadsBoundedTrackedVocabularyFiles",
+            "testProcessCommandRunnerRejectsNonGitExecutable",
+            "testProcessCommandRunnerRejectsNetworkCapableGitSubcommands",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "Set Repository Folder...",

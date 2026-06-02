@@ -32,6 +32,14 @@ REQUIRED_SOURCE_SNIPPETS = {
         "defer",
         "removeItem",
     ],
+    "src/VoiceAgentInputCore/Infra/GitRepositoryContextProvider.swift": [
+        'guard executable == "/usr/bin/git"',
+        "validateLocalReadOnlyGitArguments",
+        '["rev-parse", "--show-toplevel"]',
+        '["branch", "--show-current"]',
+        '["ls-files"]',
+        "disallowedCommand",
+    ],
     "src/VoiceAgentInputCore/Infra/AVFoundationAudioRecorder.swift": [
         "temporaryDirectory",
         "removeItem",

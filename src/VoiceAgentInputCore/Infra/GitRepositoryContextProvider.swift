@@ -60,6 +60,11 @@ public struct ProcessCommandRunner: CommandRunner {
     public init() {}
 
     public func run(executable: String, arguments: [String]) throws -> String {
+        guard executable == "/usr/bin/git" else {
+            throw GitRepositoryContextError.disallowedCommand(executable)
+        }
+        try Self.validateLocalReadOnlyGitArguments(arguments)
+
         let process = Process()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
@@ -80,8 +85,25 @@ public struct ProcessCommandRunner: CommandRunner {
         let errorOutput = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         throw GitRepositoryContextError.commandFailed(errorOutput.trimmingCharacters(in: .whitespacesAndNewlines))
     }
+
+    private static func validateLocalReadOnlyGitArguments(_ arguments: [String]) throws {
+        guard arguments.count >= 3, arguments[0] == "-C" else {
+            throw GitRepositoryContextError.disallowedCommand(arguments.joined(separator: " "))
+        }
+        let subcommand = arguments[2]
+        let allowed: Set<[String]> = [
+            ["rev-parse", "--show-toplevel"],
+            ["branch", "--show-current"],
+            ["ls-files"]
+        ]
+        let trailingArguments = Array(arguments.dropFirst(2))
+        guard allowed.contains(trailingArguments), subcommand != "fetch", subcommand != "pull", subcommand != "clone" else {
+            throw GitRepositoryContextError.disallowedCommand(arguments.joined(separator: " "))
+        }
+    }
 }
 
 public enum GitRepositoryContextError: Error, Equatable {
     case commandFailed(String)
+    case disallowedCommand(String)
 }

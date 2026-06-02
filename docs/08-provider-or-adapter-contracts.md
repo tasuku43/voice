@@ -165,7 +165,7 @@ App shell rules:
 
 Current providers:
 
-- `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through `git` commands.
+- `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through local read-only `git` commands only.
 - `RepositoryVocabularyUseCase` can turn repository name, branch name, and tracked file names into dictionary entries or learning candidates.
 - `RepositoryVocabularyLearningSource` adapts configured repository vocabulary into the explicit learning flow. The macOS shell does not mix repository vocabulary into the hotkey runtime dictionary.
 - `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override.
@@ -176,6 +176,7 @@ Direction:
 
 - Learning-source adapters educate a local context model from bounded local data.
 - GitHub, Slack, and Chatwork adapters must read local archives, exports, caches, or checked-out files before they are added.
+- Process-backed adapters must restrict themselves to local read-only commands; network-capable commands such as `git fetch`, `git pull`, and `git clone` are outside the product boundary.
 - Any adapter that would require network IO is outside the product boundary.
 - Local Foundation Model adapters may support model education or optional fallback conversion, but they must not upload prompts, audio, transcripts, or learned context.
 
