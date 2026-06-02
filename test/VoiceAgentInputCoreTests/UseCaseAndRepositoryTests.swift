@@ -1407,44 +1407,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(entries.filter { $0.canonical == "Package.swift" }.count, 1)
     }
 
-    func testVoiceInputHistoryRecordsFinalPromptsOnlyAndBoundsStoredEntries() throws {
-        let repository = InMemoryVoiceInputHistoryRepository()
-        let useCase = VoiceInputHistoryUseCase(repository: repository, maximumEntries: 2)
-
-        try useCase.record(prompt: " first prompt ", createdAt: Date(timeIntervalSince1970: 1))
-        try useCase.record(prompt: "second prompt", createdAt: Date(timeIntervalSince1970: 2))
-        try useCase.record(prompt: "first prompt", createdAt: Date(timeIntervalSince1970: 3))
-        try useCase.record(prompt: "third prompt", createdAt: Date(timeIntervalSince1970: 4))
-        try useCase.record(prompt: "   ", createdAt: Date(timeIntervalSince1970: 5))
-
-        let entries = try useCase.recentEntries()
-
-        XCTAssertEqual(entries.map(\.prompt), ["third prompt", "first prompt"])
-    }
-
-    func testJSONVoiceInputHistoryRepositoryRoundTrip() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        let store = LocalAppDataStore(directoryURL: directory)
-        let repository = try store.voiceInputHistoryRepository()
-        let entries = [
-            VoiceInputHistoryEntry(
-                id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
-                createdAt: Date(timeIntervalSince1970: 10),
-                prompt: "paste this"
-            )
-        ]
-
-        try repository.saveEntries(entries)
-
-        XCTAssertEqual(try repository.loadEntries(), entries)
-        let historyURL = directory.appendingPathComponent("voice-input-history.json")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: historyURL.path))
-        let storedJSON = try String(contentsOf: historyURL, encoding: .utf8)
-        XCTAssertTrue(storedJSON.contains("\"prompt\""))
-        XCTAssertFalse(storedJSON.contains("rawTranscript"))
-        XCTAssertFalse(storedJSON.contains("candidates"))
-    }
-
     @MainActor
     func testKeyboardShortcutMonitorStoresConfiguredShortcutAndTrigger() {
         let monitor = MockKeyboardShortcutMonitor()
@@ -1501,22 +1463,6 @@ private final class InMemoryAppSettingsRepository: AppSettingsRepository {
 
     func saveSettings(_ settings: AppSettings) throws {
         self.settings = settings
-    }
-}
-
-private final class InMemoryVoiceInputHistoryRepository: VoiceInputHistoryRepository {
-    private var entries: [VoiceInputHistoryEntry]
-
-    init(entries: [VoiceInputHistoryEntry] = []) {
-        self.entries = entries
-    }
-
-    func loadEntries() throws -> [VoiceInputHistoryEntry] {
-        entries
-    }
-
-    func saveEntries(_ entries: [VoiceInputHistoryEntry]) throws {
-        self.entries = entries
     }
 }
 

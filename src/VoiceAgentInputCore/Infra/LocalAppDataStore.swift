@@ -18,11 +18,6 @@ public struct LocalAppDataStore {
         return JSONAppSettingsRepository(fileURL: directoryURL.appendingPathComponent(fileName))
     }
 
-    public func voiceInputHistoryRepository(fileName: String = "voice-input-history.json") throws -> JSONVoiceInputHistoryRepository {
-        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        return JSONVoiceInputHistoryRepository(fileURL: directoryURL.appendingPathComponent(fileName))
-    }
-
     public func localContextModelRepository(fileName: String = "local-context-model.json") throws -> JSONLocalContextModelRepository {
         try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
         return JSONLocalContextModelRepository(fileURL: directoryURL.appendingPathComponent(fileName))

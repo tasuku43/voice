@@ -107,9 +107,6 @@ ALLOWED_WRITE_SNIPPETS = {
     "src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift": [
         "try data.write(to: fileURL, options: [.atomic])",
     ],
-    "src/VoiceAgentInputCore/Infra/JSONVoiceInputHistoryRepository.swift": [
-        "try data.write(to: fileURL, options: [.atomic])",
-    ],
     "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [
         "try audio.data.write(to: url, options: .atomic)",
     ],

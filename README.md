@@ -37,7 +37,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 The current scaffold implements the testable core: dictionary models, normalization, local learning sources, local context candidate generation, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
-The current app shell includes a minimal macOS menu bar executable with a configurable global voice-input hotkey (default Control-Option-Space), press-and-hold or toggle recording triggers, AVFoundation microphone recording, configurable recording duration and Speech locale, permission status display, Privacy & Security settings shortcut, on-device Apple Speech transcription, Accessibility-based paste, pasteboard fallback, local context model status/rebuild/export/import/delete actions, voice input history recall, and simple in-progress state for the recording flow.
+The current app shell includes a minimal macOS menu bar executable with a configurable global voice-input hotkey (default Control-Option-Space), press-and-hold or toggle recording triggers, AVFoundation microphone recording, configurable recording duration and Speech locale, permission status display, Privacy & Security settings shortcut, on-device Apple Speech transcription, Accessibility-based paste, pasteboard fallback, local context model status/rebuild/export/import/delete actions, and simple in-progress state for the recording flow.
 The menu can store a local repository folder path for repository-scoped vocabulary when the app is launched outside a terminal. Repository context includes the git root, current branch, and a bounded set of tracked file names.
 
 ## Stack
@@ -99,7 +99,7 @@ swift run voice-agent-input-app  # launch minimal menu bar shell
 open .build/VoiceAgentInput.app  # launch bundled app with microphone and speech usage descriptions after make check
 ```
 
-Use the menu bar `Hotkey Settings...` item to change the voice-input key, modifiers, and press-and-hold versus toggle recording behavior locally. Use `Recording Settings...` to change recording duration or Speech locale. Use `Permission Status...` to inspect microphone, speech recognition, and Accessibility paste states before a real recording run, and `Open Privacy Settings...` to jump to macOS privacy controls. Settings, voice input history, local context model data, and repository path are stored under Application Support; `Open Local Data Folder...` reveals that location for manual privacy checks. Raw audio is temporary and raw transcripts are not persisted by default.
+Use the menu bar `Hotkey Settings...` item to change the voice-input key, modifiers, and press-and-hold versus toggle recording behavior locally. Use `Recording Settings...` to change recording duration or Speech locale. Use `Permission Status...` to inspect microphone, speech recognition, and Accessibility paste states before a real recording run, and `Open Privacy Settings...` to jump to macOS privacy controls. Settings, local context model data, and repository path are stored under Application Support; `Open Local Data Folder...` reveals that location for manual privacy checks. Raw audio is temporary and raw transcripts are not persisted by default.
 
 Manual macOS MVP verification lives at `test/e2e/manual-macos-mvp-checklist.md`.
 The current completion evidence and remaining manual proof are tracked in `docs/15-mvp-completion-audit.md`.

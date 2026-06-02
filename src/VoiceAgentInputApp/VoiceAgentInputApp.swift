@@ -29,7 +29,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var shouldStopRecordingWhenReady = false
     private var recordingStartedAt: Date?
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
-    private let historyHotkeyMonitor = AppKitKeyboardShortcutMonitor()
     private var diagnosticHotkeyMonitors: [AppKitKeyboardShortcutMonitor] = []
     private var keyboardEventTap: KeyboardEventTap?
     private var permissionStatusTimer: Timer?
@@ -62,7 +61,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         permissionStatusTimer?.invalidate()
         permissionStatusTimer = nil
         hotkeyMonitor.stop()
-        historyHotkeyMonitor.stop()
         diagnosticHotkeyMonitors.forEach { $0.stop() }
         keyboardEventTap?.stop()
     }
@@ -78,16 +76,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         let menu = NSMenu()
         let recordItem = NSMenuItem(title: "Quick Paste Voice Input", action: #selector(recordVoiceInput), keyEquivalent: "r")
-        let historyItem = NSMenuItem(title: "Voice Input History...", action: #selector(showVoiceInputHistory), keyEquivalent: "v")
-        historyItem.keyEquivalentModifierMask = [.control, .shift]
         menu.addItem(recordItem)
         menu.addItem(NSMenuItem(title: "Show Push-to-Talk Button", action: #selector(showPushToTalkButton), keyEquivalent: "b"))
         let hotkeyItem = NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: "")
         menu.addItem(hotkeyItem)
         menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
         menu.addItem(NSMenuItem(title: "Start Hotkey Diagnostics", action: #selector(startHotkeyDiagnostics), keyEquivalent: ""))
-        menu.addItem(historyItem)
-        menu.addItem(NSMenuItem(title: "History Hotkey: Control-Shift-V", action: nil, keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
@@ -398,7 +392,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private func registerHotkeys(reason: String) {
         AppKitKeyboardShortcutMonitor.debugLogger = debugLogger
         hotkeyMonitor.stop()
-        historyHotkeyMonitor.stop()
         let settings = (try? loadSettings()) ?? AppSettings()
         updateHotkeyMenuTitle(settings: settings)
 
@@ -419,13 +412,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             },
             onRelease: releaseHandler
         )
-        debugLogger.log("registering voice input history hotkey Control-Shift-V reason=\(reason)")
-        historyHotkeyMonitor.start(shortcut: .defaultVoiceInputHistory) { [weak self] in
-            Task { @MainActor in
-                self?.debugLogger.log("voice input history hotkey triggered")
-                self?.showVoiceInputHistory()
-            }
-        }
     }
 
     private func handleVoiceInputHotkey(event: VoiceInputHotkeyEvent) {
@@ -534,12 +520,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         debugLogger.log("openPreview rawLength=\(fallback.rawTranscript.count) correctedLength=\(fallback.correctedPrompt.count)")
         let controller = PreviewWindowController(
             fallback: fallback,
-            fallbackUseCase: fallbackUseCase,
-            onPromptInserted: { [weak self] prompt in
-                self?.recordVoiceInputHistory(
-                    prompt: prompt.text
-                )
-            }
+            fallbackUseCase: fallbackUseCase
         )
         previewWindowController = controller
         controller.showWindow(nil)
@@ -551,21 +532,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         do {
             let insertion = PromptInsertionUseCase(insertionController: AccessibilityTextInsertionController())
             try insertion.insert(prompt, afterUserAction: true)
-            recordVoiceInputHistory(prompt: prompt.text)
         } catch AccessibilityTextInsertionError.accessibilityPermissionRequired {
             try PromptInsertionUseCase(
                 insertionController: PasteboardTextInsertionController()
             ).insert(prompt, afterUserAction: true)
-            recordVoiceInputHistory(prompt: prompt.text)
             showAccessibilityFallbackAlert()
-        }
-    }
-
-    private func recordVoiceInputHistory(prompt: String) {
-        do {
-            try voiceInputHistoryUseCase().record(prompt: prompt)
-        } catch {
-            debugLogger.log("voice input history record failed: \(error)")
         }
     }
 
@@ -605,11 +576,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func settingsUseCase() throws -> AppSettingsUseCase {
         try AppSettingsUseCase(repository: settingsRepository())
-    }
-
-    private func voiceInputHistoryUseCase() throws -> VoiceInputHistoryUseCase {
-        let store = LocalAppDataStore(directoryURL: try LocalAppDataStore.defaultDirectoryURL())
-        return try VoiceInputHistoryUseCase(repository: store.voiceInputHistoryRepository())
     }
 
     private func localContextModelRepository() throws -> JSONLocalContextModelRepository {
@@ -688,48 +654,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
                 self?.openAccessibilitySettings()
             }
-        }
-    }
-
-    @objc private func showVoiceInputHistory() {
-        do {
-            let entries = try voiceInputHistoryUseCase().recentEntries()
-            guard !entries.isEmpty else {
-                let alert = NSAlert()
-                alert.alertStyle = .informational
-                alert.messageText = "No voice input history yet"
-                alert.informativeText = "Recorded prompts appear here after they are pasted or copied."
-                alert.runModal()
-                return
-            }
-
-            let popup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 520, height: 28), pullsDown: false)
-            for entry in entries {
-                let title = entry.prompt.count > 80
-                    ? String(entry.prompt.prefix(77)) + "..."
-                    : entry.prompt
-                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-                item.representedObject = entry.prompt
-                popup.menu?.addItem(item)
-            }
-
-            let alert = NSAlert()
-            alert.messageText = "Voice input history"
-            alert.informativeText = "Choose a past voice input to paste into the focused app."
-            alert.accessoryView = popup
-            alert.addButton(withTitle: "Paste")
-            alert.addButton(withTitle: "Cancel")
-
-            guard
-                alert.runModal() == .alertFirstButtonReturn,
-                let prompt = popup.selectedItem?.representedObject as? String
-            else {
-                return
-            }
-
-            try insertPrompt(PromptInsertion(text: prompt))
-        } catch {
-            presentError(error)
         }
     }
 

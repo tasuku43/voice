@@ -27,11 +27,6 @@ public struct KeyboardShortcut: Codable, Equatable, Sendable {
         modifiers: [.control, .option]
     )
 
-    public static let defaultVoiceInputHistory = KeyboardShortcut(
-        key: "v",
-        modifiers: [.control, .shift]
-    )
-
     public var displayName: String {
         var parts: [String] = []
         if modifiers.contains(.control) {

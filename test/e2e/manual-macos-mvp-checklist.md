@@ -85,5 +85,5 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 1. Verify no raw audio file remains in the selected repository after recording.
 2. Verify raw transcripts are not written to Application Support by default.
-3. Verify settings, voice input history, and local context model data are local files only.
+3. Verify settings and local context model data are local files only.
 4. Verify `debug.log` contains operational diagnostics only and does not become the local learning data source.

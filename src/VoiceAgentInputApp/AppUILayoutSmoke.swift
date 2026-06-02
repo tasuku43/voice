@@ -58,11 +58,6 @@ enum AppUILayoutSmoke {
         failures.append(contentsOf: auditView(recordingStack, name: "recording-settings"))
         renderView(recordingStack, size: NSSize(width: 560, height: 92), name: "recording-settings", outputDirectory: outputDirectory)
 
-        let historyPopup = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 520, height: 28), pullsDown: false)
-        historyPopup.addItem(withTitle: "Claude Code で TypeScript エラーを直して、pnpm test を実行して、失敗したログを要約")
-        failures.append(contentsOf: auditView(historyPopup, name: "voice-input-history"))
-        renderView(historyPopup, size: NSSize(width: 560, height: 48), name: "voice-input-history", outputDirectory: outputDirectory)
-
         let sourceStack = AppLayout.formStack()
         sourceStack.addArrangedSubview(NSButton(checkboxWithTitle: "Codex / Claude local sessions", target: nil, action: nil))
         sourceStack.addArrangedSubview(NSButton(checkboxWithTitle: "Git repository vocabulary", target: nil, action: nil))

@@ -31,7 +31,6 @@
 ### Secondary workflows
 
 - Support preview/edit only as a fallback when direct paste cannot complete.
-- Recall recent voice inputs from a local history shortcut and paste the selected text.
 - Support dictionary scopes such as global, user, repository, and session.
 - Provide import/export for dictionaries and context data.
 - Provide a delete-all-local-learning-data path.
@@ -52,6 +51,5 @@
 - Do not upload audio or transcripts.
 - Do not make network calls for STT, model education, or LLM fallback in MVP.
 - Do not export raw audio or raw transcripts as local learning data.
-- Store voice input history locally as final pasted prompts only.
 - Do not auto-submit prompts.
 - Treat dangerous command substitutions conservatively.
