@@ -40,7 +40,6 @@ public struct VoiceInputPipeline {
     public var normalizer: any PromptNormalizer
     public var refiner: any PromptRefiner
     public var normalizationContext: NormalizationContext
-    public var refinementInstruction: RefinementInstruction
     public var recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)?
 
     public init(
@@ -50,7 +49,6 @@ public struct VoiceInputPipeline {
         normalizer: any PromptNormalizer = DictionaryPromptNormalizer(),
         refiner: any PromptRefiner = NoOpPromptRefiner(),
         normalizationContext: NormalizationContext,
-        refinementInstruction: RefinementInstruction = RefinementInstruction(),
         recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)? = nil
     ) {
         self.audioRecorder = audioRecorder
@@ -59,7 +57,6 @@ public struct VoiceInputPipeline {
         self.normalizer = normalizer
         self.refiner = refiner
         self.normalizationContext = normalizationContext
-        self.refinementInstruction = refinementInstruction
         self.recordedAudioHandler = recordedAudioHandler
     }
 
@@ -97,8 +94,7 @@ public struct VoiceInputPipeline {
         PromptProcessingPipeline(
             normalizer: normalizer,
             refiner: refiner,
-            normalizationContext: normalizationContext,
-            refinementInstruction: refinementInstruction
+            normalizationContext: normalizationContext
         )
     }
 }

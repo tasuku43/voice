@@ -51,17 +51,14 @@ public struct DictionaryPromptTextTransform: PromptTextTransform {
 
 public struct RefinementPromptTextTransform: PromptTextTransform {
     public var refiner: any PromptRefiner
-    public var instruction: RefinementInstruction
 
     public init(
-        refiner: any PromptRefiner = NoOpPromptRefiner(),
-        instruction: RefinementInstruction = RefinementInstruction()
+        refiner: any PromptRefiner = NoOpPromptRefiner()
     ) {
         self.refiner = refiner
-        self.instruction = instruction
     }
 
     public func transform(_ text: String) async throws -> String {
-        try await refiner.refineText(text, instruction: instruction)
+        try await refiner.refineText(text)
     }
 }

@@ -23,7 +23,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Post-STT text processing is represented by `PromptProcessingPipeline`.
 - Dictionary replacement and refinement also expose `PromptTextTransform` for simple `String -> String` composition.
 - Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`; local persistence is behind `LocalContextModelRepository` with `JSONLocalContextModelRepository` as the filesystem adapter.
-- Future local Foundation Model fallback formatting is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`.
+- Deterministic local prompt cleanup is represented by `PromptRefiner`; the default is `NoOpPromptRefiner`. Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default refiner.
 - Local context model rebuilds moved into `LocalContextModelDataUseCase`, leaving the UI to choose sources and trigger rebuilds.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Preview window rendering moved into `PreviewWindowController.swift`.

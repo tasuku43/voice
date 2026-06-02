@@ -28,14 +28,6 @@ public struct NormalizedPrompt: Equatable, Sendable {
     }
 }
 
-public struct RefinementInstruction: Equatable, Sendable {
-    public var style: String
-
-    public init(style: String = "preserve normalized prompt") {
-        self.style = style
-    }
-}
-
 public struct PromptRefinementChange: Equatable, Sendable {
     public var before: String
     public var after: String
@@ -72,7 +64,7 @@ public protocol PromptNormalizer {
 }
 
 public protocol PromptRefiner {
-    func refine(_ prompt: NormalizedPrompt, instruction: RefinementInstruction) async throws -> RefinedPrompt
+    func refine(_ prompt: NormalizedPrompt) async throws -> RefinedPrompt
 }
 
 public extension PromptNormalizer {
@@ -82,13 +74,13 @@ public extension PromptNormalizer {
 }
 
 public extension PromptRefiner {
-    func refineText(_ text: String, instruction: RefinementInstruction = RefinementInstruction()) async throws -> String {
+    func refineText(_ text: String) async throws -> String {
         let prompt = NormalizedPrompt(
             rawText: text,
             normalizedText: text,
             corrections: []
         )
-        return try await refine(prompt, instruction: instruction).refinedText
+        return try await refine(prompt).refinedText
     }
 }
 
@@ -104,7 +96,7 @@ public struct DictionaryPromptNormalizer: PromptNormalizer, Sendable {
 public struct NoOpPromptRefiner: PromptRefiner, Sendable {
     public init() {}
 
-    public func refine(_ prompt: NormalizedPrompt, instruction: RefinementInstruction) async throws -> RefinedPrompt {
+    public func refine(_ prompt: NormalizedPrompt) async throws -> RefinedPrompt {
         RefinedPrompt(
             normalizedText: prompt.normalizedText,
             refinedText: prompt.normalizedText
@@ -115,7 +107,7 @@ public struct NoOpPromptRefiner: PromptRefiner, Sendable {
 public struct JapanesePunctuationPromptRefiner: PromptRefiner, Sendable {
     public init() {}
 
-    public func refine(_ prompt: NormalizedPrompt, instruction: RefinementInstruction) async throws -> RefinedPrompt {
+    public func refine(_ prompt: NormalizedPrompt) async throws -> RefinedPrompt {
         let refined = Self.refineText(prompt.normalizedText)
         let changes = refined == prompt.normalizedText ? [] : [
             PromptRefinementChange(

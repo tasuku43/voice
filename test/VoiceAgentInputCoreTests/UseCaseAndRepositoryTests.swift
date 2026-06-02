@@ -186,10 +186,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             corrections: []
         )
 
-        let refined = try await JapanesePunctuationPromptRefiner().refine(
-            normalized,
-            instruction: RefinementInstruction()
-        )
+        let refined = try await JapanesePunctuationPromptRefiner().refine(normalized)
 
         XCTAssertEqual(
             refined.refinedText,
@@ -221,7 +218,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             corrections: []
         )
 
-        let refined = try await NoOpPromptRefiner().refine(normalized, instruction: RefinementInstruction())
+        let refined = try await NoOpPromptRefiner().refine(normalized)
 
         XCTAssertEqual(refined.normalizedText, "Codex")
         XCTAssertEqual(refined.refinedText, "Codex")
@@ -235,10 +232,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             corrections: []
         )
 
-        let refined = try await JapanesePunctuationPromptRefiner().refine(
-            normalized,
-            instruction: RefinementInstruction()
-        )
+        let refined = try await JapanesePunctuationPromptRefiner().refine(normalized)
 
         XCTAssertEqual(
             refined.refinedText,
@@ -1550,7 +1544,7 @@ private final class RecordedAudioCapture: @unchecked Sendable {
 private struct SuffixPromptRefiner: PromptRefiner {
     var suffix: String
 
-    func refine(_ prompt: NormalizedPrompt, instruction: RefinementInstruction) async throws -> RefinedPrompt {
+    func refine(_ prompt: NormalizedPrompt) async throws -> RefinedPrompt {
         RefinedPrompt(
             normalizedText: prompt.normalizedText,
             refinedText: prompt.normalizedText + suffix,

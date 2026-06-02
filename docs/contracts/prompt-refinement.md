@@ -2,20 +2,18 @@
 
 ## Inputs
 - `NormalizedPrompt`
-- `RefinementInstruction`
-- Optional short context in future implementations.
 
 ## Outputs
 - `RefinedPrompt`
 - `PromptRefinementChange`
 - Warnings when needed.
-- `refineText(_:instruction:)` is the convenience `String -> String` form.
+- `refineText(_:)` is the convenience `String -> String` form.
 - `RefinementPromptTextTransform` adapts refinement to `PromptTextTransform`.
 
 ## Allowed
-- Remove filler words, format, or lightly summarize after normalization.
-- Be swapped for a local Foundation Model implementation later.
-- Run only as an explicit fallback or model-education helper unless the product boundary changes.
+- Apply deterministic local cleanup after normalization.
+- Add lightweight punctuation or formatting rules that preserve the user's meaning.
+- Run in the hotkey path only when the implementation is deterministic and local.
 
 ## Forbidden
 - Speech recognition.
@@ -23,6 +21,7 @@
 - Persistence, paste, automatic submit, or command execution.
 - Network IO.
 - Cloud LLM calls.
+- LLM-backed rewriting in the default hotkey path.
 
 ## Read First
 - `src/VoiceAgentInputCore/App/PromptContracts.swift`
@@ -42,4 +41,4 @@
 ## Done
 - `NoOpPromptRefiner` remains the default.
 - Refinement cannot paste, submit, or persist data.
-- Any LLM-backed implementation is local-only and outside the default hotkey path.
+- Foundation Model conversion belongs to an explicit local-only fallback stage, not this default refiner contract.
