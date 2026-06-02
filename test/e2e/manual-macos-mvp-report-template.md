@@ -99,7 +99,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 
 - No raw audio remains in selected repository: pass/fail
 - Raw transcripts are not written to Application Support by default: pass/fail
-- Approved dictionary entries and settings are local files only: pass/fail
+- Local context model data and settings are local files only: pass/fail
 - Debug log is diagnostics only, not local learning data: pass/fail
 - No network/cloud prompt observed: pass/fail
 - Notes:
@@ -107,6 +107,6 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 ## Attachments
 
 - Screenshots:
-- Exported dictionary path:
+- Exported local context model path:
 - Completed checklist path:
 - Related issue or PR:

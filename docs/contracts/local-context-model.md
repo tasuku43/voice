@@ -23,7 +23,7 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 - Produce deterministic dictionary entries for post-STT correction.
 - Preserve enough source metadata for local inspection and rebuilds.
 - Use a local Foundation Model during model education when explicitly enabled.
-- Use local Foundation Model output only if no network IO occurs.
+- Accept output only from local Foundation Model adapters; network IO remains forbidden.
 - Rebuild from enabled local sources.
 - Export, import, and delete local context data.
 
@@ -78,5 +78,5 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 - The model can feed both STT recognition hints and post-STT transforms.
 - The model has a versioned local JSON document shape.
 - Source adapters remain bounded and local.
-- Local Foundation Model use, if present, is optional and network-free.
+- Local Foundation Model use, if present, is optional, local, and network-free.
 - The default hotkey path can run without LLM conversion.

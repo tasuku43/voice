@@ -46,7 +46,8 @@ The menu can store a local repository folder path for repository-scoped vocabula
 - Swift 6-compatible source
 - Foundation-only core for portable tests
 - Future macOS app shell: SwiftUI + AppKit
-- STT adapters: Apple Speech first; local-only WhisperKit or Foundation Model fallback later if needed
+- STT adapters: Apple Speech first; local-only WhisperKit later if needed
+- local Foundation Model adapters only for model education and optional last-resort conversion
 - Local persistence: JSON first, SQLite later if needed
 
 ## Build and test

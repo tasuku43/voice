@@ -1201,7 +1201,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = "Delete local context model?"
-        alert.informativeText = "This removes the learned context model used for STT hints and post-STT transforms. Approved dictionary entries and bundled seed terms are not deleted."
+        alert.informativeText = "This removes the learned context model used for STT hints and post-STT transforms. Bundled seed terms remain available."
         alert.addButton(withTitle: "Delete")
         alert.addButton(withTitle: "Cancel")
 
