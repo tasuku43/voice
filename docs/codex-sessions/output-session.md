@@ -1,6 +1,6 @@
 # Output Session
 
-Purpose: improve confirmed prompt insertion and paste fallback behavior.
+Purpose: improve prompt insertion and paste fallback behavior.
 
 Read:
 - `docs/contracts/output.md`
@@ -14,7 +14,7 @@ Avoid:
 - Speech, normalization, prompt refinement, learning.
 
 Contract:
-- Insert only confirmed text.
+- Insert only user-action-completed prompt text.
 - Never submit automatically.
 
 Tests:
