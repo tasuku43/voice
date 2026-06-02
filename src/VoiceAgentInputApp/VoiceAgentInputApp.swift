@@ -101,11 +101,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         shouldStopRecordingWhenReady = false
 
         let entries: [DictionaryEntry]
-        let settings: AppSettings
         do {
-            settings = try loadSettings()
             entries = try loadDictionaryEntries()
-            debugLogger.log("recordVoiceInput loaded settings and \(entries.count) dictionary entries")
+            debugLogger.log("recordVoiceInput loaded \(entries.count) dictionary entries")
         } catch {
             isRecording = false
             debugLogger.log("recordVoiceInput setup failed: \(error)")
@@ -123,7 +121,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.activeAudioRecorder = audioRecorder
                     self.hasDetectedVoiceInput = false
                     self.recordingStartedAt = Date()
-                    self.showRecordingFeedback(triggerMode: settings.voiceInputTriggerMode)
+                    self.showRecordingFeedback()
                     self.startInputLevelMonitoring()
                     self.debugLogger.log("recordVoiceInput recording started; waiting for user stop")
                     if self.shouldStopRecordingWhenReady {
@@ -218,7 +216,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func updateHotkeyMenuTitle(settings: AppSettings? = nil) {
         let currentSettings = settings ?? ((try? loadSettings()) ?? AppSettings())
-        hotkeyMenuItem?.title = "Hotkey: \(currentSettings.voiceInputShortcut.displayName) (\(currentSettings.voiceInputTriggerMode.displayName))"
+        hotkeyMenuItem?.title = "Hotkey: \(currentSettings.voiceInputShortcut.displayName)"
     }
 
     private func registerHotkeys(reason: String) {
@@ -227,14 +225,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let settings = (try? loadSettings()) ?? AppSettings()
         updateHotkeyMenuTitle(settings: settings)
 
-        debugLogger.log("registering voice input hotkey \(settings.voiceInputShortcut.displayName) triggerMode=\(settings.voiceInputTriggerMode.rawValue) reason=\(reason)")
-        let releaseHandler: (() -> Void)? = settings.voiceInputTriggerMode == .pressAndHold
-            ? { [weak self] in
-                Task { @MainActor in
-                    self?.handleVoiceInputHotkey(event: .released)
-                }
-            }
-            : nil
+        debugLogger.log("registering voice input hotkey \(settings.voiceInputShortcut.displayName) reason=\(reason)")
         hotkeyMonitor.start(
             shortcut: settings.voiceInputShortcut,
             onTrigger: { [weak self] in
@@ -242,18 +233,20 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self?.handleVoiceInputHotkey(event: .pressed)
                 }
             },
-            onRelease: releaseHandler
+            onRelease: { [weak self] in
+                Task { @MainActor in
+                    self?.handleVoiceInputHotkey(event: .released)
+                }
+            }
         )
     }
 
     private func handleVoiceInputHotkey(event: VoiceInputHotkeyEvent) {
-        let settings = (try? loadSettings()) ?? AppSettings()
         let action = VoiceInputHotkeyUseCase().action(
-            triggerMode: settings.voiceInputTriggerMode,
             event: event,
             isRecording: isRecording
         )
-        debugLogger.log("voice input hotkey event=\(event) triggerMode=\(settings.voiceInputTriggerMode.rawValue) action=\(action)")
+        debugLogger.log("voice input hotkey event=\(event) action=\(action)")
 
         switch action {
         case .startRecording:
@@ -299,8 +292,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func showRecordingFeedback(triggerMode: VoiceInputTriggerMode) {
-        let controller = RecordingFeedbackWindowController(triggerMode: triggerMode) { [weak self] in
+    private func showRecordingFeedback() {
+        let controller = RecordingFeedbackWindowController { [weak self] in
             Task { @MainActor in
                 self?.recordVoiceInput()
             }
@@ -505,14 +498,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
             keyPicker.selectItem(withTitle: KeyboardShortcut.displayName(forKey: settings.voiceInputShortcut.key))
 
-            let triggerPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
-            for triggerMode in VoiceInputTriggerMode.allCases {
-                let item = NSMenuItem(title: triggerMode.displayName, action: nil, keyEquivalent: "")
-                item.representedObject = triggerMode.rawValue
-                triggerPicker.menu?.addItem(item)
-            }
-            triggerPicker.selectItem(withTitle: settings.voiceInputTriggerMode.displayName)
-
             let controlCheckbox = NSButton(checkboxWithTitle: "Control", target: nil, action: nil)
             let optionCheckbox = NSButton(checkboxWithTitle: "Option", target: nil, action: nil)
             let shiftCheckbox = NSButton(checkboxWithTitle: "Shift", target: nil, action: nil)
@@ -534,21 +519,18 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
             let stack = AppLayout.formStack()
             stack.addArrangedSubview(AppLayout.formRow(label: "Key", view: keyPicker))
-            stack.addArrangedSubview(AppLayout.formRow(label: "Trigger", view: triggerPicker))
             stack.addArrangedSubview(AppLayout.formRow(label: "Modifiers", view: modifierStack))
 
             let alert = NSAlert()
             alert.messageText = "Hotkey settings"
-            alert.informativeText = "Press and Hold records until key release. Toggle Recording starts on the first press and stops on the next press or the Stop button."
+            alert.informativeText = "The voice input hotkey records while held. Releasing the shortcut confirms paste."
             alert.accessoryView = stack
             alert.addButton(withTitle: "Save")
             alert.addButton(withTitle: "Cancel")
 
             guard
                 alert.runModal() == .alertFirstButtonReturn,
-                let key = keyPicker.selectedItem?.representedObject as? String,
-                let triggerRawValue = triggerPicker.selectedItem?.representedObject as? String,
-                let triggerMode = VoiceInputTriggerMode(rawValue: triggerRawValue)
+                let key = keyPicker.selectedItem?.representedObject as? String
             else {
                 return
             }
@@ -576,8 +558,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
 
             let saved = try settingsUseCase.saveVoiceInputHotkey(
-                shortcut: KeyboardShortcut(key: key, modifiers: modifiers),
-                triggerMode: triggerMode
+                shortcut: KeyboardShortcut(key: key, modifiers: modifiers)
             )
             updateHotkeyMenuTitle(settings: saved)
             registerHotkeys(reason: "hotkey settings changed")

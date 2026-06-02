@@ -37,8 +37,7 @@ public struct RecordingFeedbackPresentationUseCase: Sendable {
     public func presentation(
         level: Float?,
         hasDetectedVoice: Bool,
-        elapsedSeconds: TimeInterval,
-        triggerMode: VoiceInputTriggerMode
+        elapsedSeconds: TimeInterval
     ) -> RecordingFeedbackPresentation {
         let phase = phase(level: level, hasDetectedVoice: hasDetectedVoice)
         let title: String
@@ -51,13 +50,7 @@ public struct RecordingFeedbackPresentationUseCase: Sendable {
             title = "Quiet"
         }
 
-        let guidance: String
-        switch triggerMode {
-        case .pressAndHold:
-            guidance = "Release shortcut to paste"
-        case .toggleRecording:
-            guidance = "Press shortcut again to paste"
-        }
+        let guidance = "Release shortcut to paste"
 
         let elapsedText = Self.elapsedText(for: elapsedSeconds)
         return RecordingFeedbackPresentation(

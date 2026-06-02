@@ -55,20 +55,6 @@ public struct KeyboardShortcut: Codable, Equatable, Sendable {
     }
 }
 
-public enum VoiceInputTriggerMode: String, Codable, Equatable, Sendable, CaseIterable {
-    case pressAndHold
-    case toggleRecording
-
-    public var displayName: String {
-        switch self {
-        case .pressAndHold:
-            "Press and Hold"
-        case .toggleRecording:
-            "Toggle Recording"
-        }
-    }
-}
-
 public enum VoiceInputHotkeyEvent: Equatable, Sendable {
     case pressed
     case released
@@ -84,18 +70,13 @@ public struct VoiceInputHotkeyUseCase: Sendable {
     public init() {}
 
     public func action(
-        triggerMode: VoiceInputTriggerMode,
         event: VoiceInputHotkeyEvent,
         isRecording: Bool
     ) -> VoiceInputHotkeyAction {
-        switch (triggerMode, event, isRecording) {
-        case (.pressAndHold, .pressed, false):
+        switch (event, isRecording) {
+        case (.pressed, false):
             .startRecording
-        case (.pressAndHold, .released, true):
-            .stopRecording
-        case (.toggleRecording, .pressed, false):
-            .startRecording
-        case (.toggleRecording, .pressed, true):
+        case (.released, true):
             .stopRecording
         default:
             .none

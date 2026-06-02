@@ -130,7 +130,6 @@ REQUIRED_SNIPPETS = {
         "RecordingFeedbackPresentationUseCase",
         "Listening",
         "Release shortcut to paste",
-        "Press shortcut again to paste",
         "meterLevels",
         "elapsedText",
     ],

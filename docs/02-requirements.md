@@ -5,8 +5,8 @@
 ### Voice input path
 
 - Invoke recording from a configurable macOS global hotkey.
-- Support both press-and-hold recording and toggle recording from the voice-input hotkey.
-- Show a compact recording HUD near the focused input when possible, including connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and the correct stop-to-paste guidance for press-and-hold or toggle hotkeys.
+- Support press-and-hold recording from the voice-input hotkey.
+- Show a compact recording HUD near the focused input when possible, including connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and release-to-paste guidance.
 - Transcribe microphone input.
 - Pass local context model recognition hints to STT when the STT adapter supports them.
 - Apply built-in developer vocabulary transforms after transcription.

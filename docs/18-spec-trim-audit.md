@@ -16,7 +16,7 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 ## Keep
 
 - Configurable macOS hotkey invocation.
-- Press-and-hold and toggle recording.
+- Press-and-hold recording.
 - Local microphone capture and local/on-device STT adapters.
 - Built-in developer vocabulary transforms.
 - A rebuildable local context model made from bounded local sources.

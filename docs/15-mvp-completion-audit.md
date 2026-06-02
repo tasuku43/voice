@@ -48,7 +48,7 @@ The MVP should not be marked fully complete until a real macOS run fills out `te
 - Apple Speech transcription,
 - focused-cursor insertion or copy fallback through the current Quick Paste path,
 - Control-Option-Space trigger in a desktop session,
-- Privacy & Security settings shortcut,
+- voice input permission shortcut,
 - Accessibility paste into a focused target app,
 - pasteboard fallback when Accessibility is not trusted,
 - local context model export/import/open-folder/delete menu actions,

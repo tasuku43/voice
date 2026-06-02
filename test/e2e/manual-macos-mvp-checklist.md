@@ -28,10 +28,8 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 1. Choose `Hotkey Settings...`.
 2. Change the voice input key to Control-Option-S, save, and verify the menu label updates.
-3. Trigger voice input with Control-Option-S, then stop it with the Stop button.
-4. Reopen `Hotkey Settings...`, switch trigger mode to `Toggle Recording`, and save.
-5. Trigger voice input with Control-Option-S, then press Control-Option-S again and verify the toggle stop explicitly confirms paste.
-6. Reopen `Hotkey Settings...` and restore Control-Option-Space with `Press and Hold` before the Quick Paste flow below.
+3. Trigger voice input with Control-Option-S, then release the shortcut or stop it with the Stop button.
+4. Reopen `Hotkey Settings...` and restore Control-Option-Space before the Quick Paste flow below.
 
 ## Quick Paste Voice Input
 
@@ -49,8 +47,6 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 12. If Accessibility is trusted, verify the prompt is pasted into the focused target.
 13. If Accessibility is not trusted, verify the app copies the prompt and asks the user to press Command-V.
 14. Verify the prompt is not automatically submitted.
-15. Switch to `Toggle Recording` in `Hotkey Settings...`, start with Control-Option-Space, verify the HUD says `Press shortcut again to paste`, press Control-Option-Space again, and verify the toggle stop acts as explicit paste confirmation.
-16. Restore `Press and Hold` in `Hotkey Settings...`.
 
 ## Local Learning
 

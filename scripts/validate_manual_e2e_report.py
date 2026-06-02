@@ -30,8 +30,7 @@ REQUIRED_SECTIONS = [
 
 REQUIRED_EVIDENCE_LABELS = [
     "Custom voice input hotkey saved and menu label updated",
-    "Toggle Recording mode starts and stops from the same hotkey",
-    "Default Control-Option-Space Press and Hold restored before Quick Paste flow",
+    "Default Control-Option-Space restored before Quick Paste flow",
     "Debug launch used `--debug`",
     "Debug log created at `~/Library/Logs/VoiceAgentInput/debug.log`",
     "`Open Voice Input Permissions...` opens missing permission settings",

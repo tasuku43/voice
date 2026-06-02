@@ -2,7 +2,7 @@
 
 ## Inputs
 - Temporary recording location provided by the local recorder adapter.
-- A recording start request from the app or pipeline, including press-and-hold or toggle hotkey flows.
+- A recording start request from the app or pipeline, using the press-and-hold hotkey flow.
 - A user stop request.
 
 ## Outputs
@@ -11,7 +11,7 @@
 
 ## Allowed
 - Capture one microphone recording.
-- Keep recording until the user explicitly stops by key release, toggle press, or Stop action.
+- Keep recording until the user explicitly stops by key release or Stop action.
 - Expose microphone input level for recording feedback.
 - Use a temporary file while recording.
 - Return the temporary recording URL when the downstream STT adapter can consume it directly.
@@ -43,6 +43,6 @@
 ## Done
 - Audio capture returns `RecordedAudio` only.
 - Recording ends by user stop instead of a short fixed timer.
-- Hotkey trigger behavior can be press-and-hold or toggle without changing the audio recorder contract.
+- Hotkey trigger behavior stays outside the audio recorder contract.
 - UI can distinguish microphone connection wait from active input.
 - Temporary raw audio is removed and not persisted by default.

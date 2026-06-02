@@ -15,7 +15,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "showHotkeySettings",
     "saveVoiceInputHotkey",
     "VoiceInputHotkeyUseCase().action",
-    "Toggle Recording",
+    "Release shortcut to paste",
     "Quick Paste Voice Input",
     "Permission Status...",
     "Open Voice Input Permissions...",

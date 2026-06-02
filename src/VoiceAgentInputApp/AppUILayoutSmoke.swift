@@ -16,7 +16,7 @@ enum AppUILayoutSmoke {
             return 1
         }
 
-        let feedbackController = RecordingFeedbackWindowController(triggerMode: .toggleRecording) {}
+        let feedbackController = RecordingFeedbackWindowController {}
         feedbackController.update(level: 0.45, hasDetectedVoice: true, elapsedSeconds: 127)
         failures.append(contentsOf: auditWindow(feedbackController.window, name: "recording-feedback"))
         renderWindow(feedbackController.window, name: "recording-feedback", outputDirectory: outputDirectory)
@@ -24,8 +24,6 @@ enum AppUILayoutSmoke {
         let hotkeyStack = AppLayout.formStack()
         let keyPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
         keyPicker.addItems(withTitles: ["Space", "A", "B", "C"])
-        let triggerPicker = NSPopUpButton(frame: NSRect(x: 0, y: 0, width: 300, height: 28), pullsDown: false)
-        triggerPicker.addItems(withTitles: ["Press and Hold", "Toggle Recording"])
         let modifierStack = NSStackView(views: [
             NSButton(checkboxWithTitle: "Control", target: nil, action: nil),
             NSButton(checkboxWithTitle: "Option", target: nil, action: nil),
@@ -35,7 +33,6 @@ enum AppUILayoutSmoke {
         modifierStack.orientation = .horizontal
         modifierStack.spacing = 8
         hotkeyStack.addArrangedSubview(AppLayout.formRow(label: "Key", view: keyPicker))
-        hotkeyStack.addArrangedSubview(AppLayout.formRow(label: "Trigger", view: triggerPicker))
         hotkeyStack.addArrangedSubview(AppLayout.formRow(label: "Modifiers", view: modifierStack))
         failures.append(contentsOf: auditView(hotkeyStack, name: "hotkey-settings"))
         renderView(hotkeyStack, size: NSSize(width: 560, height: 132), name: "hotkey-settings", outputDirectory: outputDirectory)

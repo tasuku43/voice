@@ -10,12 +10,10 @@ final class RecordingFeedbackWindowController: NSWindowController {
     private let statusDotView = RecordingStatusDotView()
     private let waveformView = RecordingWaveformView()
     private let stopAction: () -> Void
-    private let triggerMode: VoiceInputTriggerMode
     private let presentationUseCase = RecordingFeedbackPresentationUseCase()
     private var lastAnchorRefresh = Date.distantPast
 
-    init(triggerMode: VoiceInputTriggerMode, stopAction: @escaping () -> Void) {
-        self.triggerMode = triggerMode
+    init(stopAction: @escaping () -> Void) {
         self.stopAction = stopAction
         let window = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 376, height: 68),
@@ -43,8 +41,7 @@ final class RecordingFeedbackWindowController: NSWindowController {
         let presentation = presentationUseCase.presentation(
             level: level,
             hasDetectedVoice: hasDetectedVoice,
-            elapsedSeconds: elapsedSeconds,
-            triggerMode: triggerMode
+            elapsedSeconds: elapsedSeconds
         )
         titleLabel.stringValue = presentation.title
         guidanceLabel.stringValue = presentation.guidance

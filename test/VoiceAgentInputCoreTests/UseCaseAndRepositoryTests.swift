@@ -1037,14 +1037,12 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         try repository.saveSettings(AppSettings(
             repositoryPath: "/tmp/repo",
-            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
-            voiceInputTriggerMode: .toggleRecording
+            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift])
         ))
 
         XCTAssertEqual(try repository.loadSettings(), AppSettings(
             repositoryPath: "/tmp/repo",
-            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
-            voiceInputTriggerMode: .toggleRecording
+            voiceInputShortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift])
         ))
     }
 
@@ -1058,7 +1056,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(settings, AppSettings(repositoryPath: "/tmp/repo"))
         XCTAssertEqual(settings.voiceInputShortcut, .defaultVoiceInput)
-        XCTAssertEqual(settings.voiceInputTriggerMode, .pressAndHold)
     }
 
     func testAppSettingsKeepsLearningScopeFixedToUser() {
@@ -1076,39 +1073,29 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadSettings(), repositorySettings)
 
         let hotkeySettings = try useCase.saveVoiceInputHotkey(
-            shortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift]),
-            triggerMode: .toggleRecording
+            shortcut: KeyboardShortcut(key: "s", modifiers: [.control, .shift])
         )
         XCTAssertEqual(hotkeySettings.voiceInputShortcut, KeyboardShortcut(key: "s", modifiers: [.control, .shift]))
-        XCTAssertEqual(hotkeySettings.voiceInputTriggerMode, .toggleRecording)
-        XCTAssertEqual(try repository.loadSettings().voiceInputTriggerMode, .toggleRecording)
+        XCTAssertEqual(try repository.loadSettings().voiceInputShortcut, KeyboardShortcut(key: "s", modifiers: [.control, .shift]))
     }
 
-    func testVoiceInputHotkeyUseCaseSupportsPressHoldAndToggleTriggers() {
+    func testVoiceInputHotkeyUseCaseUsesPressHoldSemantics() {
         let useCase = VoiceInputHotkeyUseCase()
 
         XCTAssertEqual(
-            useCase.action(triggerMode: .pressAndHold, event: .pressed, isRecording: false),
+            useCase.action(event: .pressed, isRecording: false),
             .startRecording
         )
         XCTAssertEqual(
-            useCase.action(triggerMode: .pressAndHold, event: .released, isRecording: true),
+            useCase.action(event: .released, isRecording: true),
             .stopRecording
         )
         XCTAssertEqual(
-            useCase.action(triggerMode: .pressAndHold, event: .pressed, isRecording: true),
+            useCase.action(event: .pressed, isRecording: true),
             .none
         )
         XCTAssertEqual(
-            useCase.action(triggerMode: .toggleRecording, event: .pressed, isRecording: false),
-            .startRecording
-        )
-        XCTAssertEqual(
-            useCase.action(triggerMode: .toggleRecording, event: .pressed, isRecording: true),
-            .stopRecording
-        )
-        XCTAssertEqual(
-            useCase.action(triggerMode: .toggleRecording, event: .released, isRecording: true),
+            useCase.action(event: .released, isRecording: false),
             .none
         )
     }
@@ -1117,8 +1104,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let presentation = RecordingFeedbackPresentationUseCase().presentation(
             level: 0.22,
             hasDetectedVoice: true,
-            elapsedSeconds: 5.4,
-            triggerMode: .pressAndHold
+            elapsedSeconds: 5.4
         )
 
         XCTAssertEqual(presentation.phase, .listening)
@@ -1130,19 +1116,18 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(presentation.accessibilityLabel.contains("Release shortcut to paste"))
     }
 
-    func testRecordingFeedbackPresentationShowsQuietToggleGuidanceAfterVoiceWasDetected() {
+    func testRecordingFeedbackPresentationShowsQuietGuidanceAfterVoiceWasDetected() {
         let presentation = RecordingFeedbackPresentationUseCase().presentation(
             level: 0.01,
             hasDetectedVoice: true,
-            elapsedSeconds: 67.9,
-            triggerMode: .toggleRecording
+            elapsedSeconds: 67.9
         )
 
         XCTAssertEqual(presentation.phase, .quiet)
         XCTAssertEqual(presentation.title, "Quiet")
-        XCTAssertEqual(presentation.guidance, "Press shortcut again to paste")
+        XCTAssertEqual(presentation.guidance, "Release shortcut to paste")
         XCTAssertEqual(presentation.elapsedText, "1:07")
-        XCTAssertTrue(presentation.accessibilityLabel.contains("Press shortcut again to paste"))
+        XCTAssertTrue(presentation.accessibilityLabel.contains("Release shortcut to paste"))
     }
 
     func testDictionaryEntryLoadingCombinesSeedAndContextualEntries() throws {

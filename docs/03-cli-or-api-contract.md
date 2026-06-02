@@ -8,9 +8,9 @@ The production app will be a macOS menu bar utility. The scaffold also includes 
 swift run voice-agent-input-app
 ```
 
-The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records either while the hotkey is held or until the toggle hotkey is pressed again, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release, toggle stop, or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
+The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records while the hotkey is held, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
 
-The shell also includes local hotkey settings, permission status display, a Privacy & Security settings shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
+The shell also includes local hotkey settings, permission status display, a voice-input permission shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
 
 Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the implementation of that daily path. Model education happens through explicit local context model rebuilds, not a second voice input mode.
 
@@ -111,12 +111,11 @@ App settings:
 ```swift
 AppSettings(
     repositoryPath: String?,
-    voiceInputShortcut: KeyboardShortcut,
-    voiceInputTriggerMode: VoiceInputTriggerMode
+    voiceInputShortcut: KeyboardShortcut
 )
 ```
 
-Missing settings decode to local defaults: Control-Option-Space voice-input hotkey and press-and-hold trigger mode. Speech currently uses the fixed local Japanese Speech locale by default.
+Missing settings decode to the local default Control-Option-Space voice-input hotkey. Speech currently uses the fixed local Japanese Speech locale by default.
 
 The macOS menu bar shell exposes hotkey settings locally through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
 

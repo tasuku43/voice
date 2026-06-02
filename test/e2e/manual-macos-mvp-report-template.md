@@ -45,8 +45,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - `Hotkey Settings...` opened: pass/fail
 - Custom voice input hotkey saved and menu label updated: pass/fail
 - Custom voice input hotkey starts recording: pass/fail
-- Toggle Recording mode starts and stops from the same hotkey: pass/fail
-- Default Control-Option-Space Press and Hold restored before Quick Paste flow: pass/fail
+- Default Control-Option-Space restored before Quick Paste flow: pass/fail
 - Notes:
 
 ## Quick Paste Voice Input Evidence
