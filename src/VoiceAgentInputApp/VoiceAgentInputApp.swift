@@ -524,19 +524,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         )
     }
 
-    private func presentPreview(rawTranscript: String) {
-        let entries: [DictionaryEntry]
-        do {
-            entries = try loadDictionaryEntries()
-        } catch {
-            presentError(error)
-            return
-        }
-        let previewUseCase = PromptPreviewUseCase(entries: entries)
-        let preview = previewUseCase.preview(rawTranscript: rawTranscript)
-        openPreview(preview: preview, previewUseCase: previewUseCase)
-    }
-
     private func openPreview(preview: PromptPreview, previewUseCase: PromptPreviewUseCase) {
         debugLogger.log("openPreview rawLength=\(preview.rawTranscript.count) correctedLength=\(preview.correctedPrompt.count)")
         let controller = PreviewWindowController(

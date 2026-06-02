@@ -53,4 +53,4 @@ Stretch goals:
 
 - Low-latency recording and transcription.
 - Local archive/cache adapters for GitHub, Slack, and Chatwork data.
-- Optional preview/edit UI for users who want to inspect fallback output before insertion.
+- Fallback preview/edit UI only when direct paste cannot complete.

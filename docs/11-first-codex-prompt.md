@@ -24,7 +24,7 @@ The ideal MVP is a macOS-native menu bar app that:
 3. builds a local context model from enabled local learning sources,
 4. uses that model as STT recognition hints and deterministic post-STT transforms,
 5. inserts corrected text at the focused cursor or copies it when direct insertion is unavailable,
-6. keeps preview/edit as a fallback or quality-review surface,
+6. keeps preview/edit as a direct-paste fallback only,
 7. uses local Foundation Model assistance only for model education or explicit fallback conversion,
 8. never performs network IO for STT, model education, or LLM fallback,
 9. never uploads audio, transcripts, prompts, or learned context.

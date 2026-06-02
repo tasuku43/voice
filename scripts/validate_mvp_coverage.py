@@ -419,7 +419,7 @@ REQUIRED_COVERAGE = {
         ],
         "docs/18-spec-trim-audit.md": [
             "Spec trim audit",
-            "Preview/edit UI is a paste fallback and quality-review surface",
+            "Preview/edit UI is a direct-paste fallback",
             "Any requirement that the default hotkey path show a preview before insertion",
             "Local context model status/rebuild/export/import/delete UI is implemented",
             "source freshness checks",

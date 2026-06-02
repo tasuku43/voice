@@ -14,13 +14,13 @@
 ## Phase 2: macOS shell
 
 - Menu bar app. Minimal mock shell done.
-- Floating preview panel. Editable fallback preview flow done.
+- Fallback preview panel. Editable fallback preview flow is available only when direct paste cannot complete.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
 - Recording settings. App shell can set local recording duration and Speech locale for later recordings.
 - Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
 - Focused cursor insertion or copy fallback.
-- Optional confirm-before-paste preview flow.
+- Direct paste first; fallback preview only when insertion cannot complete.
 
 ## Phase 3: input loop
 
@@ -43,8 +43,8 @@
 - Local Codex / Claude Code history source. Done through bounded local history adapters.
 - Git repository vocabulary source. Done through explicit repository vocabulary learning source.
 - Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering candidate approval.
-- Optional editable prompt preview.
-- Optional diff extraction.
+- No edit-derived learning from preview.
+- Optional diff extraction remains a model-education technique, not a hotkey UI flow.
 - Local dictionary persistence. JSON-backed Application Support store done.
 - Local context model data controls. App-shell menu can export, import, inspect, and delete the saved local context model.
 

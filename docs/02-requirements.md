@@ -30,7 +30,7 @@
 
 ### Secondary workflows
 
-- Support an optional preview/edit workflow for quality review and manual correction.
+- Support preview/edit only as a fallback when direct paste cannot complete.
 - Recall recent voice inputs from a local history shortcut and paste the selected text.
 - Support dictionary scopes such as global, user, repository, and session.
 - Provide import/export for dictionaries and context data.

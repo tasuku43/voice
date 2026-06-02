@@ -16,12 +16,12 @@ Avoid:
 Contract:
 - Quick Paste remains the primary path.
 - Fallback preview may show raw/corrected text and accept edits.
-- Confirm before paste.
+- Paste only after the user presses Paste in the fallback preview.
 - No automatic submit.
 - No local context model training from edits.
 
 Tests:
-- `swift test --filter UseCaseAndRepositoryTests/testPreviewConfirmationReturnsPromptWithoutSubmitting`
+- `swift test --filter UseCaseAndRepositoryTests/testPreviewFallbackBuildsPromptInsertionText`
 - `make check`
 
 Done:
