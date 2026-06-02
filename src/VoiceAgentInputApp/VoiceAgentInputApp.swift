@@ -72,7 +72,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Voice Input Permissions...", action: #selector(openVoiceInputPermissionSettings), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
-        menu.addItem(NSMenuItem(title: "Local Context Model Status...", action: #selector(showLocalContextModelStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Import Local Context Model...", action: #selector(importLocalContextModel), keyEquivalent: ""))
@@ -665,22 +664,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         }
     }
 
-    @objc private func showLocalContextModelStatus() {
-        do {
-            let model = try LocalContextModelDataUseCase(
-                repository: localContextModelRepository()
-            ).exportModel()
-
-            let alert = NSAlert()
-            alert.alertStyle = .informational
-            alert.messageText = "Local context model status"
-            alert.informativeText = localContextModelStatusText(model: model)
-            alert.runModal()
-        } catch {
-            presentError(error)
-        }
-    }
-
     @objc private func openLocalDataFolder() {
         do {
             let url = try LocalAppDataStore.defaultDirectoryURL()
@@ -833,9 +816,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let scannedTextLine = scannedTextCount.map { "Scanned \($0) local source texts." } ?? "Stored source texts: \(totalSourceTexts)."
         let generatedCount = generatedCandidateCount ?? model.generatedCandidateCount
         let sourceCountLine = sourceCounts.isEmpty ? "Source text counts: none." : "Source text counts: \(sourceCounts)."
-        let warnings = LocalContextModelStatusUseCase()
-            .warnings(model: model, configuredRepositoryPath: try? loadSettings().repositoryPath)
-        let warningText = warnings.isEmpty ? "Status warnings: none." : "Status warnings: \(warnings.joined(separator: " "))"
 
         return """
         Last rebuild time: \(rebuiltText).
@@ -844,7 +824,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         \(sourceCountLine)
         Generated candidates: \(generatedCount).
         Runtime model entries: \(model.entries.count).
-        \(warningText)
         """
     }
 

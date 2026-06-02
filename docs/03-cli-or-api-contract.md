@@ -10,7 +10,7 @@ swift run voice-agent-input-app
 
 The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records while the hotkey is held, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to `SpeechRecognitionHints` and passed to Apple Speech as `contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
 
-The shell also includes local hotkey settings, permission status display, a voice-input permission shortcut, repository-folder selection for repository vocabulary learning, `Local Context Model Status...` for inspecting the saved model without rebuilding, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
+The shell also includes local hotkey settings, permission status display, a voice-input permission shortcut, repository-folder selection for repository vocabulary learning, `Rebuild Local Context Model...` for updating the runtime model without candidate approval, and export/import/open-folder/delete controls for local context model data.
 
 Product direction: the primary app contract is hotkey dictation into the focused cursor using a local context model. `Quick Paste` is the implementation of that daily path. Model education happens through explicit local context model rebuilds, not a second voice input mode.
 
@@ -104,7 +104,7 @@ LocalContextModelRebuildUseCase.rebuild(...) throws -> LocalContextModelRebuildR
 ```
 
 These operations apply to the saved local context model document used for STT recognition hints and post-STT transforms.
-The app also exposes a status action that reads the saved model and shows last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
+The app shows rebuild metadata after an explicit model rebuild. Exported local context model documents remain inspectable JSON for deeper local data review.
 
 App settings:
 

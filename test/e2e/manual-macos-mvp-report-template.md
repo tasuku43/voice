@@ -55,7 +55,6 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Recording reentry is blocked while recording: pass/fail
 - Speech transcription completes: pass/fail
 - Push-to-talk release or stop explicitly confirms paste: pass/fail
-- Toggle hotkey stop explicitly confirms paste: pass/fail
 - No raw/corrected preview window appears in Quick Paste: pass/fail
 - No candidate approval UI appears in Quick Paste: pass/fail
 - Pasted or copied prompt contains expected developer terms: pass/fail
@@ -69,7 +68,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 ## Local Learning Evidence
 
 - Rebuild Local Context Model works without candidate approval and shows rebuild metadata: pass/fail
-- Local Context Model Status shows last rebuild metadata and stale-source warnings without rebuilding: pass/fail
+- Rebuild summary shows last rebuild metadata: pass/fail
 - Rebuilt Local Context Model affects later Quick Paste normalization without candidate approval: pass/fail
 - Notes:
 

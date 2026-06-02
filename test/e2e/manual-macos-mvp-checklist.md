@@ -51,7 +51,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 ## Local Learning
 
 1. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
-2. Choose `Local Context Model Status...` and verify the saved status shows the last rebuild time, source kinds, source text counts, generated candidates, runtime entry count, and stale-source warnings without rebuilding.
+2. Verify the rebuild summary shows the last rebuild time, source kinds, source text counts, generated candidates, and runtime entry count.
 3. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
 
 ## Local Data Controls
