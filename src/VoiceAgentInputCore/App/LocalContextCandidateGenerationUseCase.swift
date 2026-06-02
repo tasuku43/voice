@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AgentHistoryDictionaryLearningUseCase: Sendable {
+public struct LocalContextCandidateGenerationUseCase: Sendable {
     public var minimumOccurrences: Int
 
     public init(minimumOccurrences: Int = 2) {
@@ -26,7 +26,7 @@ public struct AgentHistoryDictionaryLearningUseCase: Sendable {
                     correctedPhrase: term,
                     confidence: min(0.9, 0.55 + Double(count) * 0.05),
                     occurrenceCount: count,
-                    reason: "Found \(count) uses in local agent history.",
+                    reason: "Found \(count) uses in local learning sources.",
                     suggestedScope: scope,
                     autoApplyAllowed: true
                 )

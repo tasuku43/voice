@@ -68,7 +68,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "LocalContextModelDocumentCodec",
     "LearningSourceSelection",
     "AgentHistoryLearningModeUseCase",
-    "AgentHistoryDictionaryLearningUseCase",
+    "LocalContextCandidateGenerationUseCase",
     "LocalContextModelDataUseCase",
     "rebuildModel(learningResult: result)",
     "local context model rebuilt",

@@ -44,7 +44,7 @@ final class EvalHarnessTests: XCTestCase {
         for evalCase in cases {
             let result = try AgentHistoryLearningModeUseCase(
                 historyProvider: EvalAgentHistoryTextProvider(texts: evalCase.historyTexts),
-                dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+                contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
             ).generateCandidates(scope: evalCase.scope)
             let learnedEntries = result.candidates.map { candidate in
                 DictionaryEntry(

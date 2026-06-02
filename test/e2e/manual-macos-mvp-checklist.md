@@ -48,7 +48,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. Verify recording does not start again while already recording.
 6. Release the push-to-talk shortcut or stop recording and verify that this explicit stop acts as the confirmation for paste.
 7. Verify no raw/corrected preview window appears in `Quick Paste`.
-8. Verify no dictionary candidate approval UI appears in `Quick Paste`.
+8. Verify no candidate approval UI appears in `Quick Paste`.
 9. Verify the pasted or copied prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
 10. Verify the debug log contains `mode=quickPaste` for the completed recording.
 11. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=quickPaste` summary for the report.

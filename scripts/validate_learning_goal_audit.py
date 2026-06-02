@@ -38,7 +38,7 @@ REQUIRED_SNIPPETS = {
     "docs/contracts/learning.md": [
         "Bounded local Codex/Claude history text",
         "Configured repository vocabulary exposed through a learning-source adapter.",
-        "Generate dictionary candidates from local learning sources after explicit user action.",
+        "Generate local context candidates from local learning sources after explicit user action.",
         "Keep Quick Paste outside candidate review and approval",
         "Reuse deterministic developer-term speech rules across source learning.",
         "Treat repository folders as learning-source configuration",
@@ -161,7 +161,7 @@ REQUIRED_SNIPPETS = {
     ],
     "test/VoiceAgentInputCoreTests/DemoCLITests.swift": [
         "testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving",
-        "testDemoHistoryLearningNormalizeModeShowsApprovedCandidatesAffectLaterRules",
+        "testDemoHistoryLearningNormalizeModeUsesRebuiltModelEntries",
         "learn-history",
         "learn-history-normalize",
         "ProjectSpecificName",

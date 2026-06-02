@@ -1114,10 +1114,10 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         let result = try AgentHistoryLearningModeUseCase(
             learningSources: learningSources,
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
         let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
-        debugLogger.log("dictionary training scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
+        debugLogger.log("local context model education scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
         let localContextModel = try LocalContextModelDataUseCase(
             repository: localContextModelRepository()

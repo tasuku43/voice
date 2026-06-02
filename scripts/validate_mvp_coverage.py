@@ -155,10 +155,10 @@ REQUIRED_COVERAGE = {
         ],
     },
     "source learning and model education": {
-        "src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift": [
-            "AgentHistoryDictionaryLearningUseCase",
+        "src/VoiceAgentInputCore/App/LocalContextCandidateGenerationUseCase.swift": [
+            "LocalContextCandidateGenerationUseCase",
             "candidates(from texts:",
-            "local agent history",
+            "local learning sources",
         ],
         "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
             "AgentHistoryTextProvider",
@@ -179,7 +179,7 @@ REQUIRED_COVERAGE = {
             "AgentHistoryLearningModeUseCase",
             "learningSources",
             "sourceTextCounts",
-            "dictionaryLearningUseCase.candidates",
+            "contextCandidateGenerationUseCase.candidates",
             "skippedExistingCandidateCount",
         ],
         "src/VoiceAgentInputCore/App/AppSettings.swift": [
@@ -247,7 +247,7 @@ REQUIRED_COVERAGE = {
             "testCandidateExtractorCanUseReplaceableMisrecognitionDetector",
         ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
-            "testAgentHistoryDictionaryLearningFindsRepeatedDeveloperTerms",
+            "testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms",
             "testLocalAgentHistoryTextProviderReadsBoundedLocalHistories",
             "testLocalAgentHistoryTextProviderExtractsUserTextFromStructuredJSONL",
             "testLocalAgentHistoryTextProviderSkipsStructuredJSONWithoutUserText",

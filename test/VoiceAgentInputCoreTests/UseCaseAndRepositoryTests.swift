@@ -279,7 +279,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(output.hasSuffix(" please"))
     }
 
-    func testAgentHistoryDictionaryLearningFindsRepeatedDeveloperTerms() {
+    func testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms() {
         let texts = [
             "Fix the SwiftUI preview and call the API from Codex.",
             "The SwiftUI view should not block the API call.",
@@ -288,7 +288,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             "ProjectSpecificName appears again."
         ]
 
-        let candidates = AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+        let candidates = LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
             .candidates(from: texts)
 
         XCTAssertTrue(candidates.contains {
@@ -434,7 +434,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         ])
         let result = try AgentHistoryLearningModeUseCase(
             historyProvider: provider,
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates()
 
         XCTAssertEqual(result.scannedTextCount, 3)
@@ -467,7 +467,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let result = try AgentHistoryLearningModeUseCase(
             historyProvider: provider,
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates(existingEntries: existingEntries)
 
         XCTAssertEqual(result.skippedExistingCandidateCount, 1)
@@ -483,7 +483,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let result = try AgentHistoryLearningModeUseCase(
             historyProvider: provider,
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates(scope: .repository)
 
         XCTAssertFalse(result.candidates.isEmpty)
@@ -519,7 +519,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let result = try AgentHistoryLearningModeUseCase(
             learningSources: [provider, repositorySource],
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates()
 
         XCTAssertEqual(result.scannedTextCount, 3)
@@ -612,7 +612,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
                     correctedPhrase: "SwiftUI",
                     confidence: 0.8,
                     occurrenceCount: 2,
-                    reason: "Found 2 uses in local agent history.",
+                    reason: "Found 2 uses in local learning sources.",
                     suggestedScope: .user,
                     autoApplyAllowed: true
                 )
@@ -644,7 +644,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
                     correctedPhrase: "JSON",
                     confidence: 0.7,
                     occurrenceCount: 1,
-                    reason: "Found in local agent history.",
+                    reason: "Found in local learning sources.",
                     suggestedScope: .user,
                     autoApplyAllowed: true
                 )
@@ -1034,7 +1034,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         ])
         let learningResult = try AgentHistoryLearningModeUseCase(
             historyProvider: historyProvider,
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates(existingEntries: [])
 
         guard learningResult.candidates.contains(where: {
@@ -1332,7 +1332,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         let result = try AgentHistoryLearningModeUseCase(
             learningSources: [historyProvider, repositorySource],
-            dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
+            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
         ).generateCandidates()
 
         XCTAssertEqual(result.scannedTextCount, 3)

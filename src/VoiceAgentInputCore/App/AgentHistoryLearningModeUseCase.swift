@@ -21,24 +21,24 @@ public struct AgentHistoryLearningModeResult: Codable, Equatable, Sendable {
 
 public struct AgentHistoryLearningModeUseCase {
     public var learningSources: [any LearningSource]
-    public var dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase
+    public var contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase
 
     public init(
         historyProvider: any AgentHistoryTextProvider,
-        dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase = AgentHistoryDictionaryLearningUseCase()
+        contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase = LocalContextCandidateGenerationUseCase()
     ) {
         self.init(
             learningSources: [historyProvider],
-            dictionaryLearningUseCase: dictionaryLearningUseCase
+            contextCandidateGenerationUseCase: contextCandidateGenerationUseCase
         )
     }
 
     public init(
         learningSources: [any LearningSource],
-        dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase = AgentHistoryDictionaryLearningUseCase()
+        contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase = LocalContextCandidateGenerationUseCase()
     ) {
         self.learningSources = learningSources
-        self.dictionaryLearningUseCase = dictionaryLearningUseCase
+        self.contextCandidateGenerationUseCase = contextCandidateGenerationUseCase
     }
 
     public func generateCandidates(
@@ -51,7 +51,7 @@ public struct AgentHistoryLearningModeUseCase {
             sourceTextCounts[source.sourceKind.rawValue, default: 0] += texts.count
             return texts
         }
-        let textCandidates = dictionaryLearningUseCase.candidates(
+        let textCandidates = contextCandidateGenerationUseCase.candidates(
             from: learningTexts.map(\.text),
             scope: scope
         )

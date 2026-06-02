@@ -39,7 +39,7 @@ REQUIRED_EVIDENCE_LABELS = [
     "Push-to-talk release or stop explicitly confirms paste",
     "Toggle hotkey stop explicitly confirms paste",
     "No raw/corrected preview window appears in Quick Paste",
-    "No dictionary candidate approval UI appears in Quick Paste",
+    "No candidate approval UI appears in Quick Paste",
     "Pasted or copied prompt contains expected developer terms",
     "Debug log contains mode=quickPaste for completed recording",
     "Debug log summary includes mode=quickPaste",

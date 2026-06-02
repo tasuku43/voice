@@ -58,7 +58,7 @@ required = [
     'src/VoiceAgentInputCore/App/LearningSourceSelection.swift',
     'src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift',
     'src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift',
-    'src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift',
+    'src/VoiceAgentInputCore/App/LocalContextCandidateGenerationUseCase.swift',
     'src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift',
     'src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift',
     'src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift',

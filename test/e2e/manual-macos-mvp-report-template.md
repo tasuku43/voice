@@ -62,7 +62,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Push-to-talk release or stop explicitly confirms paste: pass/fail
 - Toggle hotkey stop explicitly confirms paste: pass/fail
 - No raw/corrected preview window appears in Quick Paste: pass/fail
-- No dictionary candidate approval UI appears in Quick Paste: pass/fail
+- No candidate approval UI appears in Quick Paste: pass/fail
 - Pasted or copied prompt contains expected developer terms: pass/fail
 - Debug log contains mode=quickPaste for completed recording: pass/fail
 - Debug log summary includes mode=quickPaste: pass/fail

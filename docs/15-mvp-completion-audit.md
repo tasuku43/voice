@@ -28,7 +28,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Reuse learned context after STT | history-learning eval fixtures, `AgentHistoryLearningModeUseCase`, `LocalContextModelBuildUseCase`, normalization tests | Verified |
 | Quick Paste daily input compatibility | direct recording-flow insertion of `result.preview.correctedPrompt`, app contract validation | Implemented, needs manual target-app confirmation |
 | Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
-| Extract dictionary candidates for model education | source learning tests and candidate extractor tests | Verified |
+| Extract local context candidates for model education | source learning tests and candidate extractor tests | Verified |
 | Persist local context model data | local context model repository tests and rebuild tests | Verified |
 | Export/import/open/delete local model data | local context model tests, `Open Local Data Folder...`, app contract validation | Implemented for local context model data, needs manual menu confirmation |
 | Repository vocabulary as a learning source | git context tests, repository vocabulary tests, app contract validation | Implemented, needs manual folder selection confirmation |

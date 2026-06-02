@@ -11,7 +11,7 @@ Read:
 - `src/VoiceAgentInputCore/App/LearningSource.swift`
 - `src/VoiceAgentInputCore/App/LearningSourceSelection.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift`
-- `src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift`
+- `src/VoiceAgentInputCore/App/LocalContextCandidateGenerationUseCase.swift`
 - `src/VoiceAgentInputCore/App/LocalContextModel.swift`
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
 

@@ -77,7 +77,7 @@ session > repository > user > global
 
 ## CorrectionCandidate
 
-Represents a possible learned dictionary entry extracted from local learning sources.
+Represents a possible local context model entry extracted from local learning sources.
 
 Fields:
 

@@ -106,17 +106,17 @@ REQUIRED_SNIPPETS = {
         "public struct AgentHistoryLearningModeUseCase",
         "learningSources",
         "sourceTextCounts",
-        "dictionaryLearningUseCase.candidates",
+        "contextCandidateGenerationUseCase.candidates",
         "skippedExistingCandidateCount",
     ],
     "src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift": [
         "public struct RepositoryVocabularyLearningSource",
         "CorrectionCandidateLearningSource",
     ],
-    "src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift": [
-        "public struct AgentHistoryDictionaryLearningUseCase",
+    "src/VoiceAgentInputCore/App/LocalContextCandidateGenerationUseCase.swift": [
+        "public struct LocalContextCandidateGenerationUseCase",
         "candidates(from texts:",
-        "Found \\(count) uses in local agent history.",
+        "Found \\(count) uses in local learning sources.",
     ],
     "src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift": [
         "public struct LocalAgentHistoryTextProvider",

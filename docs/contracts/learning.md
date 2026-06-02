@@ -11,8 +11,8 @@
 - Local context model entries for recognition hints and post-STT transforms.
 
 ## Allowed
-- Generate dictionary candidates from local learning sources after explicit user action.
-- Let the user choose local learning sources before training the dictionary.
+- Generate local context candidates from local learning sources after explicit user action.
+- Let the user choose local learning sources before rebuilding the local context model.
 - Report source-level scan counts so the app can explain what was used.
 - Build local context model data from bounded source adapters.
 - Use local Foundation Model assistance for model education when explicitly enabled and local-only.
@@ -27,7 +27,7 @@
 ## Forbidden
 - Speech recognition.
 - Prompt refinement.
-- Automatic dangerous dictionary updates.
+- Automatic dangerous context model updates.
 - Paste or automatic submit.
 - Network IO.
 - Cloud model calls.
@@ -40,7 +40,7 @@
 - `src/VoiceAgentInputCore/App/LearningSource.swift`
 - `src/VoiceAgentInputCore/App/LearningSourceSelection.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryLearningModeUseCase.swift`
-- `src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift`
+- `src/VoiceAgentInputCore/App/LocalContextCandidateGenerationUseCase.swift`
 - `src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift`
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
 

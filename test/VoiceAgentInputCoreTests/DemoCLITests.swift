@@ -59,7 +59,7 @@ final class DemoCLITests: XCTestCase {
         XCTAssertEqual(candidate["suggestedScope"] as? String, "repository")
     }
 
-    func testDemoHistoryLearningNormalizeModeShowsApprovedCandidatesAffectLaterRules() throws {
+    func testDemoHistoryLearningNormalizeModeUsesRebuiltModelEntries() throws {
         let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let codexDirectory = home.appendingPathComponent(".codex")
         try FileManager.default.createDirectory(at: codexDirectory, withIntermediateDirectories: true)
