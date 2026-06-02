@@ -71,7 +71,7 @@ Current use cases:
 
 - `MicrophonePermissionUseCase` requests access only when the status is `notDetermined`.
 - `VoiceInputPipeline` can check microphone permission before recording when a provider is injected.
-- `VoiceInputPipeline` owns record, transcribe, normalize, refine, and insertion-result orchestration.
+- `VoiceInputPipeline` owns record, transcribe, deterministic normalization, and insertion-result orchestration.
 
 Current test adapter:
 
@@ -118,10 +118,6 @@ Current macOS adapter:
 
 - `PasteboardTextInsertionController`
 - `AccessibilityTextInsertionController`
-
-Future adapters:
-
-- `AccessibilityInserter`
 
 Rules:
 
@@ -184,7 +180,6 @@ Future providers:
 
 - focused app provider,
 - terminal current directory provider,
-- repository vocabulary provider.
 - GitHub local archive/cache learning-source provider,
 - Slack local archive/cache learning-source provider,
 - Chatwork local archive/cache learning-source provider,

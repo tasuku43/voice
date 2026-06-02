@@ -49,7 +49,7 @@ Dictionary normalization exposes `PromptNormalizer.normalizeText(_:context:)` fo
 - Infra adapter internals unless a protocol is missing.
 
 ## Tests
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndInsertionStages`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineKeepsTranscriptNormalizationAndInsertionStages`
 - `swift test --filter UseCaseAndRepositoryTests/testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies`
 - `make check`
 
