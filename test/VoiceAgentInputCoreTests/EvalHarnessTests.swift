@@ -8,15 +8,6 @@ private struct EvalCase: Decodable {
     var expectedContains: [String]
 }
 
-private struct LearningEvalCase: Decodable {
-    var name: String
-    var rawTranscript: String
-    var finalEditedPrompt: String
-    var laterRawTranscript: String
-    var expectedContains: [String]
-    var scope: DictionaryScope
-}
-
 private struct HistoryLearningEvalCase: Decodable {
     var name: String
     var historyTexts: [String]
@@ -39,50 +30,6 @@ final class EvalHarnessTests: XCTestCase {
                 XCTAssertTrue(
                     result.correctedText.contains(expected),
                     "Eval case '\(evalCase.name)' expected corrected text to contain '\(expected)', got '\(result.correctedText)'"
-                )
-            }
-        }
-    }
-
-    func testLearningEvalCases() async throws {
-        let root = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let url = root.appendingPathComponent("evals/learning-cases.json")
-        let data = try Data(contentsOf: url)
-        let cases = try JSONDecoder().decode([LearningEvalCase].self, from: data)
-
-        for evalCase in cases {
-            let previewUseCase = PromptPreviewUseCase(entries: [])
-            let preview = previewUseCase.preview(rawTranscript: evalCase.rawTranscript)
-            let confirmed = try await PromptEditLearningUseCase(
-                previewUseCase: previewUseCase
-            ).confirm(
-                preview: preview,
-                finalEditedPrompt: evalCase.finalEditedPrompt,
-                suggestedScope: evalCase.scope
-            )
-            let learnedEntries = confirmed.candidates
-                .map { candidate in
-                    var approved = candidate
-                    approved.approved = true
-                    return approved
-                }
-                .map { candidate in
-                    DictionaryEntry(
-                        spokenForms: [candidate.rawPhrase],
-                        canonical: candidate.correctedPhrase,
-                        kind: .projectTerm,
-                        scope: candidate.suggestedScope,
-                        confidence: candidate.confidence,
-                        autoApply: candidate.autoApplyAllowed
-                    )
-                }
-            let result = PromptNormalizationUseCase(entries: learnedEntries)
-                .normalize(rawText: evalCase.laterRawTranscript)
-
-            for expected in evalCase.expectedContains {
-                XCTAssertTrue(
-                    result.correctedText.contains(expected),
-                    "Learning eval case '\(evalCase.name)' expected corrected text to contain '\(expected)', got '\(result.correctedText)'"
                 )
             }
         }

@@ -28,9 +28,7 @@ final class DemoCLITests: XCTestCase {
         let confirmed = try XCTUnwrap(output["confirmed"] as? [String: Any])
         XCTAssertEqual(confirmed["promptToInsert"] as? String, "Claude Code で TypeScript error を直して")
         XCTAssertEqual(confirmed["shouldSubmitAutomatically"] as? Bool, false)
-        let candidates = try XCTUnwrap(confirmed["candidates"] as? [[String: Any]])
-        XCTAssertTrue(candidates.contains { $0["correctedPhrase"] as? String == "Claude Code" })
-        XCTAssertTrue(candidates.contains { $0["correctedPhrase"] as? String == "TypeScript" })
+        XCTAssertNil(confirmed["candidates"])
     }
 
     func testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving() throws {

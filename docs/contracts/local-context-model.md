@@ -65,7 +65,7 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 - AppKit UI.
 - Audio recorder internals.
 - Text insertion adapters.
-- Candidate approval UI, unless it is being explicitly kept as an optional curation surface.
+- Preview or candidate approval UI.
 
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testSpeechRecognitionHintsUseDictionaryEntriesForContextualStrings`

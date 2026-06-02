@@ -155,7 +155,7 @@ REQUIRED_COVERAGE = {
             "testPasteboardInsertionWritesPromptTextOnly",
         ],
     },
-    "candidate learning and approval": {
+    "source learning and model education": {
         "src/VoiceAgentInputCore/App/AgentHistoryDictionaryLearningUseCase.swift": [
             "AgentHistoryDictionaryLearningUseCase",
             "candidates(from texts:",
@@ -222,8 +222,8 @@ REQUIRED_COVERAGE = {
             "Learning Goal Audit",
             "Keep ordinary hotkey dictation mostly rule-based and fast.",
             "without candidate approval",
-            "testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails",
-            "DetectorBackedLearningCandidateReviewer",
+            "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
+            "LocalContextModelBuildUseCase",
             "local Foundation Models only",
             "Remaining Evidence Needed",
         ],
@@ -260,19 +260,14 @@ REQUIRED_COVERAGE = {
             "testAgentHistoryLearningModeCanGenerateRepositoryScopedCandidates",
             "testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources",
             "testRuntimeDictionaryLoadingDefaultsToSeedAndApprovedEntriesOnly",
-            "testApprovedLearningEntriesAffectNextRuleBasedNormalization",
-            "testAgentHistoryLearningApprovalEvolvesRuleBasedNormalizationForProjectTerms",
-            "testApprovingEquivalentCandidateStrengthensExistingDictionaryEntry",
-            "testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails",
-            "testDetectorBackedLearningReviewerPreservesDangerousCandidateGuardrails",
+            "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         ],
         "src/VoiceAgentInputCore/App/PromptPreviewUseCase.swift": [
-            "normalizationUseCase.learn",
+            "return ConfirmedPrompt(promptToInsert: promptToInsert)",
         ],
-        "src/VoiceAgentInputCore/App/DictionaryLearningUseCase.swift": [
-            "approveCandidates",
-            "firstEquivalentIndex",
-            "updatedAt",
+        "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
+            "learningResult?.candidates.map(Self.entry(from:))",
+            "generatedCandidateCount",
         ],
     },
     "local learning data controls": {
@@ -366,11 +361,6 @@ REQUIRED_COVERAGE = {
             "Cursor",
             "GitHub",
         ],
-        "evals/learning-cases.json": [
-            "VoiceAgentInput",
-            "ボイスエージェントインプット",
-            "repository",
-        ],
         "evals/history-learning-cases.json": [
             "ProjectSpecificName",
             "project specific name",
@@ -446,7 +436,7 @@ REQUIRED_COVERAGE = {
         ],
         "docs/18-spec-trim-audit.md": [
             "Spec trim audit",
-            "Preview/edit UI is an optional curation surface",
+            "Preview/edit UI is a paste fallback and quality-review surface",
             "Any requirement that the default hotkey path show a preview before insertion",
             "Local context model status/rebuild/export/import/delete UI is implemented",
             "source freshness checks",

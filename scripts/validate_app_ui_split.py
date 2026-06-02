@@ -26,7 +26,6 @@ ENTRYPOINT_FORBIDDEN = [
     "Raw transcript",
     "Corrected prompt",
     "Approve dictionary candidates?",
-    "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "CandidateApprovalDialogController",
 ]
 
@@ -40,8 +39,6 @@ PREVIEW_REQUIRED = [
 ]
 
 PREVIEW_FORBIDDEN = [
-    "PromptEditLearningUseCase(",
-    "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     "Approve dictionary candidates?",
     "CandidateApprovalDialogController",
     "approveCandidatesIfRequested",

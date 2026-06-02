@@ -21,16 +21,13 @@ public struct PromptPreview: Codable, Equatable, Sendable {
 
 public struct ConfirmedPrompt: Codable, Equatable, Sendable {
     public var promptToInsert: String
-    public var candidates: [CorrectionCandidate]
     public var shouldSubmitAutomatically: Bool
 
     public init(
         promptToInsert: String,
-        candidates: [CorrectionCandidate],
         shouldSubmitAutomatically: Bool = false
     ) {
         self.promptToInsert = promptToInsert
-        self.candidates = candidates
         self.shouldSubmitAutomatically = shouldSubmitAutomatically
     }
 }
@@ -42,8 +39,8 @@ public struct PromptPreviewUseCase: Sendable {
         self.normalizationUseCase = normalizationUseCase
     }
 
-    public init(entries: [DictionaryEntry], candidateExtractor: CandidateExtractor = CandidateExtractor()) {
-        self.normalizationUseCase = PromptNormalizationUseCase(entries: entries, candidateExtractor: candidateExtractor)
+    public init(entries: [DictionaryEntry]) {
+        self.normalizationUseCase = PromptNormalizationUseCase(entries: entries)
     }
 
     public func preview(rawTranscript: String) -> PromptPreview {
@@ -55,14 +52,8 @@ public struct PromptPreviewUseCase: Sendable {
         )
     }
 
-    public func confirm(preview: PromptPreview, finalEditedPrompt: String? = nil, suggestedScope: DictionaryScope = .user) -> ConfirmedPrompt {
+    public func confirm(preview: PromptPreview, finalEditedPrompt: String? = nil) -> ConfirmedPrompt {
         let promptToInsert = finalEditedPrompt ?? preview.correctedPrompt
-        let candidates = normalizationUseCase.learn(
-            rawText: preview.rawTranscript,
-            autoCorrectedText: preview.correctedPrompt,
-            finalEditedText: promptToInsert,
-            suggestedScope: suggestedScope
-        )
-        return ConfirmedPrompt(promptToInsert: promptToInsert, candidates: candidates)
+        return ConfirmedPrompt(promptToInsert: promptToInsert)
     }
 }

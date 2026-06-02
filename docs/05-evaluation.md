@@ -38,8 +38,7 @@
 - Unit tests cover deterministic algorithms.
 - E2E tests cover the demo CLI path.
 - Fixture-driven normalization eval cases cover realistic utterances.
-- Fixture-driven learning eval cases cover approved edit-derived dictionary growth and later rule-based reuse.
-- Fixture-driven history learning eval cases cover approved history-derived dictionary growth and later rule-based reuse.
+- Fixture-driven history learning eval cases cover source-derived local context model growth and later rule-based reuse.
 - Future evals should cover context-model extraction from each learning source adapter and the recognition hints generated from that model.
 
 ## Human usability
@@ -54,4 +53,4 @@ Stretch goals:
 
 - Low-latency recording and transcription.
 - GitHub, Slack, and Chatwork learning-source adapters.
-- Optional preview and dictionary review UI for users who want manual curation.
+- Optional preview/edit UI for users who want to inspect fallback output before insertion.

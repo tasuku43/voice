@@ -1046,258 +1046,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         }
     }
 
-    func testConfirmingEditedPromptExtractsLearningCandidates() {
-        let useCase = PromptPreviewUseCase(entries: [])
-        let preview = useCase.preview(rawTranscript: "くらのコードでタイプスクリプトエラーを直して")
-        let confirmed = useCase.confirm(
-            preview: preview,
-            finalEditedPrompt: "Claude Code で TypeScript error を直して"
-        )
-
-        XCTAssertEqual(confirmed.promptToInsert, "Claude Code で TypeScript error を直して")
-        XCTAssertTrue(confirmed.candidates.contains { $0.rawPhrase == "くらのコード" && $0.correctedPhrase == "Claude Code" })
-        XCTAssertTrue(confirmed.candidates.contains { $0.rawPhrase == "タイプスクリプト" && $0.correctedPhrase == "TypeScript" })
-        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
-    }
-
-    func testPromptEditLearningCanReviewCandidatesOffTheTranscriptionPath() async throws {
-        let previewUseCase = PromptPreviewUseCase(entries: [])
-        let preview = previewUseCase.preview(rawTranscript: "コーデックスで直して")
-        let confirmed = try await PromptEditLearningUseCase(
-            previewUseCase: previewUseCase,
-            candidateReviewer: StubLearningCandidateReviewer { candidates, _ in
-                candidates.map { candidate in
-                    var reviewed = candidate
-                    reviewed.confidence = 0.93
-                    reviewed.reason = "Reviewed after user confirmation by an off-path detector."
-                    return reviewed
-                }
-            }
-        ).confirm(
-            preview: preview,
-            finalEditedPrompt: "Codex で直して"
-        )
-
-        let codex = try XCTUnwrap(confirmed.candidates.first { $0.correctedPhrase == "Codex" })
-        XCTAssertEqual(confirmed.promptToInsert, "Codex で直して")
-        XCTAssertEqual(codex.confidence, 0.93)
-        XCTAssertEqual(codex.reason, "Reviewed after user confirmation by an off-path detector.")
-        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
-    }
-
-    func testPromptEditLearningUsesRepositoryScopeWhenConfigured() async throws {
-        let previewUseCase = PromptPreviewUseCase(entries: [])
-        let preview = previewUseCase.preview(rawTranscript: "ボイスエージェントインプットを直して")
-        let confirmed = try await PromptEditLearningUseCase(
-            previewUseCase: previewUseCase
-        ).confirm(
-            preview: preview,
-            finalEditedPrompt: "VoiceAgentInput を直して",
-            suggestedScope: .repository
-        )
-
-        let candidate = try XCTUnwrap(confirmed.candidates.first {
-            $0.rawPhrase == "ボイスエージェントインプット"
-                && $0.correctedPhrase == "VoiceAgentInput"
-        })
-        XCTAssertEqual(candidate.suggestedScope, .repository)
-        XCTAssertTrue(candidate.autoApplyAllowed)
-    }
-
-    func testPromptEditLearningFallsBackToUnreviewedCandidatesWhenReviewerFails() async throws {
-        let previewUseCase = PromptPreviewUseCase(entries: [])
-        let preview = previewUseCase.preview(rawTranscript: "コーデックスで直して")
-        let confirmed = try await PromptEditLearningUseCase(
-            previewUseCase: previewUseCase,
-            candidateReviewer: StubLearningCandidateReviewer { _, _ in
-                throw PromptEditLearningTestError.reviewerFailed
-            }
-        ).confirm(
-            preview: preview,
-            finalEditedPrompt: "Codex で直して"
-        )
-
-        let codex = try XCTUnwrap(confirmed.candidates.first { $0.correctedPhrase == "Codex" })
-        XCTAssertEqual(confirmed.promptToInsert, "Codex で直して")
-        XCTAssertEqual(codex.rawPhrase, "コーデックス")
-        XCTAssertFalse(confirmed.shouldSubmitAutomatically)
-    }
-
-    func testDetectorBackedLearningReviewerPreservesDangerousCandidateGuardrails() async throws {
-        let diff = PromptDiff(
-            rawText: "アールエムを使って消して",
-            autoCorrectedText: "アールエムを使って消して",
-            finalEditedText: "rm を使って消して"
-        )
-        let reviewed = try await DetectorBackedLearningCandidateReviewer(
-            detector: FixedVoiceMisrecognitionDetector(
-                evidence: VoiceMisrecognitionEvidence(confidence: 0.99, reason: "High confidence detector result.")
-            )
-        ).review(
-            candidates: [
-                CorrectionCandidate(
-                    rawPhrase: "アールエム",
-                    correctedPhrase: "rm",
-                    confidence: 0.3,
-                    suggestedScope: .user,
-                    dangerous: true,
-                    autoApplyAllowed: true
-                )
-            ],
-            diff: diff
-        )
-
-        XCTAssertEqual(reviewed[0].confidence, 0.4)
-        XCTAssertEqual(reviewed[0].reason, "High confidence detector result.")
-        XCTAssertFalse(reviewed[0].autoApplyAllowed)
-    }
-
-    func testApprovedCandidatesPersistAsLocalDictionaryEntries() throws {
-        let repository = InMemoryDictionaryRepository()
-        let useCase = DictionaryLearningUseCase(
-            repository: repository,
-            now: { Date(timeIntervalSince1970: 1_234) }
-        )
-        let candidates = [
-            CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.72, suggestedScope: .user, approved: true, autoApplyAllowed: true),
-            CorrectionCandidate(rawPhrase: "アールエム", correctedPhrase: "rm", confidence: 0.4, suggestedScope: .user, approved: true, dangerous: true, autoApplyAllowed: true),
-            CorrectionCandidate(rawPhrase: "却下", correctedPhrase: "reject me", confidence: 0.9, suggestedScope: .user, rejected: true, autoApplyAllowed: true)
-        ]
-
-        let approved = try useCase.approveCandidates(candidates)
-        let saved = try repository.loadEntries()
-
-        XCTAssertEqual(approved.count, 2)
-        XCTAssertEqual(saved.count, 2)
-        XCTAssertTrue(saved.contains {
-            $0.spokenForms == ["くらのコード"] &&
-                $0.canonical == "Claude Code" &&
-                $0.recognitionHints.contains("Claude Code") &&
-                !$0.recognitionHints.contains("くらのコード") &&
-                $0.autoApply
-        })
-        XCTAssertTrue(saved.contains {
-            $0.spokenForms == ["アールエム"] &&
-                $0.canonical == "rm" &&
-                $0.recognitionHints == ["rm"] &&
-                !$0.autoApply
-        })
-        XCTAssertFalse(saved.contains { $0.canonical == "reject me" })
-    }
-
-    func testUnapprovedCandidatesDoNotPersist() throws {
-        let repository = InMemoryDictionaryRepository()
-        let useCase = DictionaryLearningUseCase(repository: repository)
-
-        let approved = try useCase.approveCandidates([
-            CorrectionCandidate(rawPhrase: "候補", correctedPhrase: "candidate", confidence: 0.8, suggestedScope: .user)
-        ])
-
-        XCTAssertEqual(approved, [])
-        XCTAssertEqual(try repository.loadEntries(), [])
-    }
-
-    func testApprovingEquivalentCandidateStrengthensExistingDictionaryEntry() throws {
-        let existingEntry = DictionaryEntry(
-            spokenForms: ["すいふとゆーあい"],
-            canonical: "SwiftUI",
-            kind: .phrase,
-            scope: .user,
-            confidence: 0.55,
-            autoApply: false,
-            createdAt: Date(timeIntervalSince1970: 10),
-            updatedAt: Date(timeIntervalSince1970: 10)
-        )
-        let repository = InMemoryDictionaryRepository(entries: [existingEntry])
-
-        _ = try DictionaryLearningUseCase(
-            repository: repository,
-            now: { Date(timeIntervalSince1970: 20) }
-        ).approveCandidates([
-            CorrectionCandidate(
-                rawPhrase: "すいふとゆーあい",
-                correctedPhrase: "SwiftUI",
-                confidence: 0.82,
-                suggestedScope: .user,
-                approved: true,
-                autoApplyAllowed: true
-            )
-        ])
-        let saved = try repository.loadEntries()
-
-        XCTAssertEqual(saved.count, 1)
-        XCTAssertEqual(saved[0].confidence, 0.82)
-        XCTAssertTrue(saved[0].autoApply)
-        XCTAssertEqual(saved[0].createdAt, Date(timeIntervalSince1970: 10))
-        XCTAssertEqual(saved[0].updatedAt, Date(timeIntervalSince1970: 20))
-    }
-
-    func testCandidateApprovalMarksSelectedOnly() {
-        let candidates = [
-            CorrectionCandidate(rawPhrase: "one", correctedPhrase: "1", confidence: 0.8, suggestedScope: .user),
-            CorrectionCandidate(rawPhrase: "two", correctedPhrase: "2", confidence: 0.8, suggestedScope: .user)
-        ]
-
-        let approved = CandidateApprovalUseCase().approveCandidates(candidates, selectedIndexes: [1])
-
-        XCTAssertTrue(approved[0].rejected)
-        XCTAssertFalse(approved[0].approved)
-        XCTAssertTrue(approved[1].approved)
-        XCTAssertFalse(approved[1].rejected)
-    }
-
-    func testLearningApprovalUseCasePersistsOnlySelectedCandidates() throws {
-        let repository = InMemoryDictionaryRepository()
-        let candidates = [
-            CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.8, suggestedScope: .user),
-            CorrectionCandidate(rawPhrase: "却下", correctedPhrase: "reject me", confidence: 0.8, suggestedScope: .user)
-        ]
-
-        let approved = try LearningApprovalUseCase(
-            repository: repository,
-            now: { Date(timeIntervalSince1970: 42) }
-        ).approveSelectedCandidates(candidates, selectedIndexes: [0])
-
-        XCTAssertEqual(approved.map(\.canonical), ["Claude Code"])
-        XCTAssertEqual(try repository.loadEntries().map(\.canonical), ["Claude Code"])
-    }
-
-    func testApprovedLearningEntriesAffectNextRuleBasedNormalization() throws {
-        let repository = InMemoryDictionaryRepository()
-        let candidates = [
-            CorrectionCandidate(
-                rawPhrase: "すいふとゆーあい",
-                correctedPhrase: "SwiftUI",
-                confidence: 0.8,
-                suggestedScope: .user,
-                autoApplyAllowed: true
-            )
-        ]
-
-        _ = try LearningApprovalUseCase(repository: repository)
-            .approveSelectedCandidates(candidates, selectedIndexes: [0])
-        let entries = try DictionaryEntryLoadingUseCase(
-            repository: repository,
-            seedEntries: [],
-            contextualEntries: []
-        ).loadEntries()
-        let preview = PromptPreviewUseCase(entries: entries)
-            .preview(rawTranscript: "すいふとゆーあいのpreviewを直して")
-        var foundLearnedCorrection = false
-        for correction in preview.corrections {
-            if correction.original == "すいふとゆーあい",
-               correction.replacement == "SwiftUI ",
-               correction.canonical == "SwiftUI" {
-                foundLearnedCorrection = true
-            }
-        }
-
-        XCTAssertEqual(preview.correctedPrompt, "SwiftUI のpreviewを直して")
-        XCTAssertTrue(foundLearnedCorrection)
-    }
-
-    func testAgentHistoryLearningApprovalEvolvesRuleBasedNormalizationForProjectTerms() throws {
-        let repository = InMemoryDictionaryRepository()
+    func testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms() throws {
         let historyProvider = StubAgentHistoryTextProvider(texts: [
             "ProjectSpecificName appears in this repository prompt.",
             "Please preserve ProjectSpecificName when editing docs."
@@ -1305,23 +1054,18 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let learningResult = try AgentHistoryLearningModeUseCase(
             historyProvider: historyProvider,
             dictionaryLearningUseCase: AgentHistoryDictionaryLearningUseCase(minimumOccurrences: 2)
-        ).generateCandidates(existingEntries: try repository.loadEntries())
+        ).generateCandidates(existingEntries: [])
 
-        guard let index = learningResult.candidates.firstIndex(where: {
+        guard learningResult.candidates.contains(where: {
             $0.rawPhrase == "project specific name" &&
                 $0.correctedPhrase == "ProjectSpecificName"
         }) else {
             return XCTFail("Expected ProjectSpecificName learning candidate")
         }
 
-        _ = try LearningApprovalUseCase(repository: repository)
-            .approveSelectedCandidates(learningResult.candidates, selectedIndexes: [index])
-        let entries = try DictionaryEntryLoadingUseCase(
-            repository: repository,
-            seedEntries: [],
-            contextualEntries: []
-        ).loadEntries()
-        let preview = PromptPreviewUseCase(entries: entries)
+        let model = LocalContextModelBuildUseCase(seedEntries: [], approvedEntries: [])
+            .build(learningResult: learningResult)
+        let preview = PromptPreviewUseCase(entries: model.postSTTEntries)
             .preview(rawTranscript: "project specific nameの設定を直して")
 
         XCTAssertEqual(preview.correctedPrompt, "ProjectSpecificName の設定を直して")
@@ -1330,7 +1074,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     func testPromptInsertionRequiresExplicitConfirmation() throws {
         let insertionController = MockTextInsertionController()
         let useCase = PromptInsertionUseCase(insertionController: insertionController)
-        let confirmed = ConfirmedPrompt(promptToInsert: "Claude Code で確認して", candidates: [])
+        let confirmed = ConfirmedPrompt(promptToInsert: "Claude Code で確認して")
 
         XCTAssertThrowsError(try useCase.insert(confirmed, explicitConfirmation: false)) { error in
             XCTAssertEqual(error as? PromptInsertionError, .explicitConfirmationRequired)
@@ -1341,12 +1085,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     func testPromptInsertionUsesPromptTextWithoutSubmitting() throws {
         let insertionController = MockTextInsertionController()
         let useCase = PromptInsertionUseCase(insertionController: insertionController)
-        let confirmed = ConfirmedPrompt(
-            promptToInsert: "Claude Code で確認して",
-            candidates: [
-                CorrectionCandidate(rawPhrase: "くらのコード", correctedPhrase: "Claude Code", confidence: 0.72, suggestedScope: .user, autoApplyAllowed: true)
-            ]
-        )
+        let confirmed = ConfirmedPrompt(promptToInsert: "Claude Code で確認して")
 
         try useCase.insert(confirmed, explicitConfirmation: true)
 
@@ -1360,7 +1099,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let useCase = PromptInsertionUseCase(insertionController: insertionController)
         let confirmed = ConfirmedPrompt(
             promptToInsert: "Claude Code で確認して",
-            candidates: [],
             shouldSubmitAutomatically: true
         )
 
@@ -1973,10 +1711,6 @@ private enum TemporaryRecordedAudioFileStoreTestError: Error, Equatable {
     case expected
 }
 
-private enum PromptEditLearningTestError: Error {
-    case reviewerFailed
-}
-
 private final class RecordedAudioCapture: @unchecked Sendable {
     private let lock = NSLock()
     private var storedValue: RecordedAudio?
@@ -2033,25 +1767,5 @@ private struct StubAgentHistoryTextProvider: AgentHistoryTextProvider {
 
     func historyTexts() throws -> [String] {
         texts
-    }
-}
-
-private struct StubLearningCandidateReviewer: LearningCandidateReviewer {
-    var reviewClosure: @Sendable ([CorrectionCandidate], PromptDiff) async throws -> [CorrectionCandidate]
-
-    init(_ reviewClosure: @escaping @Sendable ([CorrectionCandidate], PromptDiff) async throws -> [CorrectionCandidate]) {
-        self.reviewClosure = reviewClosure
-    }
-
-    func review(candidates: [CorrectionCandidate], diff: PromptDiff) async throws -> [CorrectionCandidate] {
-        try await reviewClosure(candidates, diff)
-    }
-}
-
-private struct FixedVoiceMisrecognitionDetector: VoiceMisrecognitionDetector {
-    var evidence: VoiceMisrecognitionEvidence
-
-    func evidence(rawPhrase: String, correctedPhrase: String, diff: PromptDiff) -> VoiceMisrecognitionEvidence {
-        evidence
     }
 }

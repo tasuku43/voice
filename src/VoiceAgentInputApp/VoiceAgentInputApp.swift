@@ -279,8 +279,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 await MainActor.run {
                     do {
                         try self.insertConfirmedPrompt(ConfirmedPrompt(
-                            promptToInsert: result.preview.correctedPrompt,
-                            candidates: []
+                            promptToInsert: result.preview.correctedPrompt
                         ))
                     } catch {
                         self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
@@ -747,7 +746,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
 
             try insertConfirmedPrompt(
-                ConfirmedPrompt(promptToInsert: prompt, candidates: [])
+                ConfirmedPrompt(promptToInsert: prompt)
             )
         } catch {
             presentError(error)

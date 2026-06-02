@@ -51,7 +51,6 @@ required = [
     'src/VoiceAgentInputCore/App/LocalContextModel.swift',
     'src/VoiceAgentInputCore/App/LocalContextModelDocumentCodec.swift',
     'src/VoiceAgentInputCore/App/LocalContextModelRepository.swift',
-    'src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift',
     'src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift',
     'src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift',
     'src/VoiceAgentInputCore/App/AppSettingsUseCase.swift',
@@ -69,7 +68,6 @@ required = [
     'src/VoiceAgentInputApp/PreviewWindowController.swift',
     '.codex/goals/voice-agent-input-full-build.md',
     'evals/normalization-cases.json',
-    'evals/learning-cases.json',
     'evals/history-learning-cases.json',
 ]
 

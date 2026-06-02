@@ -13,7 +13,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 - `DemoCLITests` exercise process-level preview, confirm, and history-learning flows.
 - `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local dictionary import/export/delete, repository vocabulary, STT recognition hints, and temporary audio cleanup.
 - `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, explicit-confirmation enforcement, and automatic-submit rejection.
-- `EvalHarnessTests` covers fixture-driven normalization cases, edit-derived learning cases, and history-derived context learning cases.
+- `EvalHarnessTests` covers fixture-driven normalization cases and history-derived context learning cases.
 
 ## Requirement evidence
 
@@ -25,10 +25,10 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Transcribe speech | `AppleSpeechEngine`, on-device default, speech permission use case, app contract validation | Implemented, needs real speech confirmation |
 | Normalize developer terms | domain normalization tests, fixture evals, eval coverage validation | Verified |
 | Feed learned context into STT hints | `SpeechRecognitionHintsUseCase`, dictionary `recognitionHints`, Apple Speech contextual string tests | Verified |
-| Reuse learned context after STT | learning eval fixtures, `PromptEditLearningUseCase`, `AgentHistoryLearningModeUseCase`, normalization tests | Verified |
+| Reuse learned context after STT | history-learning eval fixtures, `AgentHistoryLearningModeUseCase`, `LocalContextModelBuildUseCase`, normalization tests | Verified |
 | Quick Paste daily input compatibility | direct recording-flow insertion of `result.preview.correctedPrompt`, app contract validation | Implemented, needs manual target-app confirmation |
 | Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
-| Extract dictionary candidates from edits | preview confirmation tests and candidate extractor tests | Verified as optional curation |
+| Extract dictionary candidates for model education | source learning tests and candidate extractor tests | Verified |
 | Persist approved local dictionaries | JSON repository tests and local learning data tests | Verified |
 | Export/import/open/delete local learning data | local learning data tests, local context model tests, `Open Local Data Folder...`, app contract validation | Implemented for approved dictionary and local context model data, needs manual menu confirmation |
 | Repository vocabulary as a learning source | git context tests, repository vocabulary tests, app contract validation | Implemented, needs manual folder selection confirmation |

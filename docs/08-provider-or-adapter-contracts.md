@@ -93,9 +93,6 @@ Current use cases:
 
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries, approved local entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime, preview, and confirmation flows.
 - `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
-- `CandidateApprovalUseCase` marks selected candidates as approved and unselected candidates as rejected.
-- `DictionaryLearningUseCase` persists only candidates marked `approved` and not `rejected` as local dictionary entries.
-- `LearningApprovalUseCase` combines candidate selection review and approved-entry persistence so UI only supplies selected indexes.
 - `LocalLearningDataUseCase` exports, imports, and deletes approved local dictionary entries; the macOS shell exposes these as menu actions.
 - `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete separately from approved dictionary controls.
 - `LocalLearningDataDocumentCodec` owns the JSON document shape for local dictionary import/export.
@@ -106,7 +103,7 @@ Product direction:
 
 - The dictionary repository is one storage mechanism for the broader local context model.
 - Learned context should be usable before STT as recognition hints and after STT as deterministic transforms.
-- Preview and approval flows are optional curation surfaces, not the core hotkey input path.
+- Model rebuild flows are explicit curation surfaces, not part of the core hotkey input path.
 
 Future adapter:
 

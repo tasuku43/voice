@@ -56,7 +56,7 @@ History learning normalize mode simulates approving the generated history candid
 swift run voice-agent-input-demo --mode learn-history-normalize --scope repository "project specific nameの設定を直して"
 ```
 
-This output includes both `historyLearning` and `normalization`, so tests and manual experiments can verify that history-derived candidates would improve the next rule-based normalization step before using the app's approval UI.
+This output includes both `historyLearning` and `normalization`, so tests and manual experiments can verify that history-derived candidates would improve the next rule-based normalization step after rebuilding the local context model.
 
 ## Core API
 
@@ -95,12 +95,13 @@ AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLe
 
 The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and candidate metadata. `LocalContextModelDataUseCase.rebuildModel(...)` persists a rebuilt model after explicit learning-source runs. `DictionaryEntryLoadingUseCase` loads seed entries, approved local entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
 
-Learning use case:
+Preview confirmation use case:
 
 ```swift
-PromptNormalizationUseCase.learn(rawText: String, autoCorrectedText: String, finalEditedText: String) -> [CorrectionCandidate]
-DictionaryLearningUseCase.approveCandidates(_ candidates: [CorrectionCandidate]) throws -> [DictionaryEntry]
+PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?) -> ConfirmedPrompt
 ```
+
+Confirmation returns only the prompt to insert. It does not generate learning candidates, approve entries, or submit automatically.
 
 Insertion use case:
 
@@ -158,14 +159,6 @@ Missing settings decode to local defaults: four seconds of recording, `ja-JP` sp
 The macOS menu bar shell exposes recording settings locally through `Recording Settings...` and hotkey settings through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
 
 Runtime voice input currently stays global: repository folders do not implicitly change the dictionary used by hotkey recording, Apple Speech hints, or post-STT normalization. Repository folders are learning-source configuration, so repository context is included through explicit source selection and bounded model rebuilds rather than implicit broad scans.
-
-Learning candidate review:
-
-```swift
-PromptEditLearningUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?, suggestedScope: DictionaryScope) async throws -> ConfirmedPrompt
-```
-
-Candidate review must preserve dangerous-command guardrails. Reviewers may update reasons and confidence, but must not make a dangerous substitution auto-apply. Any future LLM-style reviewer must be a local Foundation Model adapter with no network IO.
 
 Permission status use case:
 

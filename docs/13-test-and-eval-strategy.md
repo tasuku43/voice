@@ -17,7 +17,6 @@ Cover deterministic domain behavior:
 Cover orchestration:
 
 - normalize raw transcript,
-- learn from final edited prompt,
 - build context from local learning sources,
 - generate STT recognition hints from learned context,
 - persist approved entries through repository adapters.
@@ -41,7 +40,7 @@ Cover the real executable path where practical:
 - `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.
 - `make check` smoke-launches `.build/VoiceAgentInput.app` long enough to catch immediate startup crashes.
 - `make check` runs the app executable with `--ui-layout-smoke`, renders representative optional Preview, learning settings, and recording HUD layouts to `.build/ui-layout-smoke/`, and fails on ambiguous or empty view frames.
-- `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms, edit-derived learning eval coverage, and history-derived learning eval coverage.
+- `make check` validates normalization eval coverage for realistic mixed Japanese-English developer terms and history-derived learning eval coverage.
 - `make check` validates architecture boundaries: Domain and App stay free of UI/macOS framework dependencies while framework-specific adapters remain in Infra.
 - `make check` validates the app source contract for hotkey wiring, on-device Apple Speech, the current Quick Paste daily path, local learning source controls, local dictionary data controls, and absence of obvious network calls.
 - `make check` validates the privacy contract across source files, including absence of direct networking/cloud snippets, on-device Apple Speech default, an allowlist for file writes, temporary audio cleanup hooks, and local learning data controls.
@@ -59,21 +58,12 @@ Normalization eval cases in `evals/normalization-cases.json` should include:
 - expected corrected output,
 - expected correction count or required canonical terms.
 
-Learning eval cases in `evals/learning-cases.json` should include:
-
-- name,
-- raw transcript,
-- final edited prompt,
-- later raw transcript,
-- expected canonical terms after approving the learned candidate,
-- learning scope.
-
 History learning eval cases in `evals/history-learning-cases.json` should include:
 
 - name,
 - bounded local agent history text snippets,
 - later raw transcript,
-- expected canonical terms after approving history-derived candidates,
+- expected canonical terms after rebuilding the local context model,
 - learning scope.
 
 Local context model eval cases should be added when the model becomes first-class. They should include:

@@ -67,10 +67,6 @@ REQUIRED_SNIPPETS = {
         "public struct DictionaryContextLoadingUseCase",
         "RepositoryVocabularyFilePathProvider",
     ],
-    "src/VoiceAgentInputCore/App/LearningApprovalUseCase.swift": [
-        "public struct LearningApprovalUseCase",
-        "approveSelectedCandidates",
-    ],
     "src/VoiceAgentInputCore/App/LocalLearningDataDocumentCodec.swift": [
         "public struct LocalLearningDataDocumentCodec",
         "dateEncodingStrategy = .iso8601",
@@ -91,12 +87,6 @@ REQUIRED_SNIPPETS = {
         "public struct AppSettingsUseCase",
         "saveRepositoryPath",
         "saveRecordingSettings",
-    ],
-    "src/VoiceAgentInputCore/App/PromptEditLearningUseCase.swift": [
-        "public protocol LearningCandidateReviewer",
-        "public struct PromptEditLearningUseCase",
-        "candidateReviewer.review",
-        "reviewedCandidates = confirmed.candidates",
     ],
     "src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift": [
         "public protocol AgentHistoryTextProvider",
@@ -213,7 +203,6 @@ FORBIDDEN_SNIPPETS = {
         "Approve dictionary candidates?",
         "CandidateApprovalDialogController",
         "approveCandidatesIfRequested",
-        "LearningApprovalUseCase(repository: repository).approveSelectedCandidates",
     ],
     "src/VoiceAgentInputCore/App/PromptContracts.swift": [
         "import AppKit",

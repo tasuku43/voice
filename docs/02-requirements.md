@@ -32,8 +32,6 @@
 
 - Support an optional preview/edit workflow for quality review and manual correction.
 - Recall recent voice inputs from a local history shortcut and paste the selected text.
-- Extract correction candidates from user edits when the preview/edit workflow is used.
-- Store approved dictionary entries locally when an approval workflow is used.
 - Support dictionary scopes such as global, user, repository, and session.
 - Provide import/export for dictionaries and context data.
 - Provide a delete-all-local-learning-data path.

@@ -120,7 +120,6 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "recordVoiceInput paste failed",
     )
     forbidden_quick_paste = [
-        "PromptEditLearningUseCase(",
         "CandidateApprovalDialogController(",
         "approveCandidatesIfRequested",
     ]
@@ -134,7 +133,6 @@ def validate_quick_paste_learning_boundary(source: str) -> None:
         "private func insertConfirmedPrompt",
     )
     forbidden_preview = [
-        "PromptEditLearningUseCase(",
         "CandidateApprovalDialogController(",
         "approveCandidatesIfRequested",
     ]
