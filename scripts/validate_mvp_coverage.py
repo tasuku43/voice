@@ -62,9 +62,9 @@ REQUIRED_COVERAGE = {
             "audioRecorder.recordOnce",
             "speechEngine.transcribe",
         ],
-        "src/VoiceAgentInputCore/App/VoiceInputFlowUseCase.swift": [
-            "recordTranscribeAndPreview",
-            "VoiceInputPipeline",
+        "src/VoiceAgentInputCore/App/VoiceInputPipeline.swift": [
+            "func run() async throws -> VoiceInputPipelineResult",
+            "recordedAudioHandler?(audio)",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
             "let voiceInputPipeline = VoiceInputPipeline(",

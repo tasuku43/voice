@@ -21,7 +21,7 @@ Contract:
 - Do not transcribe, correct, refine, paste, learn, or persist raw audio by default.
 
 Tests:
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing`
 - `swift test --filter UseCaseAndRepositoryTests/testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation`
 - `make check`
 

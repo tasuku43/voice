@@ -24,14 +24,14 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(confirmed.shouldSubmitAutomatically)
     }
 
-    func testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview() async throws {
+    func testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing() async throws {
         let speechEngine = MockSpeechEngine()
-        let useCase = VoiceInputFlowUseCase(
+        let pipeline = VoiceInputPipeline(
             speechEngine: speechEngine,
-            entries: SeedDictionaries.codingAgentEntries
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await useCase.transcribeAndPreview(mockAudioText: "こーでっくすでブランチを確認して")
+        let preview = try await pipeline.run(mockAudioText: "こーでっくすでブランチを確認して").preview
 
         XCTAssertEqual(preview.rawTranscript, "こーでっくすでブランチを確認して")
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
@@ -39,18 +39,18 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(preview.requiresExplicitConfirmation)
     }
 
-    func testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview() async throws {
+    func testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing() async throws {
         let recorder = MockAudioRecorder(mockText: "くらのコードでタイプスクリプトを確認して")
         let permissionProvider = MockMicrophonePermissionProvider(status: .authorized)
         let speechEngine = MockSpeechEngine()
-        let useCase = VoiceInputFlowUseCase(
+        let pipeline = VoiceInputPipeline(
             audioRecorder: recorder,
             microphonePermissionProvider: permissionProvider,
             speechEngine: speechEngine,
-            entries: SeedDictionaries.codingAgentEntries
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await useCase.recordTranscribeAndPreview()
+        let preview = try await pipeline.run().preview
 
         XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトを確認して")
         XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
@@ -58,22 +58,22 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
     }
 
-    func testVoiceInputFlowReportsRecordedAudioForDebugObservability() async throws {
+    func testVoiceInputPipelineReportsRecordedAudioForDebugObservability() async throws {
         let audio = RecordedAudio(
             data: Data("くらのコードでタイプスクリプトを確認して".utf8),
             formatDescription: "mock-text",
             durationSeconds: 4.2
         )
         let capturedAudio = RecordedAudioCapture()
-        let useCase = VoiceInputFlowUseCase(
+        let pipeline = VoiceInputPipeline(
             audioRecorder: MockAudioRecorder(audio: audio),
             microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
             speechEngine: MockSpeechEngine(),
-            entries: SeedDictionaries.codingAgentEntries,
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries),
             recordedAudioHandler: { capturedAudio.store($0) }
         )
 
-        _ = try await useCase.recordTranscribeAndPreview()
+        _ = try await pipeline.run()
 
         XCTAssertEqual(capturedAudio.value, audio)
     }
@@ -816,16 +816,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadModel(), LocalContextModel())
     }
 
-    func testVoiceInputFlowRequestsMicrophonePermissionWhenNeeded() async throws {
+    func testVoiceInputPipelineRequestsMicrophonePermissionWhenNeeded() async throws {
         let permissionProvider = MockMicrophonePermissionProvider(status: .notDetermined, requestedStatus: .authorized)
-        let useCase = VoiceInputFlowUseCase(
+        let pipeline = VoiceInputPipeline(
             audioRecorder: MockAudioRecorder(mockText: "こーでっくすでブランチを確認して"),
             microphonePermissionProvider: permissionProvider,
             speechEngine: MockSpeechEngine(),
-            entries: SeedDictionaries.codingAgentEntries
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await useCase.recordTranscribeAndPreview()
+        let preview = try await pipeline.run().preview
 
         XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 1)
@@ -995,35 +995,35 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
     }
 
-    func testVoiceInputFlowDoesNotRecordWhenMicrophonePermissionIsDenied() async {
+    func testVoiceInputPipelineDoesNotRecordWhenMicrophonePermissionIsDenied() async {
         let permissionProvider = MockMicrophonePermissionProvider(status: .denied)
-        let useCase = VoiceInputFlowUseCase(
+        let pipeline = VoiceInputPipeline(
             audioRecorder: MockAudioRecorder(mockText: "recording should not be consumed"),
             microphonePermissionProvider: permissionProvider,
             speechEngine: MockSpeechEngine(),
-            entries: SeedDictionaries.codingAgentEntries
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
         do {
-            _ = try await useCase.recordTranscribeAndPreview()
+            _ = try await pipeline.run()
             XCTFail("Expected microphone permission denial")
         } catch {
-            XCTAssertEqual(error as? VoiceInputFlowError, .microphonePermissionDenied(status: .denied))
+            XCTAssertEqual(error as? VoiceInputPipelineError, .microphonePermissionDenied(status: .denied))
             XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
         }
     }
 
-    func testVoiceInputFlowRequiresRecorderForRecordPath() async {
-        let useCase = VoiceInputFlowUseCase(
+    func testVoiceInputPipelineRequiresRecorderForRecordPath() async {
+        let pipeline = VoiceInputPipeline(
             speechEngine: MockSpeechEngine(),
-            entries: SeedDictionaries.codingAgentEntries
+            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
         do {
-            _ = try await useCase.recordTranscribeAndPreview()
+            _ = try await pipeline.run()
             XCTFail("Expected recorder unavailable error")
         } catch {
-            XCTAssertEqual(error as? VoiceInputFlowError, .audioRecorderUnavailable)
+            XCTAssertEqual(error as? VoiceInputPipelineError, .audioRecorderUnavailable)
         }
     }
 

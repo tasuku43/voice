@@ -1231,7 +1231,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     }
 
     private func userFacingMessage(for error: Error) -> String {
-        if let flowError = error as? VoiceInputFlowError {
+        if let flowError = error as? VoiceInputPipelineError {
             switch flowError {
             case .audioRecorderUnavailable:
                 return "The audio recorder is not available."

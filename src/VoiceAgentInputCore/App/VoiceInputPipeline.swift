@@ -1,5 +1,10 @@
 import Foundation
 
+public enum VoiceInputPipelineError: Error, Equatable {
+    case audioRecorderUnavailable
+    case microphonePermissionDenied(status: MicrophonePermissionStatus)
+}
+
 public struct VoiceInputPipelineResult: Equatable, Sendable {
     public var transcript: Transcript
     public var normalizedPrompt: NormalizedPrompt
@@ -60,14 +65,14 @@ public struct VoiceInputPipeline {
 
     public func run() async throws -> VoiceInputPipelineResult {
         guard let audioRecorder else {
-            throw VoiceInputFlowError.audioRecorderUnavailable
+            throw VoiceInputPipelineError.audioRecorderUnavailable
         }
         if let microphonePermissionProvider {
             do {
                 try await MicrophonePermissionUseCase(provider: microphonePermissionProvider).ensureRecordingAllowed()
             } catch let error as MicrophonePermissionError {
                 if case let .recordingNotAllowed(status) = error {
-                    throw VoiceInputFlowError.microphonePermissionDenied(status: status)
+                    throw VoiceInputPipelineError.microphonePermissionDenied(status: status)
                 }
                 throw error
             }

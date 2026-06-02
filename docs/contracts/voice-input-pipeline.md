@@ -48,7 +48,6 @@ Use `PromptTextTransformPipeline` when a session only needs function composition
 - `src/VoiceAgentInputCore/App/VoiceInputPipeline.swift`
 - `src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift`
 - `src/VoiceAgentInputCore/App/PromptTextTransform.swift`
-- `src/VoiceAgentInputCore/App/VoiceInputFlowUseCase.swift`
 - `src/VoiceAgentInputCore/App/DictionaryContextLoadingUseCase.swift`
 
 ## May Touch

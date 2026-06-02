@@ -70,8 +70,8 @@ PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?)
 Voice-input orchestration:
 
 ```swift
-VoiceInputFlowUseCase.transcribeAndPreview(mockAudioText: String) async throws -> PromptPreview
-VoiceInputFlowUseCase.recordTranscribeAndPreview() async throws -> PromptPreview
+VoiceInputPipeline.run(mockAudioText: String) async throws -> VoiceInputPipelineResult
+VoiceInputPipeline.run() async throws -> VoiceInputPipelineResult
 ```
 
 This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Runtime entries also feed `SpeechRecognitionHints` so the saved local context model can affect recognition before post-STT normalization.

@@ -19,7 +19,7 @@ Contract:
 - Do not correct developer terms or persist transcripts.
 
 Tests:
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing`
 - `make check`
 
 Done:

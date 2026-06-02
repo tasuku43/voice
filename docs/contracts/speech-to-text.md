@@ -35,7 +35,7 @@
 - Normalization, learning, and output use cases.
 
 ## Tests
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowTranscribesThroughReplaceableEngineBeforePreview`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing`
 - `swift test --filter UseCaseAndRepositoryTests/testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation`
 - `make check`
 

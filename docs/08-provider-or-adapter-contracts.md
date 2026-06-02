@@ -33,7 +33,6 @@ Current app orchestration:
 
 - `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, a `PromptRefiner`, and `NormalizationContext`.
 - `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptPreview` stage outputs.
-- `VoiceInputFlowUseCase` remains as a compatibility wrapper for preview-oriented tests and CLI-style call sites.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
 - `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
 
@@ -72,7 +71,7 @@ Current use cases:
 
 - `MicrophonePermissionUseCase` requests access only when the status is `notDetermined`.
 - `VoiceInputPipeline` can check microphone permission before recording when a provider is injected.
-- `VoiceInputFlowUseCase` delegates to `VoiceInputPipeline` for compatibility.
+- `VoiceInputPipeline` owns record, transcribe, normalize, refine, and preview-result orchestration.
 
 Current test adapter:
 

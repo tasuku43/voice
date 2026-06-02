@@ -36,7 +36,7 @@
 - Speech, normalization, preview, learning, and output logic.
 
 ## Tests
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputFlowRecordsAudioBeforeTranscriptionAndPreview`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing`
 - `swift test --filter UseCaseAndRepositoryTests/testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation`
 - `make check`
 
