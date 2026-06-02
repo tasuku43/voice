@@ -121,6 +121,7 @@ REQUIRED_SNIPPETS = {
         "request.contextualStrings = recognitionHints.contextualStrings",
     ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+        "Model Education",
         "Last rebuild time",
         "Rebuild Local Context Model...",
         "rebuildLocalContextModelFromSources",

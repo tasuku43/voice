@@ -36,6 +36,7 @@ REQUIRED_SNIPPETS = [
     "not automatically submitted",
     "Accessibility",
     "copies the prompt",
+    "Model Education",
     "Rebuild Local Context Model...",
     "without opening candidate approval",
     "rebuild time and source kinds",

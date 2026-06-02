@@ -50,24 +50,24 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 ## Local Learning
 
-1. Choose `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
+1. Choose `Model Education` -> `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
 2. Verify the rebuild summary shows the last rebuild time, source kinds, source text counts, generated candidates, and runtime entry count.
 3. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
 
 ## Local Data Controls
 
-1. Choose `Export Local Context Model...` and save a JSON file.
+1. Choose `Model Education` -> `Export Local Context Model...` and save a JSON file.
 2. Verify the exported JSON contains `schemaVersion`, `model`, `lastRebuiltAt`, and `sourceKinds`.
-3. Choose `Import Local Context Model...` and import the JSON file.
-4. Choose `Open Local Data Folder...` and verify the Application Support folder opens.
-5. Choose `Delete Local Context Model...`.
+3. Choose `Model Education` -> `Import Local Context Model...` and import the JSON file.
+4. Choose `Model Education` -> `Open Local Data Folder...` and verify the Application Support folder opens.
+5. Choose `Model Education` -> `Delete Local Context Model...`.
 6. Verify later Quick Paste runs no longer use deleted local model entries unless they come from seed terms or a rebuilt local context model.
 
 ## Repository Vocabulary
 
-1. Choose `Set Repository Folder...`.
+1. Choose `Model Education` -> `Set Repository Folder...`.
 2. Select a Git repository folder.
-3. Choose `Rebuild Local Context Model...` with `Git repository vocabulary` selected.
+3. Choose `Model Education` -> `Rebuild Local Context Model...` with `Git repository vocabulary` selected.
 4. Trigger Quick Paste containing the repository name, branch name, or tracked file name.
 5. Verify repository vocabulary appears only after an explicit model rebuild, not merely because a repository folder is configured.
 

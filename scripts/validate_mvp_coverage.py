@@ -188,6 +188,8 @@ REQUIRED_COVERAGE = {
             "parsedStructuredJSON",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+            "Model Education",
+            "modelEducationMenuItem",
             "Last rebuild time",
             "Rebuild Local Context Model...",
             "rebuildLocalContextModelFromSources",
@@ -260,6 +262,7 @@ REQUIRED_COVERAGE = {
             "dateDecodingStrategy = .iso8601",
         ],
         "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
+            "Model Education",
             "Export Local Context Model...",
             "Import Local Context Model...",
             "Open Local Data Folder...",
@@ -387,7 +390,7 @@ REQUIRED_COVERAGE = {
             "Spec trim audit",
             "Preview/edit UI has been removed from the current app",
             "Any requirement that the default hotkey path show a preview before insertion",
-            "Local context model rebuild/export/import/delete UI is implemented",
+            "`Model Education` contains local context model rebuild/export/import/delete UI",
             "last rebuild time",
             "local Foundation Model adapter",
         ],

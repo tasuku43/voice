@@ -28,6 +28,8 @@ REQUIRED_SOURCE_SNIPPETS = [
     "openMissingPermissionSettingsIfNeeded",
     "Privacy_Accessibility",
     "Privacy_ListenEvent",
+    "Model Education",
+    "modelEducationMenuItem",
     "Last rebuild time",
     "Rebuild Local Context Model...",
     "rebuildLocalContextModelFromSources",

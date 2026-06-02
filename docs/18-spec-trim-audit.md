@@ -56,5 +56,5 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 
 ## Remaining Shape Work
 
-- Local context model rebuild/export/import/delete UI is implemented, and the model stores source kinds plus last rebuild time.
+- `Model Education` contains local context model rebuild/export/import/delete UI, and the model stores source kinds plus last rebuild time.
 - Add local Foundation Model protocols only after deterministic model education and runtime transforms are not enough.

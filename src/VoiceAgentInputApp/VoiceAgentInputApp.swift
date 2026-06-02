@@ -71,12 +71,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
         menu.addItem(NSMenuItem(title: "Open Voice Input Permissions...", action: #selector(openVoiceInputPermissionSettings), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
-        menu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Import Local Context Model...", action: #selector(importLocalContextModel), keyEquivalent: ""))
-        menu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
-        menu.addItem(NSMenuItem(title: "Delete Local Context Model...", action: #selector(deleteLocalContextModel), keyEquivalent: ""))
+        menu.addItem(modelEducationMenuItem())
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
         item.menu = menu
@@ -87,6 +82,20 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         updateRecordingState()
         updateHotkeyMenuTitle()
         debugLogger.log("installMenuBarItem finished; button=\(item.button == nil ? "nil" : "present")")
+    }
+
+    private func modelEducationMenuItem() -> NSMenuItem {
+        let item = NSMenuItem(title: "Model Education", action: nil, keyEquivalent: "")
+        let submenu = NSMenu(title: "Model Education")
+        submenu.addItem(NSMenuItem(title: "Set Repository Folder...", action: #selector(setRepositoryFolder), keyEquivalent: ","))
+        submenu.addItem(NSMenuItem(title: "Rebuild Local Context Model...", action: #selector(rebuildLocalContextModelFromSources), keyEquivalent: ""))
+        submenu.addItem(NSMenuItem.separator())
+        submenu.addItem(NSMenuItem(title: "Export Local Context Model...", action: #selector(exportLocalContextModel), keyEquivalent: ""))
+        submenu.addItem(NSMenuItem(title: "Import Local Context Model...", action: #selector(importLocalContextModel), keyEquivalent: ""))
+        submenu.addItem(NSMenuItem(title: "Open Local Data Folder...", action: #selector(openLocalDataFolder), keyEquivalent: "o"))
+        submenu.addItem(NSMenuItem(title: "Delete Local Context Model...", action: #selector(deleteLocalContextModel), keyEquivalent: ""))
+        item.submenu = submenu
+        return item
     }
 
     @objc private func recordVoiceInput() {
