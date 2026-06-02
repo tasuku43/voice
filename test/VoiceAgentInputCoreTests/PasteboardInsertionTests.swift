@@ -7,7 +7,7 @@ final class PasteboardInsertionTests: XCTestCase {
         let pasteboard = NSPasteboard(name: NSPasteboard.Name("voice-agent-input-tests-\(UUID().uuidString)"))
         let controller = PasteboardTextInsertionController(pasteboard: pasteboard)
 
-        try controller.insert(TextInsertionRequest(text: "Claude Code で確認して", submitAutomatically: false))
+        try controller.insert(TextInsertionRequest(text: "Claude Code で確認して"))
 
         XCTAssertEqual(pasteboard.string(forType: .string), "Claude Code で確認して")
     }
@@ -32,7 +32,7 @@ final class PasteboardInsertionTests: XCTestCase {
             pasteCommandSender: pasteCommandSender
         )
 
-        try controller.insert(TextInsertionRequest(text: "Codex で確認して", submitAutomatically: false))
+        try controller.insert(TextInsertionRequest(text: "Codex で確認して"))
 
         XCTAssertEqual(pasteboard.string(forType: .string), "Codex で確認して")
         XCTAssertEqual(pasteCommandSender.sendCount, 1)
@@ -54,16 +54,4 @@ final class PasteboardInsertionTests: XCTestCase {
         XCTAssertEqual(pasteCommandSender.sendCount, 0)
     }
 
-    func testAccessibilityInsertionRejectsAutomaticSubmit() throws {
-        let pasteCommandSender = MockPasteCommandSender()
-        let controller = AccessibilityTextInsertionController(
-            permissionProvider: MockAccessibilityPermissionProvider(status: .trusted),
-            pasteCommandSender: pasteCommandSender
-        )
-
-        XCTAssertThrowsError(try controller.insert(TextInsertionRequest(text: "prompt", submitAutomatically: true))) { error in
-            XCTAssertEqual(error as? AccessibilityTextInsertionError, .automaticSubmitRejected)
-        }
-        XCTAssertEqual(pasteCommandSender.sendCount, 0)
-    }
 }

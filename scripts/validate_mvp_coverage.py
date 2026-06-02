@@ -142,15 +142,15 @@ REQUIRED_COVERAGE = {
             "Corrected prompt",
         ],
     },
-    "user-action paste without submit": {
+    "user-action paste with no submit option": {
         "src/VoiceAgentInputCore/App/PromptInsertionUseCase.swift": [
             "afterUserAction",
             "userActionRequired",
-            "submitAutomatically: false",
+            "TextInsertionRequest(text: prompt.text)",
         ],
         "test/VoiceAgentInputCoreTests/PasteboardInsertionTests.swift": [
-            "testAccessibilityInsertionRejectsAutomaticSubmit",
             "testPasteboardInsertionWritesPromptTextOnly",
+            "testAccessibilityInsertionWritesPasteboardThenSendsPasteCommand",
         ],
     },
     "source learning and model education": {

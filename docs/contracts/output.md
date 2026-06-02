@@ -36,4 +36,4 @@
 
 ## Done
 - Output inserts text only after the user invokes or stops the voice input action, or after the user presses Paste in an optional preview workflow.
-- Automatic submit remains rejected.
+- Automatic submit remains impossible through the insertion request shape.

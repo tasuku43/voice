@@ -18,9 +18,6 @@ public struct AccessibilityTextInsertionController: TextInsertionController {
     }
 
     public func insert(_ request: TextInsertionRequest) throws {
-        guard !request.submitAutomatically else {
-            throw AccessibilityTextInsertionError.automaticSubmitRejected
-        }
         guard permissionProvider.currentStatus() == .trusted else {
             throw AccessibilityTextInsertionError.accessibilityPermissionRequired
         }
@@ -32,7 +29,6 @@ public struct AccessibilityTextInsertionController: TextInsertionController {
 
 public enum AccessibilityTextInsertionError: Error, Equatable {
     case accessibilityPermissionRequired
-    case automaticSubmitRejected
     case pasteCommandUnavailable
 }
 

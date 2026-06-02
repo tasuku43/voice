@@ -12,7 +12,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 - Privacy contract validation includes direct networking/cloud guards and an allowlist for Swift file writes so raw transcript or raw audio persistence cannot be added silently.
 - `DemoCLITests` exercise process-level preview and history-learning flows.
 - `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local context model persistence, repository vocabulary, STT recognition hints, and temporary audio cleanup.
-- `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, user-action enforcement, and automatic-submit rejection.
+- `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, and user-action enforcement; insertion requests expose no automatic-submit option.
 - `EvalHarnessTests` covers fixture-driven normalization cases and history-derived context learning cases.
 
 ## Requirement evidence
@@ -27,7 +27,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Feed learned context into STT hints | `SpeechRecognitionHintsUseCase`, dictionary `recognitionHints`, Apple Speech contextual string tests | Verified |
 | Reuse learned context after STT | history-learning eval fixtures, `AgentHistoryLearningModeUseCase`, `LocalContextModelBuildUseCase`, normalization tests | Verified |
 | Quick Paste daily input compatibility | direct recording-flow insertion of `result.insertion`, app contract validation | Implemented, needs manual target-app confirmation |
-| Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
+| Prevent automatic submit | insertion request shape, insertion use case tests, pasteboard and Accessibility tests | Verified |
 | Extract local context candidates for model education | source learning tests and candidate extractor tests | Verified |
 | Persist local context model data | local context model repository tests and rebuild tests | Verified |
 | Export/import/open/delete local model data | local context model tests, `Open Local Data Folder...`, app contract validation | Implemented for local context model data, needs manual menu confirmation |

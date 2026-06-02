@@ -17,10 +17,7 @@ public struct PromptInsertionUseCase {
         }
 
         try insertionController.insert(
-            TextInsertionRequest(
-                text: prompt.text,
-                submitAutomatically: false
-            )
+            TextInsertionRequest(text: prompt.text)
         )
     }
 }

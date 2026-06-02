@@ -1069,7 +1069,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         try useCase.insert(prompt, afterUserAction: true)
 
         XCTAssertEqual(insertionController.insertedRequests, [
-            TextInsertionRequest(text: "Claude Code で確認して", submitAutomatically: false)
+            TextInsertionRequest(text: "Claude Code で確認して")
         ])
     }
 

@@ -100,7 +100,7 @@ Insertion use case:
 PromptInsertionUseCase.insert(_ prompt: PromptInsertion, afterUserAction: Bool) throws
 ```
 
-Insertion requires `afterUserAction = true` and always passes `submitAutomatically = false` to the insertion adapter.
+Insertion requires `afterUserAction = true`. The insertion request has no automatic-submit option.
 
 Local context model data use case:
 
