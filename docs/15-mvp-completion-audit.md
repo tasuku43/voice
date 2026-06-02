@@ -26,7 +26,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Normalize developer terms | domain normalization tests, fixture evals, eval coverage validation | Verified |
 | Feed learned context into STT hints | `SpeechRecognitionHintsUseCase`, dictionary `recognitionHints`, Apple Speech contextual string tests | Verified |
 | Reuse learned context after STT | history-learning eval fixtures, `AgentHistoryLearningModeUseCase`, `LocalContextModelBuildUseCase`, normalization tests | Verified |
-| Quick Paste daily input compatibility | direct recording-flow insertion of `result.preview.correctedPrompt`, app contract validation | Implemented, needs manual target-app confirmation |
+| Quick Paste daily input compatibility | direct recording-flow insertion of `result.insertion`, app contract validation | Implemented, needs manual target-app confirmation |
 | Prevent automatic submit | insertion use case tests, pasteboard and Accessibility tests | Verified |
 | Extract local context candidates for model education | source learning tests and candidate extractor tests | Verified |
 | Persist local context model data | local context model repository tests and rebuild tests | Verified |

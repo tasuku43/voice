@@ -10,7 +10,7 @@
 
 ## Outputs
 - `VoiceInputPipelineResult`
-- Stage data: `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, `PromptPreview`
+- Stage data: `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, `PromptInsertion`, `PromptPreview`
 
 `VoiceInputPipeline` owns capture and STT orchestration. `PromptProcessingPipeline` owns the post-STT text path:
 
@@ -32,7 +32,7 @@ PromptTextTransform.transform(String) async throws -> String
 Use `PromptTextTransformPipeline` when a session only needs function composition and does not need correction metadata.
 
 ## Allowed
-- Orchestrate audio, speech, normalization, refinement, and preview model creation.
+- Orchestrate audio, speech, normalization, refinement, insertion text creation, and fallback preview model creation.
 - Pass local recognition hints into STT adapters that support contextual strings.
 - Keep local Foundation Model conversion as an optional fallback stage.
 - Preserve stage outputs for debugging and component tests.

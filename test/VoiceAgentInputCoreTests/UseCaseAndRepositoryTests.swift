@@ -88,6 +88,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
         XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
+        XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
         XCTAssertEqual(result.preview.rawTranscript, result.transcript.text)
         XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
     }
@@ -212,6 +213,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
         XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
+        XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
         XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
     }
 

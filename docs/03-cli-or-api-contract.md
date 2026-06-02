@@ -64,7 +64,7 @@ PromptPreviewUseCase.preview(rawTranscript: String) -> PromptPreview
 PromptPreviewUseCase.makeInsertion(preview: PromptPreview, finalEditedPrompt: String?) -> PromptInsertion
 ```
 
-`PromptPreview` remains available for paste fallback. `PromptInsertion` returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
+`PromptInsertion` is the normal Quick Paste output. `PromptPreview` remains available for paste fallback. `PromptInsertion` returns the exact text that a UI or insertion adapter may paste; it has no automatic-submit option.
 
 Voice-input orchestration:
 

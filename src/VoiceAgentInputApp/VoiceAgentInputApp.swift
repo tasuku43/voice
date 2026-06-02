@@ -270,12 +270,12 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     self.isRecording = false
                     self.shouldStopRecordingWhenReady = false
                     self.debugLogger.log(
-                        "recordVoiceInput completed; transcriptLength=\(result.transcript.text.count) correctedLength=\(result.preview.correctedPrompt.count); mode=quickPaste"
+                        "recordVoiceInput completed; transcriptLength=\(result.transcript.text.count) correctedLength=\(result.insertion.text.count); mode=quickPaste"
                     )
                 }
                 await MainActor.run {
                     do {
-                        try self.insertPrompt(PromptInsertion(text: result.preview.correctedPrompt))
+                        try self.insertPrompt(result.insertion)
                     } catch {
                         self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
                         self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
