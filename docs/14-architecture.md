@@ -63,11 +63,8 @@ Pure types and algorithms:
 - `DictionaryEntryKind`
 - `NormalizationEngine`
 - `CorrectionCandidate`
-- `CandidateExtractor`
-- `PromptDiff`
 - local context model value types
 - deterministic transform policies
-- dangerous command policy
 
 Domain must be deterministic and free of file, UI, environment, or macOS permission dependencies.
 

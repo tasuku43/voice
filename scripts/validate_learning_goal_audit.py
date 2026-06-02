@@ -182,11 +182,6 @@ REQUIRED_SNIPPETS = {
         "project specific name",
         "repository",
     ],
-    "test/VoiceAgentInputCoreTests/CandidateExtractorTests.swift": [
-        "testCandidateExtractionInfersKatakanaProjectIdentifierSpeechRulesFromEditedPrompt",
-        "testCandidateExtractionInfersProjectIdentifierSpeechRulesFromEditedPrompt",
-        "testCandidateExtractorCanUseReplaceableMisrecognitionDetector",
-    ],
     "test/e2e/manual-macos-mvp-checklist.md": [
         "Rebuild Local Context Model...",
         "without opening candidate approval",

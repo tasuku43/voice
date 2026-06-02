@@ -228,22 +228,11 @@ REQUIRED_COVERAGE = {
         "src/VoiceAgentInputCore/Domain/CorrectionCandidate.swift": [
             "public var reason: String",
         ],
-        "src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift": [
-            "VoiceMisrecognitionDetector",
-            "RuleBasedVoiceMisrecognitionDetector",
-            "Likely voice misrecognition",
-        ],
         "src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift": [
             "DeveloperTermSpeechRules",
             "extractTerms(from text:",
             "spokenPhrase(for term:",
             "spokenIdentifierPhrase",
-        ],
-        "test/VoiceAgentInputCoreTests/CandidateExtractorTests.swift": [
-            "allSatisfy { !$0.reason.isEmpty }",
-            "testCandidateExtractionInfersDeveloperTermSpeechRulesFromEditedPrompt",
-            "testCandidateExtractionInfersProjectIdentifierSpeechRulesFromEditedPrompt",
-            "testCandidateExtractorCanUseReplaceableMisrecognitionDetector",
         ],
         "test/VoiceAgentInputCoreTests/UseCaseAndRepositoryTests.swift": [
             "testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms",

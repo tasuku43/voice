@@ -9,8 +9,7 @@ Cover deterministic domain behavior:
 - dictionary replacement,
 - scope precedence,
 - correction metadata,
-- candidate extraction,
-- dangerous command policy.
+- local context candidate generation.
 
 ### Use-case tests
 

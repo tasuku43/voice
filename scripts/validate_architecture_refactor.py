@@ -72,11 +72,6 @@ REQUIRED_SNIPPETS = {
         "settingsRepository",
         "localContextModelRepository",
     ],
-    "src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift": [
-        "public protocol VoiceMisrecognitionDetector",
-        "public struct RuleBasedVoiceMisrecognitionDetector",
-        "Likely voice misrecognition",
-    ],
     "src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift": [
         "public enum DeveloperTermSpeechRules",
         "extractTerms(from text:",

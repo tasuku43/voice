@@ -62,7 +62,6 @@ required = [
     'src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift',
     'src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift',
     'src/VoiceAgentInputCore/Infra/JSONLocalContextModelRepository.swift',
-    'src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift',
     'src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift',
     'src/VoiceAgentInputApp/VoiceAgentInputApp.swift',
     'src/VoiceAgentInputApp/PreviewWindowController.swift',

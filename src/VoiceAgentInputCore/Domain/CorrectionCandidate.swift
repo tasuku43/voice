@@ -15,7 +15,7 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
         correctedPhrase: String,
         confidence: Double,
         occurrenceCount: Int = 1,
-        reason: String = "User edited transcript to this phrase.",
+        reason: String = "Found in local learning sources.",
         suggestedScope: DictionaryScope,
         dangerous: Bool = false,
         autoApplyAllowed: Bool = false

@@ -4,8 +4,8 @@
 
 - Add source freshness checks based on content modification times after the last rebuild.
 - Split built-in vocabulary transforms from personal context transforms.
-- Improve phrase alignment in candidate extraction.
-- Add confidence accumulation for repeated corrections.
+- Improve phrase alignment in local context candidate generation.
+- Add confidence accumulation for repeated local learning-source evidence.
 - Add repository-scoped candidate promotion rules.
 - Add golden snapshots for demo CLI output.
 

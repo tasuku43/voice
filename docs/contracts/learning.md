@@ -21,21 +21,19 @@
 - Reuse deterministic developer-term speech rules across source learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
 - Build local context model entries without candidate approval UI.
-- Score likely voice misrecognitions behind a replaceable detector.
+- Keep fallback preview edits out of model education.
 - Keep model education separate from the ordinary voice-input app layer.
 
 ## Forbidden
 - Speech recognition.
 - Prompt refinement.
-- Automatic dangerous context model updates.
+- Automatic context model updates from fallback preview edits.
 - Paste or automatic submit.
 - Network IO.
 - Cloud model calls.
 
 ## Read First
-- `src/VoiceAgentInputCore/Domain/CandidateExtractor.swift`
 - `src/VoiceAgentInputCore/Domain/DeveloperTermSpeechRules.swift`
-- `src/VoiceAgentInputCore/Domain/VoiceMisrecognitionDetector.swift`
 - `src/VoiceAgentInputCore/App/AgentHistoryTextProvider.swift`
 - `src/VoiceAgentInputCore/App/LearningSource.swift`
 - `src/VoiceAgentInputCore/App/LearningSourceSelection.swift`
@@ -45,18 +43,18 @@
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
 
 ## May Touch
-- Candidate extraction and learning persistence tests.
+- Source learning, candidate generation, and learning persistence tests.
 
 ## Avoid Touching
 - Audio, speech, and output adapters.
 
 ## Tests
-- `swift test --filter CandidateExtractorTests`
+- `swift test --filter UseCaseAndRepositoryTests/testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms`
 - `swift test --filter UseCaseAndRepositoryTests/testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms`
 - `make check`
 
 ## Done
-- Rejected and dangerous candidates are not auto-applied.
+- Fallback preview edits do not generate model education candidates.
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Learning-source adapters remain bounded and local.
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.
