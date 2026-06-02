@@ -13,18 +13,21 @@ This audit maps the current implementation to the product goal of a fully local,
 | Reuse deterministic developer-term speech rules across source learning. | `DeveloperTermSpeechRules` is used by `LocalContextCandidateGenerationUseCase` and `RepositoryVocabularyUseCase`; tests cover inferred `SwiftUI`, `JSON`, project identifier candidates such as `VoiceAgentInput`, and katakana project identifier aliases such as `ボイスエージェントインプット`. Runtime hotkey behavior is not implicitly repository-specific; repository folders are selected learning sources for bounded model rebuilds. | Implemented |
 | Let source learning improve later rule-based normalization. | `AgentHistoryLearningModeUseCase`, `LocalContextModelBuildUseCase`, `DictionaryEntryLoadingUseCase`, `testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms`, `evals/history-learning-cases.json`, and `testHistoryLearningEvalCases` show that learned source terms become saved local context model entries and later post-STT transforms without candidate approval UI. | Implemented |
 | Keep candidate generation explainable while separating it from the hotkey app layer. | `CorrectionCandidate`, `LocalContextCandidateGenerationUseCase`, and repository vocabulary learning generate reasons and confidence metadata from explicit local learning sources. Prompt insertion carries only text; it does not return learning candidates. | Implemented |
-| Keep LLM-style assistance out of STT, deterministic normalization, and default hotkey latency. | The app no longer exposes a generic learning reviewer command. Future LLM-backed implementations must be local Foundation Model adapters only, used for model education or an explicit last-resort conversion stage rather than the ordinary STT -> system dictionary -> custom dictionary path. | Implemented; local Foundation Model adapter remains future work |
+| Keep LLM-style assistance out of STT, deterministic normalization, and default hotkey latency. | The app no longer exposes a generic learning reviewer command or any LLM conversion adapter in the default hotkey path. Future LLM-backed implementations must be local Foundation Model adapters only, used for model education or an explicit last-resort conversion stage rather than the ordinary STT -> system dictionary -> custom dictionary path. | Verified for current source; adapter is deferred |
 | Keep model education source-driven instead of edit-driven. | The old edit-derived candidate extractor has been removed. Model entries now come from explicit local source rebuilds, seed dictionaries, and repository vocabulary adapters rather than opportunistic edits made during voice input. | Implemented |
 | Preserve fully local privacy. | Local history adapters use filesystem boundaries only; privacy validators reject direct network snippets; manual E2E checklist covers raw audio/transcript persistence expectations. Product docs now exclude cloud STT, network LLM calls, arbitrary reviewer commands, and network IO in MVP model education or fallback conversion. | Implemented, manual evidence still needed |
 | Support full record-to-stop transcription across pauses as far as Apple Speech snapshots allow. | `SpeechTranscriptAccumulator` merges partial/final snapshots and tests pause-split, overlap, rolling revision, and final-only-last-chunk cases. | Implemented with Apple Speech limitation |
 
-## Remaining Evidence Needed
+## Remaining Completion Evidence
 
 - Manual macOS E2E evidence for real microphone capture, Apple Speech behavior, Accessibility paste, local context model rebuild behavior, and local filesystem privacy inspection.
-- Future local archive/cache learning-source adapters for GitHub, Slack, and Chatwork data.
-- Future local Foundation Model adapter for model education and explicit fallback conversion.
-- Future source freshness checks based on content modification times after the last rebuild.
 - If Apple Speech never emits missing earlier speech in any partial or final snapshot, the current accumulator cannot reconstruct it; that would require chunk-level audio segmentation or another local STT strategy.
+
+## Deferred, Not Completion Gates
+
+- Local archive/cache learning-source adapters for GitHub, Slack, and Chatwork data.
+- Local Foundation Model adapter for model education and explicit fallback conversion.
+- Source freshness checks based on content modification times after the last rebuild.
 
 ## Verification
 

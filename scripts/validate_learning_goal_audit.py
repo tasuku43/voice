@@ -31,6 +31,8 @@ REQUIRED_SNIPPETS = {
         "testHistoryLearningEvalCases",
         "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
         "local Foundation Models only",
+        "Remaining Completion Evidence",
+        "Deferred, Not Completion Gates",
         "manual evidence still needed",
     ],
     "docs/contracts/learning.md": [

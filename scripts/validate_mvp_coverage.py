@@ -210,7 +210,7 @@ REQUIRED_COVERAGE = {
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
             "LocalContextModelBuildUseCase",
             "local Foundation Models only",
-            "Remaining Evidence Needed",
+            "Remaining Completion Evidence",
         ],
         "src/VoiceAgentInputCore/Domain/CorrectionCandidate.swift": [
             "public var reason: String",
