@@ -28,8 +28,7 @@ No stage in this pipeline may require network IO in the MVP.
 ```text
 Codex / Claude Code local sessions
 Git repository vocabulary
-Future GitHub / Slack / Chatwork local adapters
-Manual dictionary edits
+Future GitHub / Slack / Chatwork local archive/cache adapters
   -> Learning source adapters
   -> Vocabulary and context extractors
   -> Local context model store
@@ -77,7 +76,7 @@ Domain must be deterministic and free of file, UI, environment, or macOS permiss
 Use-case orchestration:
 
 - normalize a prompt,
-- learn candidates from edits,
+- build candidates from bounded local learning sources,
 - build or load local context model data,
 - choose recognition hints for STT,
 - apply system vocabulary and personal context transforms,
@@ -92,15 +91,14 @@ Use-case orchestration:
 
 Adapters:
 
-- JSON dictionary repository,
 - STT adapter,
 - pasteboard and Accessibility insertion adapters,
 - git context provider,
 - local learning source providers,
-- future GitHub / Slack / Chatwork adapters,
+- future GitHub / Slack / Chatwork local archive/cache adapters,
 - future local Foundation Model adapter.
 
-Infra adapters must not introduce implicit network IO. Any future connector with network-backed data must be an explicit opt-in product decision and remain outside the MVP boundary.
+Infra adapters must not introduce network IO. GitHub, Slack, Chatwork, and similar learning sources must be represented as local archives, exports, caches, or checked-out files before this app reads them.
 
 ### UI boundary
 

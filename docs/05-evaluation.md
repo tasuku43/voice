@@ -52,5 +52,5 @@ Minimum acceptable behavior:
 Stretch goals:
 
 - Low-latency recording and transcription.
-- GitHub, Slack, and Chatwork learning-source adapters.
+- Local archive/cache adapters for GitHub, Slack, and Chatwork data.
 - Optional preview/edit UI for users who want to inspect fallback output before insertion.

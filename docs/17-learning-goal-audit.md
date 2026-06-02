@@ -22,7 +22,7 @@ This audit maps the current implementation to the product goal of a fully local,
 ## Remaining Evidence Needed
 
 - Manual macOS E2E evidence for real microphone capture, Apple Speech behavior, Accessibility paste, local context model rebuild behavior, and local filesystem privacy inspection.
-- Future GitHub, Slack, and Chatwork learning-source adapters.
+- Future local archive/cache learning-source adapters for GitHub, Slack, and Chatwork data.
 - Future local Foundation Model adapter for model education and explicit fallback conversion.
 - Future source freshness checks based on content modification times after the last rebuild.
 - If Apple Speech never emits missing earlier speech in any partial or final snapshot, the current accumulator cannot reconstruct it; that would require chunk-level audio segmentation or another local STT strategy.

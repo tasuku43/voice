@@ -3,7 +3,7 @@
 ## Inputs
 - Bounded local Codex/Claude history text for explicit learning mode.
 - Configured repository vocabulary exposed through a learning-source adapter.
-- Future bounded local source text from GitHub, Slack, Chatwork, or similar adapters.
+- Future bounded local archive/cache text from GitHub, Slack, Chatwork, or similar tools.
 
 ## Outputs
 - `CorrectionCandidate`

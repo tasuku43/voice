@@ -176,8 +176,8 @@ Current providers:
 Direction:
 
 - Learning-source adapters educate a local context model from bounded local data.
-- GitHub, Slack, and Chatwork adapters should follow the same adapter boundary before they are added.
-- Any adapter that would require network IO is outside the MVP unless the product boundary is explicitly changed.
+- GitHub, Slack, and Chatwork adapters must read local archives, exports, caches, or checked-out files before they are added.
+- Any adapter that would require network IO is outside the product boundary.
 - Local Foundation Model adapters may support model education or optional fallback conversion, but they must not upload prompts, audio, transcripts, or learned context.
 
 Future providers:
@@ -185,7 +185,7 @@ Future providers:
 - focused app provider,
 - terminal current directory provider,
 - repository vocabulary provider.
-- GitHub learning-source provider,
-- Slack learning-source provider,
-- Chatwork learning-source provider,
+- GitHub local archive/cache learning-source provider,
+- Slack local archive/cache learning-source provider,
+- Chatwork local archive/cache learning-source provider,
 - local Foundation Model provider.

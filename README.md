@@ -10,7 +10,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 
 - developer terminology correction: Claude Code, Codex, TypeScript, pnpm, MCP
 - project-specific vocabulary: repo names, branch names, file names, symbols, product terms
-- environment-specific language from Codex / Claude Code history, Git / GitHub, Slack, Chatwork, and future local adapters
+- environment-specific language from Codex / Claude Code history, Git repository vocabulary, and future local archive/cache adapters for tools such as GitHub, Slack, or Chatwork
 - STT `contextualStrings` / recognition hints before transcription
 - deterministic system and personal transforms after transcription
 - local-only model education with no transcript or audio upload

@@ -21,7 +21,7 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 - Built-in developer vocabulary transforms.
 - A rebuildable local context model made from bounded local sources.
 - Learning-source adapters for Codex / Claude local sessions and Git repository vocabulary.
-- Future explicit adapters for GitHub, Slack, Chatwork, and similar context sources.
+- Future explicit local archive/cache adapters for GitHub, Slack, Chatwork, and similar context sources.
 - Recognition hints before STT when the adapter supports them.
 - Deterministic post-STT transforms after transcription.
 - Focused cursor insertion with copy fallback.

@@ -40,14 +40,13 @@
 - Terminal working directory detection.
 - Git root and branch detection.
 - Repository vocabulary extraction.
-- GitHub learning-source adapter.
-- Slack learning-source adapter.
-- Chatwork learning-source adapter.
+- GitHub local archive/cache learning-source adapter.
+- Slack local archive/cache learning-source adapter.
+- Chatwork local archive/cache learning-source adapter.
 - Bounded scanning and ignore rules.
 
 ## Persistence
 
-- JSON dictionary storage.
 - Local context model storage. Initial JSON repository exists.
 - SQLite migration if needed.
 - Export/import UI for learned context.

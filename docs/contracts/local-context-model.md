@@ -4,7 +4,7 @@
 - Built-in developer vocabulary.
 - Bounded local Codex / Claude Code session text.
 - Bounded Git repository vocabulary.
-- Future bounded local GitHub, Slack, Chatwork, or similar adapter output.
+- Future bounded local archive/cache output for GitHub, Slack, Chatwork, or similar tools.
 - Optional local Foundation Model education output.
 
 ## Outputs

@@ -21,7 +21,7 @@
 - Build a local context model from bounded learning sources.
 - Support learning-source adapters for Codex / Claude Code local sessions.
 - Support learning-source adapters for Git repository vocabulary.
-- Support future local adapters for GitHub, Slack, Chatwork, and similar developer context.
+- Support future local archive/cache adapters for GitHub, Slack, Chatwork, and similar developer context.
 - Extract vocabulary, identifiers, recognition hints, and likely spoken forms from learning sources.
 - Store learned context locally.
 - Reuse learned context for both STT recognition hints and post-STT transforms.
