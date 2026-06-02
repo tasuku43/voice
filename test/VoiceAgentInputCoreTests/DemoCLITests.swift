@@ -3,16 +3,16 @@ import XCTest
 import VoiceAgentInputCore
 
 final class DemoCLITests: XCTestCase {
-    func testDemoPreviewModeUsesRealExecutablePath() throws {
+    func testDemoNormalizeModeUsesRealExecutablePath() throws {
         let output = try runDemo(arguments: [
-            "--mode", "preview",
             "くらのコードでタイプスクリプトエラーを直して"
         ])
 
-        XCTAssertEqual(output["mode"] as? String, "preview")
-        let preview = try XCTUnwrap(output["preview"] as? [String: Any])
-        XCTAssertEqual(preview["rawTranscript"] as? String, "くらのコードでタイプスクリプトエラーを直して")
-        XCTAssertTrue((preview["correctedPrompt"] as? String)?.contains("Claude Code") == true)
+        XCTAssertEqual(output["mode"] as? String, "normalize")
+        XCTAssertNil(output["preview"] as? [String: Any])
+        let normalization = try XCTUnwrap(output["normalization"] as? [String: Any])
+        XCTAssertEqual(normalization["rawText"] as? String, "くらのコードでタイプスクリプトエラーを直して")
+        XCTAssertTrue((normalization["correctedText"] as? String)?.contains("Claude Code") == true)
     }
 
     func testDemoHistoryLearningModeReadsLocalHistoryWithoutSaving() throws {

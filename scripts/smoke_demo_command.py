@@ -37,10 +37,10 @@ def main() -> None:
     except json.JSONDecodeError as error:
         fail(f"demo command did not emit JSON: {error}")
 
-    preview = payload.get("preview") or {}
-    corrected = preview.get("correctedPrompt") or ""
-    if payload.get("mode") != "preview":
-        fail("demo command did not run preview mode")
+    normalization = payload.get("normalization") or {}
+    corrected = normalization.get("correctedText") or ""
+    if payload.get("mode") != "normalize":
+        fail("demo command did not run normalize mode")
     for expected in ["Claude Code", "TypeScript", "error"]:
         if expected not in corrected:
             fail(f"demo corrected prompt missing {expected}: {corrected}")

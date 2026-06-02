@@ -222,7 +222,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
         Task {
             do {
-                let previewUseCase = PromptPreviewUseCase(entries: entries)
                 try await SpeechRecognitionPermissionUseCase(
                     provider: SFSpeechRecognitionPermissionProvider()
                 ).ensureTranscriptionAllowed()
@@ -278,7 +277,14 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                         try self.insertPrompt(result.insertion)
                     } catch {
                         self.debugLogger.log("recordVoiceInput paste failed: \(error); opening preview")
-                        self.openPreview(preview: result.preview, previewUseCase: previewUseCase)
+                        self.openPreview(
+                            preview: PromptPreview(
+                                rawTranscript: result.transcript.text,
+                                correctedPrompt: result.refinedPrompt.refinedText,
+                                corrections: result.normalizedPrompt.corrections
+                            ),
+                            previewUseCase: PromptPreviewUseCase(entries: entries)
+                        )
                     }
                 }
             } catch {

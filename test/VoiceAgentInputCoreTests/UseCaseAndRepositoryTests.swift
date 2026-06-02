@@ -29,11 +29,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await pipeline.run(mockAudioText: "こーでっくすでブランチを確認して").preview
+        let result = try await pipeline.run(mockAudioText: "こーでっくすでブランチを確認して")
 
-        XCTAssertEqual(preview.rawTranscript, "こーでっくすでブランチを確認して")
-        XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
-        XCTAssertTrue(preview.correctedPrompt.contains("branch"))
+        XCTAssertEqual(result.transcript.text, "こーでっくすでブランチを確認して")
+        XCTAssertTrue(result.insertion.text.contains("Codex"))
+        XCTAssertTrue(result.insertion.text.contains("branch"))
     }
 
     func testVoiceInputPipelineRecordsAudioBeforeTranscriptionAndProcessing() async throws {
@@ -47,11 +47,11 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await pipeline.run().preview
+        let result = try await pipeline.run()
 
-        XCTAssertEqual(preview.rawTranscript, "くらのコードでタイプスクリプトを確認して")
-        XCTAssertTrue(preview.correctedPrompt.contains("Claude Code"))
-        XCTAssertTrue(preview.correctedPrompt.contains("TypeScript"))
+        XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトを確認して")
+        XCTAssertTrue(result.insertion.text.contains("Claude Code"))
+        XCTAssertTrue(result.insertion.text.contains("TypeScript"))
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
     }
 
@@ -75,7 +75,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(capturedAudio.value, audio)
     }
 
-    func testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndPreviewStages() async throws {
+    func testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndInsertionStages() async throws {
         let pipeline = VoiceInputPipeline(
             speechEngine: MockSpeechEngine(),
             refiner: SuffixPromptRefiner(suffix: " please"),
@@ -89,8 +89,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
         XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
         XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
-        XCTAssertEqual(result.preview.rawTranscript, result.transcript.text)
-        XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
     }
 
     func testSpeechTranscriptAccumulatorMergesPauseSplitSnapshots() {
@@ -214,7 +212,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
         XCTAssertEqual(result.refinedPrompt.refinedText, result.normalizedPrompt.normalizedText + " please")
         XCTAssertEqual(result.insertion.text, result.refinedPrompt.refinedText)
-        XCTAssertEqual(result.preview.correctedPrompt, result.refinedPrompt.refinedText)
     }
 
     func testNoOpPromptRefinerPreservesNormalizedPrompt() async throws {
@@ -823,9 +820,9 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let preview = try await pipeline.run().preview
+        let result = try await pipeline.run()
 
-        XCTAssertTrue(preview.correctedPrompt.contains("Codex"))
+        XCTAssertTrue(result.insertion.text.contains("Codex"))
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 1)
     }
 

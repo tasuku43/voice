@@ -32,7 +32,7 @@ Implementations:
 Current app orchestration:
 
 - `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, a `PromptRefiner`, and `NormalizationContext`.
-- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, `PromptInsertion`, and `PromptPreview` stage outputs.
+- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, `RefinedPrompt`, and `PromptInsertion` stage outputs. Preview data is built only by the app fallback path when direct paste fails.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
 - `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
 
@@ -71,7 +71,7 @@ Current use cases:
 
 - `MicrophonePermissionUseCase` requests access only when the status is `notDetermined`.
 - `VoiceInputPipeline` can check microphone permission before recording when a provider is injected.
-- `VoiceInputPipeline` owns record, transcribe, normalize, refine, and preview-result orchestration.
+- `VoiceInputPipeline` owns record, transcribe, normalize, refine, and insertion-result orchestration.
 
 Current test adapter:
 
@@ -89,7 +89,7 @@ Current adapter:
 
 Current use cases:
 
-- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime, preview, and confirmation flows.
+- `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime and fallback preview normalization.
 - `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
 - `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete controls.
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
@@ -158,7 +158,7 @@ Current macOS adapter:
 
 App shell rules:
 
-- Control-Option-Space starts the same record/transcribe/preview path as the menu item.
+- Control-Option-Space starts the same record/transcribe/insert path as the menu item.
 - Repeated hotkey/menu triggers are ignored while a recording/transcription flow is active.
 
 ## ContextProvider

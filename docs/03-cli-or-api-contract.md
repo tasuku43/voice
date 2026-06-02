@@ -20,17 +20,23 @@ Product direction: the primary app contract is hotkey dictation into the focused
 swift run voice-agent-input-demo "くらのコードでタイプスクリプトエラーを直して"
 ```
 
-Default output is still a preview JSON object for CI stability and debugging:
+Default output is a normalization JSON object for CI stability and debugging:
 
 ```json
 {
-  "mode": "preview",
-  "preview": {
-    "rawTranscript": "...",
-    "correctedPrompt": "...",
+  "mode": "normalize",
+  "normalization": {
+    "rawText": "...",
+    "correctedText": "...",
     "corrections": [...]
   }
 }
+```
+
+An explicit fallback-preview mode is available for the optional paste fallback surface:
+
+```sh
+swift run voice-agent-input-demo --mode preview-fallback "くらのコードでタイプスクリプトエラーを直して"
 ```
 
 History learning mode previews local context model candidates without saving them:

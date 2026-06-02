@@ -36,7 +36,7 @@
 
 ## Tests
 - `swift test --filter UseCaseAndRepositoryTests/testNoOpPromptRefinerPreservesNormalizedPrompt`
-- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndPreviewStages`
+- `swift test --filter UseCaseAndRepositoryTests/testVoiceInputPipelineKeepsTranscriptNormalizationRefinementAndInsertionStages`
 - `make check`
 
 ## Done

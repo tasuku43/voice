@@ -9,7 +9,7 @@ struct DemoOutput: Codable {
 }
 
 struct Arguments {
-    var mode = "preview"
+    var mode = "normalize"
     var rawText = "くらのコードでタイプスクリプトエラーを直して"
     var homeDirectoryPath: String?
     var scope: DictionaryScope = .user
@@ -59,8 +59,6 @@ func parseArguments(_ rawArguments: [String]) -> Arguments {
 
 let arguments = parseArguments(Array(CommandLine.arguments.dropFirst()))
 let normalizationUseCase = PromptNormalizationUseCase(entries: SeedDictionaries.codingAgentEntries)
-let previewUseCase = PromptPreviewUseCase(normalizationUseCase: normalizationUseCase)
-let preview = previewUseCase.preview(rawTranscript: arguments.rawText)
 
 let output: DemoOutput
 switch arguments.mode {
@@ -110,11 +108,19 @@ case "learn-history-normalize":
         ).normalize(rawText: arguments.rawText),
         historyLearning: historyLearning
     )
+case "preview-fallback":
+    let previewUseCase = PromptPreviewUseCase(normalizationUseCase: normalizationUseCase)
+    output = DemoOutput(
+        mode: "preview-fallback",
+        preview: previewUseCase.preview(rawTranscript: arguments.rawText),
+        normalization: nil,
+        historyLearning: nil
+    )
 default:
     output = DemoOutput(
-        mode: "preview",
-        preview: preview,
-        normalization: nil,
+        mode: "normalize",
+        preview: nil,
+        normalization: normalizationUseCase.normalize(rawText: arguments.rawText),
         historyLearning: nil
     )
 }

@@ -388,7 +388,6 @@ REQUIRED_COVERAGE = {
             "normalizedPrompt",
             "refinedPrompt",
             "insertion",
-            "preview",
             "promptProcessingPipeline().process",
         ],
         "docs/contracts/prompt-refinement.md": [
