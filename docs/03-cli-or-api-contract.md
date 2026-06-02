@@ -42,7 +42,7 @@ swift run voice-agent-input-demo --mode confirm --edited "Claude Code で TypeSc
 
 Confirm output includes `confirmed.promptToInsert` and `confirmed.shouldSubmitAutomatically = false`.
 
-History learning mode previews local dictionary candidates without approving or saving them:
+History learning mode previews local context model candidates without saving them:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history --scope repository
@@ -50,7 +50,7 @@ swift run voice-agent-input-demo --mode learn-history --scope repository
 
 History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the requested scope for generated candidates, and does not persist dictionary entries.
 
-History learning normalize mode simulates approving the generated history candidates and immediately normalizes a later utterance without writing local dictionary files:
+History learning normalize mode simulates rebuilding from generated history candidates and immediately normalizes a later utterance without writing local files:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history-normalize --scope repository "project specific nameの設定を直して"
@@ -73,7 +73,7 @@ PromptPreviewUseCase.preview(rawTranscript: String) -> PromptPreview
 PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?) -> ConfirmedPrompt
 ```
 
-`PromptPreview` remains available for optional curation. `ConfirmedPrompt` returns the exact prompt text that a UI or insertion adapter may paste, but it must not submit automatically.
+`PromptPreview` remains available for paste fallback. `ConfirmedPrompt` returns the exact prompt text that a UI or insertion adapter may paste, but it must not submit automatically.
 
 Voice-input orchestration:
 
@@ -101,7 +101,7 @@ Preview confirmation use case:
 PromptPreviewUseCase.confirm(preview: PromptPreview, finalEditedPrompt: String?) -> ConfirmedPrompt
 ```
 
-Confirmation returns only the prompt to insert. It does not generate learning candidates, approve entries, or submit automatically.
+Confirmation returns only the prompt to insert. It does not generate learning candidates, persist entries, or submit automatically.
 
 Insertion use case:
 

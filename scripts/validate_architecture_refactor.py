@@ -174,7 +174,7 @@ REQUIRED_CONTRACTS = [
     "normalization.md",
     "prompt-refinement.md",
     "voice-input-pipeline.md",
-    "preview-and-approval.md",
+    "preview-fallback.md",
     "learning.md",
     "output.md",
 ]
@@ -186,7 +186,7 @@ REQUIRED_SESSIONS = [
     "normalization-session.md",
     "prompt-refinement-session.md",
     "repository-vocabulary-session.md",
-    "preview-ui-session.md",
+    "preview-fallback-session.md",
     "learning-session.md",
     "output-session.md",
 ]

@@ -72,7 +72,7 @@ Component contracts:
 - `docs/contracts/normalization.md`
 - `docs/contracts/prompt-refinement.md`
 - `docs/contracts/voice-input-pipeline.md`
-- `docs/contracts/preview-and-approval.md`
+- `docs/contracts/preview-fallback.md`
 - `docs/contracts/learning.md`
 - `docs/contracts/output.md`
 
@@ -84,7 +84,7 @@ Future Codex session prompts:
 - `docs/codex-sessions/normalization-session.md`
 - `docs/codex-sessions/prompt-refinement-session.md`
 - `docs/codex-sessions/repository-vocabulary-session.md`
-- `docs/codex-sessions/preview-ui-session.md`
+- `docs/codex-sessions/preview-fallback-session.md`
 - `docs/codex-sessions/learning-session.md`
 - `docs/codex-sessions/output-session.md`
 
@@ -110,6 +110,6 @@ Future Codex session prompts:
 
 Prioritize `docs/codex-sessions/local-context-model-session.md` if the goal is to align implementation with the product direction. Make learned context explicit, rebuildable, and usable for both STT recognition hints and post-STT transforms.
 
-Prioritize `docs/codex-sessions/preview-ui-session.md` if the goal is to make the AppKit shell thinner. Split menu command handlers or insertion fallback presentation into AppKit boundary types while keeping learning and insertion in Core use cases.
+Prioritize `docs/codex-sessions/preview-fallback-session.md` if the goal is to make the AppKit shell thinner. Split menu command handlers or insertion fallback presentation into AppKit boundary types while keeping learning and insertion in Core use cases.
 
 Prioritize `docs/codex-sessions/prompt-refinement-session.md` if the goal is to add real local prompt cleanup. Keep the default no-op path and preserve the `PromptTextTransform` shape.

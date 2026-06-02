@@ -77,7 +77,7 @@ session > repository > user > global
 
 ## CorrectionCandidate
 
-Represents a possible learned dictionary entry extracted from user edits.
+Represents a possible learned dictionary entry extracted from local learning sources.
 
 Fields:
 
@@ -86,8 +86,6 @@ Fields:
 - confidence
 - occurrenceCount
 - suggestedScope
-- approved
-- rejected
 - dangerous
 - autoApplyAllowed
 

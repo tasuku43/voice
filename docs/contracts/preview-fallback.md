@@ -27,7 +27,7 @@ Preview fallback is an optional safety surface when direct paste cannot be compl
 - `src/VoiceAgentInputApp/PreviewWindowController.swift`
 
 ## May Touch
-- Preview window UI and preview use case.
+- Preview fallback UI and preview use case.
 
 ## Avoid Touching
 - Speech and repository vocabulary adapters.

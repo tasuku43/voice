@@ -1,6 +1,6 @@
 # Spec trim audit
 
-This document is the current product-shaping checkpoint. `AGENTS.md` captured an early preview-and-approval-heavy MVP, but the product center is now narrower:
+This document is the current product-shaping checkpoint. `AGENTS.md` captured an early preview-heavy MVP, but the product center is now narrower:
 
 ```text
 hotkey voice input

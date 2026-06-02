@@ -2,7 +2,7 @@
 
 `voice-agent-input` is a macOS-native, fully local voice input utility for developers. A user invokes it with a hotkey, speaks Japanese or mixed Japanese-English developer text, and receives a corrected transcription at the focused cursor.
 
-The product is not primarily a preview-and-approval prompt tool. Its core is environment-adaptive dictation: it builds a local context model from the user's developer environment, then uses that model to improve STT recognition hints and post-STT text transforms.
+The product is not primarily a preview-first prompt tool. Its core is environment-adaptive dictation: it builds a local context model from the user's developer environment, then uses that model to improve STT recognition hints and post-STT text transforms.
 
 ## Target users
 

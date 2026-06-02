@@ -51,7 +51,7 @@ The MVP should not be marked fully complete until a real macOS run fills out `te
 - Privacy & Security settings shortcut,
 - Accessibility paste into a focused target app,
 - pasteboard fallback when Accessibility is not trusted,
-- local dictionary export/import/open-folder/delete menu actions,
+- local context model export/import/open-folder/delete menu actions,
 - repository folder selection and repository vocabulary learning source,
 - Application Support privacy inspection for raw transcripts,
 - selected-repository privacy inspection for raw audio.

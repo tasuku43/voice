@@ -141,7 +141,7 @@ Short component contracts live in `docs/contracts/`:
 - normalization,
 - prompt-refinement,
 - voice-input-pipeline,
-- preview-and-approval,
+- preview-fallback,
 - learning,
 - output.
 

@@ -39,7 +39,7 @@ Use `PromptTextTransformPipeline` when a session only needs function composition
 
 ## Forbidden
 - AppKit UI rendering.
-- Local dictionary approval persistence.
+- Local context model persistence.
 - Paste or automatic submit.
 - Network IO.
 - Cloud STT or cloud LLM calls.
