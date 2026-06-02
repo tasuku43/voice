@@ -91,7 +91,7 @@ Current use cases:
 
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime normalization.
 - `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
-- `LocalContextModelDataUseCase` exports, imports, rebuilds, and deletes the saved local context model; the macOS shell exposes model export/import/delete controls.
+- `LocalContextModelRebuildUseCase` runs selected learning sources and persists the rebuilt model through `LocalContextModelDataUseCase`; the macOS shell exposes model export/import/delete controls.
 - `AppSettingsUseCase` owns repository path and recording setting updates so the UI does not duplicate clamping and trimming rules.
 
 Product direction:

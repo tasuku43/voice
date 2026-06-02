@@ -122,7 +122,7 @@ REQUIRED_COVERAGE = {
             "testSpeechRecognitionHintsPreferRecognitionHintsOverCorrectionForms",
             "testLocalContextModelFeedsRecognitionHintsAndPostSTTEntries",
             "testLocalContextModelCanExcludeGeneratedCandidatesFromRuntimeEntries",
-            "testLocalContextModelDataUseCaseRebuildsAndPersistsModel",
+            "testLocalContextModelRebuildUseCaseGeneratesCandidatesAndPersistsModel",
             "testLocalContextModelDocumentCodecRoundTrip",
             "testJSONLocalContextModelRepositoryRoundTripAndDelete",
             "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",
@@ -203,7 +203,8 @@ REQUIRED_COVERAGE = {
             "Codex / Claude local sessions",
             "Git repository vocabulary",
             "LocalAgentHistoryTextProvider",
-            "generateCandidates(scope:",
+            "LocalContextModelRebuildUseCase",
+            ".rebuild(scope: learningScope, existingEntries: existingEntries)",
             "preferredLearningScope",
         ],
         "docs/17-learning-goal-audit.md": [

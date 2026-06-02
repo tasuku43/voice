@@ -15,7 +15,7 @@
 
 The local context model is not an LLM. In the MVP it is structured local data: canonical terms, spoken forms, ASR-friendly recognition hints, source counts, source kinds, last rebuild metadata, scopes, and deterministic transform metadata.
 
-The current implementation starts with `LocalContextModel` and `LocalContextModelBuildUseCase`, which combine seed entries and optionally generated learning candidates into one model. `LocalContextModelDataUseCase.rebuildModel(...)` saves that model after learning-source runs. `LocalContextModelDocumentCodec` stores the model in a versioned JSON document, `JSONLocalContextModelRepository` is the local filesystem adapter, and `DictionaryEntryLoadingUseCase` loads saved `postSTTEntries` into the hotkey runtime.
+The current implementation starts with `LocalContextModel` and `LocalContextModelBuildUseCase`, which combine seed entries and optionally generated learning candidates into one model. `LocalContextModelRebuildUseCase.rebuild(...)` runs selected learning sources, generates candidates, and saves the rebuilt model through `LocalContextModelDataUseCase.rebuildModel(...)`. `LocalContextModelDocumentCodec` stores the model in a versioned JSON document, `JSONLocalContextModelRepository` is the local filesystem adapter, and `DictionaryEntryLoadingUseCase` loads saved `postSTTEntries` into the hotkey runtime.
 
 ## Allowed
 - Merge built-in vocabulary and local learned context.

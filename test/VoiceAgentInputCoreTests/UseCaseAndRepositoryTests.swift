@@ -602,6 +602,36 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.loadModel(), model)
     }
 
+    func testLocalContextModelRebuildUseCaseGeneratesCandidatesAndPersistsModel() throws {
+        let source = StubAgentHistoryTextProvider(texts: [
+            "ProjectSpecificName appears in this prompt.",
+            "Please preserve ProjectSpecificName in generated docs."
+        ])
+        let repository = InMemoryLocalContextModelRepository()
+
+        let result = try LocalContextModelRebuildUseCase(
+            learningSources: [source],
+            dataUseCase: LocalContextModelDataUseCase(
+                repository: repository,
+                buildUseCase: LocalContextModelBuildUseCase(seedEntries: [])
+            )
+        ).rebuild(scope: .repository, rebuiltAt: Date(timeIntervalSince1970: 3_000))
+
+        XCTAssertEqual(result.learningResult.scannedTextCount, 2)
+        XCTAssertEqual(result.learningResult.sourceTextCounts["agentHistory"], 2)
+        XCTAssertTrue(result.learningResult.candidates.contains {
+            $0.rawPhrase == "project specific name" &&
+                $0.correctedPhrase == "ProjectSpecificName" &&
+                $0.suggestedScope == .repository
+        })
+        XCTAssertTrue(result.model.postSTTEntries.contains {
+            $0.canonical == "ProjectSpecificName" &&
+                $0.spokenForms.contains("project specific name")
+        })
+        XCTAssertEqual(result.model.lastRebuiltAt, Date(timeIntervalSince1970: 3_000))
+        XCTAssertEqual(try repository.loadModel(), result.model)
+    }
+
     func testLocalContextModelDocumentCodecRoundTrip() throws {
         let model = LocalContextModel(
             entries: [

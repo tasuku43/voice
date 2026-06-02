@@ -727,7 +727,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
 
             let run = try rebuildLocalContextModel(selection: selection)
-            showLocalContextModelRebuiltAlert(result: run.result, model: run.model)
+            showLocalContextModelRebuiltAlert(result: run.learningResult, model: run.model)
         } catch {
             presentError(error)
         }
@@ -801,7 +801,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     private func rebuildLocalContextModel(
         selection: LearningSourceSelection
-    ) throws -> (result: AgentHistoryLearningModeResult, model: LocalContextModel) {
+    ) throws -> LocalContextModelRebuildResult {
         let historyProvider = LocalAgentHistoryTextProvider()
         let existingEntries = try loadDictionaryEntries()
         let learningScope = try loadSettings().preferredLearningScope
@@ -810,19 +810,18 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             historyProvider: historyProvider
         )
 
-        let result = try AgentHistoryLearningModeUseCase(
+        let result = try LocalContextModelRebuildUseCase(
             learningSources: learningSources,
-            contextCandidateGenerationUseCase: LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
-        ).generateCandidates(scope: learningScope, existingEntries: existingEntries)
+            dataUseCase: LocalContextModelDataUseCase(
+                repository: localContextModelRepository()
+            )
+        ).rebuild(scope: learningScope, existingEntries: existingEntries)
         let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
-        debugLogger.log("local context model education scanned \(historyProvider.historyFileURLs().count) local history files, loaded \(result.scannedTextCount) source texts, sourceTextCounts=\(result.sourceTextCounts), skipped \(result.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
+        debugLogger.log("local context model education loaded \(result.learningResult.scannedTextCount) source texts, sourceTextCounts=\(result.learningResult.sourceTextCounts), skipped \(result.learningResult.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
-        let localContextModel = try LocalContextModelDataUseCase(
-            repository: localContextModelRepository()
-        ).rebuildModel(learningResult: result)
-        debugLogger.log("local context model rebuilt with \(localContextModel.entries.count) entries and \(localContextModel.generatedCandidateCount) generated candidates")
+        debugLogger.log("local context model rebuilt with \(result.model.entries.count) entries and \(result.model.generatedCandidateCount) generated candidates")
 
-        return (result, localContextModel)
+        return result
     }
 
     private func showLocalContextModelRebuiltAlert(

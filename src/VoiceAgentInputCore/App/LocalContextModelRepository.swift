@@ -44,3 +44,48 @@ public struct LocalContextModelDataUseCase {
         try repository.saveModel(LocalContextModel())
     }
 }
+
+public struct LocalContextModelRebuildResult: Equatable, Sendable {
+    public var learningResult: AgentHistoryLearningModeResult
+    public var model: LocalContextModel
+
+    public init(learningResult: AgentHistoryLearningModeResult, model: LocalContextModel) {
+        self.learningResult = learningResult
+        self.model = model
+    }
+}
+
+public struct LocalContextModelRebuildUseCase {
+    public var learningSources: [any LearningSource]
+    public var dataUseCase: LocalContextModelDataUseCase
+    public var candidateGenerationUseCase: LocalContextCandidateGenerationUseCase
+
+    public init(
+        learningSources: [any LearningSource],
+        dataUseCase: LocalContextModelDataUseCase,
+        candidateGenerationUseCase: LocalContextCandidateGenerationUseCase = LocalContextCandidateGenerationUseCase(minimumOccurrences: 2)
+    ) {
+        self.learningSources = learningSources
+        self.dataUseCase = dataUseCase
+        self.candidateGenerationUseCase = candidateGenerationUseCase
+    }
+
+    public func rebuild(
+        scope: DictionaryScope = .user,
+        existingEntries: [DictionaryEntry] = [],
+        rebuiltAt: Date = Date()
+    ) throws -> LocalContextModelRebuildResult {
+        let learningResult = try AgentHistoryLearningModeUseCase(
+            learningSources: learningSources,
+            contextCandidateGenerationUseCase: candidateGenerationUseCase
+        ).generateCandidates(scope: scope, existingEntries: existingEntries)
+        let model = try dataUseCase.rebuildModel(
+            learningResult: learningResult,
+            rebuiltAt: rebuiltAt
+        )
+        return LocalContextModelRebuildResult(
+            learningResult: learningResult,
+            model: model
+        )
+    }
+}

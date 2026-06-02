@@ -40,6 +40,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/LocalContextModelRepository.swift": [
         "public protocol LocalContextModelRepository",
         "public struct LocalContextModelDataUseCase",
+        "public struct LocalContextModelRebuildUseCase",
         "rebuildModel",
         "deleteLocalContextModel",
     ],
@@ -137,7 +138,7 @@ REQUIRED_SNIPPETS = {
         "let voiceInputPipeline = VoiceInputPipeline(",
         "let result = try await voiceInputPipeline.run()",
         "Rebuild Local Context Model...",
-        "AgentHistoryLearningModeUseCase",
+        "LocalContextModelRebuildUseCase",
     ],
     "docs/16-architecture-refactor-summary.md": [
         "Responsibility Moves",

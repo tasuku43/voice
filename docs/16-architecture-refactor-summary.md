@@ -24,7 +24,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Dictionary replacement exposes `PromptNormalizer.normalizeText` for simple `String -> String` checks.
 - Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`; local persistence is behind `LocalContextModelRepository` with `JSONLocalContextModelRepository` as the filesystem adapter.
 - Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default hotkey processing path.
-- Local context model rebuilds moved into `LocalContextModelDataUseCase`, leaving the UI to choose sources and trigger rebuilds.
+- Local context model rebuild execution moved into `LocalContextModelRebuildUseCase`, leaving the UI to choose sources and trigger rebuilds.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
 - Local app data storage is represented by `LocalAppDataStore`, which creates settings and local context model repositories.
@@ -50,6 +50,7 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 - `LocalContextModel`
 - `LocalContextModelDocumentCodec`
 - `LocalContextModelRepository`
+- `LocalContextModelRebuildUseCase`
 - `VoiceInputPipeline`
 - `PromptProcessingPipeline`
 - `DictionaryContextLoadingUseCase`
