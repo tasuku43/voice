@@ -139,7 +139,7 @@ def validate_quick_paste_label(source: str) -> None:
     install_menu = source_between(
         source,
         "private func installMenuBarItem()",
-        "private func showLaunchWindow",
+        "@objc private func recordVoiceInput()",
     )
     if 'NSMenuItem(title: "Quick Paste Voice Input"' not in install_menu:
         fail("default menu label must present Quick Paste as the daily voice input action")
@@ -151,7 +151,6 @@ def validate_quick_paste_label(source: str) -> None:
     )
     required_label_snippets = [
         '"Quick Paste Voice Input"',
-        '"Quick Paste"',
     ]
     missing = [snippet for snippet in required_label_snippets if snippet not in update_state]
     if missing:

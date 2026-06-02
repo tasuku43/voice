@@ -17,8 +17,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var recordMenuItem: NSMenuItem?
     private var hotkeyMenuItem: NSMenuItem?
-    private var launchRecordButton: NSButton?
-    private var launchWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
     private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
     private var activeAudioRecorder: AVFoundationAudioRecorder?
@@ -38,9 +36,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         debugLogger.log("applicationDidFinishLaunching started; hotkeyDiagnosticsBuild=dispatcher-target-v1 bundlePath=\(Bundle.main.bundlePath) args=\(CommandLine.arguments.joined(separator: " "))")
-        NSApp.setActivationPolicy(.regular)
+        NSApp.setActivationPolicy(.accessory)
         installMenuBarItem()
-        showLaunchWindow()
         logPermissionStatusForDebug()
         requestInputMonitoringAccessIfNeeded()
         requestAccessibilityAccessIfNeeded()
@@ -95,48 +92,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         updateRecordingState()
         updateHotkeyMenuTitle()
         debugLogger.log("installMenuBarItem finished; button=\(item.button == nil ? "nil" : "present")")
-    }
-
-    private func showLaunchWindow() {
-        debugLogger.log("showLaunchWindow started")
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
-            styleMask: [.titled, .closable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "Voice Agent Input"
-        window.center()
-
-        let container = NSStackView()
-        container.orientation = .vertical
-        container.spacing = 12
-        container.alignment = .centerX
-        container.edgeInsets = NSEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
-
-        let title = NSTextField(labelWithString: "Voice Agent Input")
-        title.font = NSFont.boldSystemFont(ofSize: 18)
-        let status = NSTextField(labelWithString: "Ready")
-
-        let buttons = NSStackView()
-        buttons.orientation = .horizontal
-        buttons.spacing = 8
-        buttons.alignment = .centerY
-        let recordButton = NSButton(title: "Quick Paste", target: self, action: #selector(recordVoiceInput))
-        launchRecordButton = recordButton
-        buttons.addArrangedSubview(recordButton)
-
-        container.addArrangedSubview(title)
-        container.addArrangedSubview(status)
-        container.addArrangedSubview(buttons)
-
-        window.contentView = container
-        let controller = NSWindowController(window: window)
-        launchWindowController = controller
-        controller.showWindow(nil)
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-        debugLogger.log("showLaunchWindow finished; visible=\(window.isVisible)")
     }
 
     @objc private func recordVoiceInput() {
@@ -271,7 +226,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         statusItem?.button?.title = isRecording ? "Voice..." : "Voice"
         recordMenuItem?.title = isRecording ? "Stop Voice Input" : "Quick Paste Voice Input"
         recordMenuItem?.isEnabled = true
-        launchRecordButton?.title = isRecording ? "Stop" : "Quick Paste"
     }
 
     private func updateHotkeyMenuTitle(settings: AppSettings? = nil) {
