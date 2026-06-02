@@ -28,16 +28,16 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
 - Local app data storage is represented by `LocalAppDataStore`, which creates settings and local context model repositories.
-- Repository path and recording setting updates moved into `AppSettingsUseCase`.
+- Repository path and hotkey updates moved into `AppSettingsUseCase`.
 
 ## App Responsibilities Still Present
 
 - Menu bar installation and menu commands.
 - Hotkey start/stop.
 - Optional local debug log.
-- macOS permission status display and privacy-settings shortcut.
+- macOS permission status display and voice-input permission shortcut.
 - Hotkey settings dialog.
-- Export/import/delete/open local learning menu actions.
+- `Model Education` export/import/delete/open local learning actions.
 - Error presentation.
 
 These are acceptable UI boundary responsibilities. Further work can split menu command handlers into smaller AppKit types without changing Core contracts.
@@ -94,7 +94,7 @@ Future Codex session prompts:
 
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
 - Local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
-- Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, local data menus, and privacy filesystem checks.
+- Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, Model Education data actions, and privacy filesystem checks.
 
 ## Next Recommended Session
 

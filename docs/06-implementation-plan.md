@@ -17,7 +17,7 @@
 - Pasteboard fallback. When Accessibility paste cannot complete, the app copies the corrected prompt and asks the user to paste manually.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
-- Voice input uses the fixed local Japanese Speech locale by default; model education should improve developer terminology instead of adding broad recording settings.
+- Voice input uses the fixed local Japanese Speech locale by default; model education should improve developer terminology instead of adding broad speech settings.
 - Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
 - Focused cursor insertion or copy fallback.
 - Direct paste first; pasteboard copy fallback only when insertion cannot complete.
@@ -44,9 +44,8 @@
 - Git repository vocabulary source. Done through explicit repository vocabulary learning source.
 - Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering candidate approval.
 - No edit-derived learning from preview.
-- Optional diff extraction remains a model-education technique, not a hotkey UI flow.
 - Local dictionary persistence. JSON-backed Application Support store done.
-- Local context model data controls. App-shell menu can export, import, inspect, and delete the saved local context model.
+- Local context model data controls. `Model Education` can export, import, open, and delete the saved local context model.
 
 ## Phase 6: repository context
 

@@ -48,12 +48,8 @@
 - Apple SpeechAnalyzer / SpeechTranscriber adapter.
 - Local-only WhisperKit fallback.
 - Local Foundation Model education and conversion fallback.
-- SwiftUI/AppKit menu bar shell.
-- Global hotkey.
-- Pasteboard and Accessibility insertion.
 - GitHub, Slack, and Chatwork learning-source adapters.
 - SQLite persistence.
-- Dictionary export/import UI.
 
 ## Non-goals
 
