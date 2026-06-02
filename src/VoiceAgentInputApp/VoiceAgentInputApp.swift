@@ -19,7 +19,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var hotkeyMenuItem: NSMenuItem?
     private var launchRecordButton: NSButton?
     private var launchWindowController: NSWindowController?
-    private var debugWindowController: NSWindowController?
     private var previewWindowController: PreviewWindowController?
     private var recordingFeedbackWindowController: RecordingFeedbackWindowController?
     private var pushToTalkWindowController: PushToTalkWindowController?
@@ -29,8 +28,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private var shouldStopRecordingWhenReady = false
     private var recordingStartedAt: Date?
     private let hotkeyMonitor = AppKitKeyboardShortcutMonitor()
-    private var diagnosticHotkeyMonitors: [AppKitKeyboardShortcutMonitor] = []
-    private var keyboardEventTap: KeyboardEventTap?
     private var permissionStatusTimer: Timer?
     private var lastPermissionStatusSnapshot: PermissionStatusSnapshot?
     private var hasOpenedMissingPermissionSettings = false
@@ -45,13 +42,11 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         installMenuBarItem()
         showLaunchWindow()
-        showDebugWindowIfNeeded()
         logPermissionStatusForDebug()
         requestInputMonitoringAccessIfNeeded()
         requestAccessibilityAccessIfNeeded()
         openMissingPermissionSettingsIfNeeded(reason: "launch")
         registerHotkeys(reason: "launch")
-        startHotkeyDiagnosticsIfDebug()
         startPermissionStatusMonitoring()
         debugLogger.log("applicationDidFinishLaunching finished")
     }
@@ -61,8 +56,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         permissionStatusTimer?.invalidate()
         permissionStatusTimer = nil
         hotkeyMonitor.stop()
-        diagnosticHotkeyMonitors.forEach { $0.stop() }
-        keyboardEventTap?.stop()
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
@@ -81,7 +74,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let hotkeyItem = NSMenuItem(title: "Hotkey: Control-Option-Space", action: nil, keyEquivalent: "")
         menu.addItem(hotkeyItem)
         menu.addItem(NSMenuItem(title: "Hotkey Settings...", action: #selector(showHotkeySettings), keyEquivalent: "h"))
-        menu.addItem(NSMenuItem(title: "Start Hotkey Diagnostics", action: #selector(startHotkeyDiagnostics), keyEquivalent: ""))
         menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Recording Settings...", action: #selector(showRecordingSettings), keyEquivalent: "s"))
         menu.addItem(NSMenuItem(title: "Permission Status...", action: #selector(showPermissionStatus), keyEquivalent: ""))
@@ -147,48 +139,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
         debugLogger.log("showLaunchWindow finished; visible=\(window.isVisible)")
-    }
-
-    private func showDebugWindowIfNeeded() {
-        guard debugLogger.enabled else {
-            return
-        }
-
-        let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 560, height: 220),
-            styleMask: [.titled, .closable, .resizable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "Voice Agent Input Debug"
-        window.center()
-
-        let textView = NSTextView()
-        textView.isEditable = false
-        textView.isRichText = false
-        textView.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
-        textView.string = """
-        Voice Agent Input debug mode is active.
-
-        Log file:
-        \(debugLogger.logFileURL.path)
-
-        Try:
-        open -n .build/VoiceAgentInput.app --args --debug
-        tail -f "\(debugLogger.logFileURL.path)"
-        """
-
-        let scrollView = NSScrollView()
-        scrollView.hasVerticalScroller = true
-        scrollView.documentView = textView
-        window.contentView = scrollView
-
-        let controller = NSWindowController(window: window)
-        debugWindowController = controller
-        controller.showWindow(nil)
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-        debugLogger.log("showDebugWindowIfNeeded finished; visible=\(window.isVisible)")
     }
 
     @objc private func recordVoiceInput() {
@@ -351,44 +301,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         controller.showWindow(nil)
     }
 
-    private func startHotkeyDiagnosticsIfDebug() {
-        guard debugLogger.enabled else {
-            return
-        }
-        startHotkeyDiagnostics()
-    }
-
-    @objc private func startHotkeyDiagnostics() {
-        debugLogger.log("hotkey diagnostics starting")
-        diagnosticHotkeyMonitors.forEach { $0.stop() }
-        diagnosticHotkeyMonitors = []
-
-        let diagnosticShortcuts: [(String, KeyboardShortcut)] = [
-            ("diagnostic/control-option-s", KeyboardShortcut(key: "s", modifiers: [.control, .option])),
-            ("diagnostic/control-shift-d", KeyboardShortcut(key: "d", modifiers: [.control, .shift])),
-            ("diagnostic/control-option-d", KeyboardShortcut(key: "d", modifiers: [.control, .option]))
-        ]
-        for (label, shortcut) in diagnosticShortcuts {
-            let monitor = AppKitKeyboardShortcutMonitor()
-            monitor.start(
-                shortcut: shortcut,
-                onTrigger: { [debugLogger] in
-                    debugLogger.log("hotkey diagnostics carbon pressed label=\(label)")
-                },
-                onRelease: { [debugLogger] in
-                    debugLogger.log("hotkey diagnostics carbon released label=\(label)")
-                }
-            )
-            diagnosticHotkeyMonitors.append(monitor)
-        }
-
-        if keyboardEventTap == nil {
-            keyboardEventTap = KeyboardEventTap(debugLogger: debugLogger)
-        }
-        keyboardEventTap?.start()
-        debugLogger.log("hotkey diagnostics ready; try Control-Option-Space, Control-Shift-S, Control-Option-S, Control-Shift-D, Control-Option-D")
-    }
-
     private func registerHotkeys(reason: String) {
         AppKitKeyboardShortcutMonitor.debugLogger = debugLogger
         hotkeyMonitor.stop()
@@ -464,9 +376,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
            status.inputMonitoring == .trusted
         {
             registerHotkeys(reason: "input monitoring became trusted")
-            if debugLogger.enabled {
-                startHotkeyDiagnostics()
-            }
         }
     }
 
@@ -1582,133 +1491,5 @@ private final class AppKitKeyboardShortcutMonitor: KeyboardShortcutMonitor {
         }
         let relevantFlags = flags.intersection([.maskCommand, .maskAlternate, .maskControl, .maskShift])
         return relevantFlags == expected
-    }
-}
-
-private final class KeyboardEventTap {
-    private let debugLogger: AppDebugLogger
-    private var eventTap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
-
-    init(debugLogger: AppDebugLogger) {
-        self.debugLogger = debugLogger
-    }
-
-    func start() {
-        stop()
-        guard CGPreflightListenEventAccess() else {
-            debugLogger.log("hotkey diagnostics cgevent tap not started; input monitoring not trusted")
-            return
-        }
-
-        let eventsOfInterest =
-            (1 << CGEventType.keyDown.rawValue)
-            | (1 << CGEventType.keyUp.rawValue)
-            | (1 << CGEventType.flagsChanged.rawValue)
-
-        guard let eventTap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .listenOnly,
-            eventsOfInterest: CGEventMask(eventsOfInterest),
-            callback: { _, type, event, userInfo in
-                guard let userInfo else {
-                    return Unmanaged.passUnretained(event)
-                }
-                let tap = Unmanaged<KeyboardEventTap>
-                    .fromOpaque(userInfo)
-                    .takeUnretainedValue()
-                tap.log(event: event, type: type)
-                return Unmanaged.passUnretained(event)
-            },
-            userInfo: Unmanaged.passUnretained(self).toOpaque()
-        ) else {
-            debugLogger.log("hotkey diagnostics cgevent tap create failed")
-            return
-        }
-
-        guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0) else {
-            debugLogger.log("hotkey diagnostics cgevent run loop source create failed")
-            CFMachPortInvalidate(eventTap)
-            return
-        }
-
-        self.eventTap = eventTap
-        self.runLoopSource = source
-        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
-        CGEvent.tapEnable(tap: eventTap, enable: true)
-        debugLogger.log("hotkey diagnostics cgevent tap started")
-    }
-
-    func stop() {
-        if let runLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetMain(), runLoopSource, .commonModes)
-        }
-        if let eventTap {
-            CFMachPortInvalidate(eventTap)
-        }
-        runLoopSource = nil
-        eventTap = nil
-    }
-
-    private func log(event: CGEvent, type: CGEventType) {
-        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
-        let flags = event.flags
-        guard shouldLog(keyCode: keyCode, flags: flags, type: type) else {
-            return
-        }
-        debugLogger.log(
-            "hotkey diagnostics cgevent \(typeDescription(type)) keyCode=\(keyCode) modifiers=\(modifierDescription(flags))"
-        )
-    }
-
-    private func shouldLog(keyCode: Int64, flags: CGEventFlags, type: CGEventType) -> Bool {
-        if type == .flagsChanged {
-            return true
-        }
-        let interestingKeys: Set<Int64> = [
-            Int64(kVK_ANSI_S),
-            Int64(kVK_ANSI_D),
-            Int64(kVK_ANSI_V),
-            Int64(kVK_Space)
-        ]
-        return interestingKeys.contains(keyCode)
-            || flags.contains(.maskControl)
-            || flags.contains(.maskShift)
-            || flags.contains(.maskCommand)
-            || flags.contains(.maskAlternate)
-    }
-
-    private func typeDescription(_ type: CGEventType) -> String {
-        switch type {
-        case .keyDown:
-            "keyDown"
-        case .keyUp:
-            "keyUp"
-        case .flagsChanged:
-            "flagsChanged"
-        default:
-            "\(type.rawValue)"
-        }
-    }
-
-    private func modifierDescription(_ flags: CGEventFlags) -> String {
-        var names: [String] = []
-        if flags.contains(.maskControl) {
-            names.append("control")
-        }
-        if flags.contains(.maskShift) {
-            names.append("shift")
-        }
-        if flags.contains(.maskCommand) {
-            names.append("command")
-        }
-        if flags.contains(.maskAlternate) {
-            names.append("option")
-        }
-        if flags.contains(.maskSecondaryFn) {
-            names.append("fn")
-        }
-        return names.isEmpty ? "none" : names.joined(separator: "+")
     }
 }

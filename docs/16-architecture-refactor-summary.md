@@ -28,14 +28,14 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Preview window rendering moved into `PreviewWindowController.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
-- Local app data storage is represented by `LocalAppDataStore`, which creates settings, history, and local context model repositories.
+- Local app data storage is represented by `LocalAppDataStore`, which creates settings and local context model repositories.
 - Repository path and recording setting updates moved into `AppSettingsUseCase`.
 
 ## App Responsibilities Still Present
 
 - Menu bar installation and menu commands.
 - Hotkey start/stop.
-- Debug launch diagnostics and optional local debug log.
+- Optional local debug log.
 - macOS permission status display and privacy-settings shortcut.
 - Recording settings dialog.
 - Preview window rendering and user edits in `PreviewWindowController.swift`.
