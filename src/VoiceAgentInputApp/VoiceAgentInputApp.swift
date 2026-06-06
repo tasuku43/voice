@@ -148,12 +148,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     audioRecorder: audioRecorder,
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
                     speechEngine: speechEngine,
-                    normalizationContext: NormalizationContext(entries: entries),
-                    recordedAudioHandler: { [debugLogger] audio in
-                        debugLogger.log(
-                            "recordVoiceInput recorded audio duration=\(String(format: "%.2f", audio.durationSeconds))s bytes=\(audio.byteCount) format=\(audio.formatDescription)"
-                        )
-                    }
+                    normalizationContext: NormalizationContext(entries: entries)
                 )
                 let result = try await voiceInputPipeline.run()
                 await MainActor.run {

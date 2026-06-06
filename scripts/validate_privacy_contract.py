@@ -22,6 +22,7 @@ FORBIDDEN_SOURCE_SNIPPETS = [
     "https://",
     "speech snapshot final=\\(isFinal) text=\\(snapshot)",
     "recognitionSnapshotHandler",
+    "recordedAudioHandler",
 ]
 
 REQUIRED_SOURCE_SNIPPETS = {

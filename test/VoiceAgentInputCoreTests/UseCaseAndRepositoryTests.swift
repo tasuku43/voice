@@ -43,26 +43,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(permissionProvider.requestAccessCallCount, 0)
     }
 
-    func testVoiceInputPipelineReportsRecordedAudioForDebugObservability() async throws {
-        let audio = RecordedAudio(
-            data: Data("くらのコードでタイプスクリプトを確認して".utf8),
-            formatDescription: "mock-text",
-            durationSeconds: 4.2
-        )
-        let capturedAudio = RecordedAudioCapture()
-        let pipeline = VoiceInputPipeline(
-            audioRecorder: MockAudioRecorder(audio: audio),
-            microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
-            speechEngine: MockSpeechEngine(),
-            normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries),
-            recordedAudioHandler: { capturedAudio.store($0) }
-        )
-
-        _ = try await pipeline.run()
-
-        XCTAssertEqual(capturedAudio.value, audio)
-    }
-
     func testVoiceInputPipelineKeepsTranscriptNormalizationAndInsertionStages() async throws {
         let pipeline = VoiceInputPipeline(
             speechEngine: MockSpeechEngine(),
@@ -1341,23 +1321,6 @@ private final class InMemoryAppSettingsRepository: AppSettingsRepository {
 
 private enum TemporaryRecordedAudioFileStoreTestError: Error, Equatable {
     case expected
-}
-
-private final class RecordedAudioCapture: @unchecked Sendable {
-    private let lock = NSLock()
-    private var storedValue: RecordedAudio?
-
-    var value: RecordedAudio? {
-        lock.lock()
-        defer { lock.unlock() }
-        return storedValue
-    }
-
-    func store(_ audio: RecordedAudio) {
-        lock.lock()
-        storedValue = audio
-        lock.unlock()
-    }
 }
 
 private struct StubRepositoryContextProvider: RepositoryContextProvider {

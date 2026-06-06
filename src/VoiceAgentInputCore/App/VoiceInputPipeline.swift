@@ -35,22 +35,19 @@ public struct VoiceInputPipeline {
     public var speechEngine: any SpeechToTextEngine
     public var normalizer: any PromptNormalizer
     public var normalizationContext: NormalizationContext
-    public var recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)?
 
     public init(
         audioRecorder: (any AudioRecorder)? = nil,
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
         normalizer: any PromptNormalizer = DictionaryPromptNormalizer(),
-        normalizationContext: NormalizationContext,
-        recordedAudioHandler: (@Sendable (RecordedAudio) -> Void)? = nil
+        normalizationContext: NormalizationContext
     ) {
         self.audioRecorder = audioRecorder
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.normalizer = normalizer
         self.normalizationContext = normalizationContext
-        self.recordedAudioHandler = recordedAudioHandler
     }
 
     public func run() async throws -> VoiceInputPipelineResult {
@@ -68,7 +65,6 @@ public struct VoiceInputPipeline {
             }
         }
         let audio = try await audioRecorder.recordOnce()
-        recordedAudioHandler?(audio)
         let transcript = try await speechEngine.transcribe(audio: audio)
         return try await run(transcript: transcript)
     }
