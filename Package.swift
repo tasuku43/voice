@@ -9,7 +9,8 @@ let package = Package(
     products: [
         .library(name: "VoiceAgentInputCore", targets: ["VoiceAgentInputCore"]),
         .executable(name: "voice-agent-input-app", targets: ["VoiceAgentInputApp"]),
-        .executable(name: "voice-agent-input-demo", targets: ["VoiceAgentInputDemo"])
+        .executable(name: "voice-agent-input-demo", targets: ["VoiceAgentInputDemo"]),
+        .executable(name: "TranscribeCLI", targets: ["TranscribeCLI"])
     ],
     targets: [
         .target(
@@ -27,6 +28,11 @@ let package = Package(
             dependencies: ["VoiceAgentInputCore"],
             path: "src/VoiceAgentInputApp",
             exclude: ["Info.plist"]
+        ),
+        .executableTarget(
+            name: "TranscribeCLI",
+            dependencies: ["VoiceAgentInputCore"],
+            path: "src/TranscribeCLI"
         ),
         .testTarget(
             name: "VoiceAgentInputCoreTests",

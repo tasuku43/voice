@@ -2,9 +2,13 @@
 
 ## SpeechToTextEngine
 
-Current protocol:
+Current protocols:
 
 ```swift
+protocol SpeechEngine {
+    func transcribe(audioFile url: URL, options: TranscriptionOptions) async throws -> TranscriptionResult
+}
+
 protocol SpeechToTextEngine {
     func transcribe(audio: RecordedAudio) async throws -> Transcript
 }
@@ -25,8 +29,8 @@ Implementations:
 - `MockAudioRecorder` for tests and UI development.
 - `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file and returns that URL in `RecordedAudio` so STT adapters can avoid a second audio write.
 - `MockSpeechEngine` for tests and UI development.
-- `AppleSpeechEngine` for on-device local file transcription through `SFSpeechRecognizer`; it uses recorder-provided temporary file URLs directly when available, otherwise creates a temporary file through `TemporaryRecordedAudioFileStore`. Temporary audio is deleted after success or failure.
-- `AppleSpeechEngine` accepts `SpeechRecognitionHints` and maps them to `SFSpeechRecognitionRequest.contextualStrings` so loaded dictionary entries can help ASR before post-STT normalization.
+- `AppleSpeechEngine` for on-device local file transcription through `SpeechAnalyzer` and `SpeechTranscriber`; it uses recorder-provided temporary file URLs directly when available, otherwise creates a temporary file through `TemporaryRecordedAudioFileStore`. Temporary audio is deleted after success or failure.
+- `AppleSpeechEngine` accepts `SpeechRecognitionHints` and maps tagged `ContextualStringsConfig` values to `AnalysisContext.contextualStrings` so loaded dictionary entries can help ASR before post-STT normalization.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
@@ -34,7 +38,8 @@ Current app orchestration:
 - `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, and `NormalizationContext`.
 - `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
-- `AppleSpeechEngine` defaults to `requiresOnDeviceRecognition = true` to avoid uploading audio for recognition.
+- `AppleSpeechEngine` requires `SpeechAnalyzer` on macOS 26 or later and requires local speech assets to already be installed; it does not download speech assets during the hotkey path.
+- `TranscribeCLI` calls the same `SpeechEngine` file API for repeatable audio-file accuracy checks without hotkey, UI, Accessibility, or paste dependencies.
 
 ## SpeechRecognitionPermissionProvider
 
@@ -90,7 +95,7 @@ Current adapter:
 Current use cases:
 
 - `DictionaryEntryLoadingUseCase` combines seed dictionary entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for hotkey runtime normalization.
-- `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated ASR contextual strings, using `spokenForms` only as a legacy fallback.
+- `SpeechRecognitionHintsUseCase` converts loaded `DictionaryEntry.recognitionHints` values into bounded, de-duplicated, tagged ASR contextual strings, using `spokenForms` only as a legacy fallback.
 - `LocalContextModelRebuildUseCase` runs selected learning sources and persists the rebuilt model through `LocalContextModelDataUseCase`; the macOS shell exposes model export/import/delete controls.
 - `AppSettingsUseCase` owns repository path and hotkey updates so the UI does not duplicate persistence rules.
 

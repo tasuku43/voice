@@ -33,7 +33,7 @@
 
 - Audio recorder abstraction. Done as protocol plus mock recorder.
 - AVFoundation microphone recorder. Initial adapter done; it uses a temporary local file and deletes it after reading audio data.
-- Apple Speech adapter. Initial `SFSpeechRecognizer` file transcription adapter and permission provider wired into bundled app flow.
+- Apple Speech adapter. `SpeechAnalyzer`/`SpeechTranscriber` file transcription adapter and permission provider wired into bundled app flow.
 - Availability guards.
 - Mock engine retained for tests.
 

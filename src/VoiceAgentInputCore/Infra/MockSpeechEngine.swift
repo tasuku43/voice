@@ -1,6 +1,6 @@
 import Foundation
 
-public struct MockSpeechEngine: SpeechToTextEngine {
+public struct MockSpeechEngine: SpeechEngine, SpeechToTextEngine {
     public var transcript: Transcript?
 
     public init(transcript: Transcript? = nil) {
@@ -12,6 +12,26 @@ public struct MockSpeechEngine: SpeechToTextEngine {
             text: String(data: audio.data, encoding: .utf8) ?? "",
             localeIdentifier: "ja-JP",
             confidence: 1.0
+        )
+    }
+
+    public func transcribe(audioFile url: URL, options: TranscriptionOptions) async throws -> TranscriptionResult {
+        let data = try Data(contentsOf: url)
+        let transcript = transcript ?? Transcript(
+            text: String(data: data, encoding: .utf8) ?? "",
+            localeIdentifier: options.locale.identifier,
+            confidence: 1.0
+        )
+        return TranscriptionResult(
+            text: transcript.text,
+            metadata: TranscriptionMetadata(
+                engine: "MockSpeechEngine",
+                localeIdentifier: transcript.localeIdentifier ?? options.locale.identifier,
+                confidence: transcript.confidence,
+                contextualStringCount: options.contextualStrings.phraseCount,
+                recognitionMode: options.recognitionMode,
+                outputDetailLevel: options.outputDetailLevel
+            )
         )
     }
 }

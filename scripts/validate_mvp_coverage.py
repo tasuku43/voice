@@ -75,10 +75,22 @@ REQUIRED_COVERAGE = {
             "AVAudioRecorder",
         ],
         "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
-            "SFSpeechRecognizer",
-            "requiresOnDeviceRecognition",
-            "request.contextualStrings",
-            "SpeechTranscriptAccumulator",
+            "SpeechAnalyzer",
+            "SpeechTranscriber",
+            "AnalysisContext",
+            "AssetInventory.status",
+            "TemporaryRecordedAudioFileStore",
+        ],
+        "src/VoiceAgentInputCore/App/TranscriptionOptions.swift": [
+            "public struct TranscriptionOptions",
+            "public struct ContextualStringsConfig",
+            "public enum RecognitionMode",
+            "public enum OutputDetailLevel",
+        ],
+        "src/VoiceAgentInputCore/App/TranscriptionResult.swift": [
+            "public struct TranscriptionResult",
+            "public struct TranscriptionSegment",
+            "public struct TranscriptionMetadata",
         ],
         "src/VoiceAgentInputCore/App/SpeechRecognitionHints.swift": [
             "public struct SpeechRecognitionHints",
@@ -126,9 +138,17 @@ REQUIRED_COVERAGE = {
             "testJSONLocalContextModelRepositoryRoundTripAndDelete",
             "testDictionaryEntryLoadingIncludesSavedLocalContextModelEntries",
             "testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries",
-            "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
-            "testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk",
-            "testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence",
+            "testAppleSpeechEngineBuildsAnalysisContextWithTaggedContextualStrings",
+            "testAppleSpeechEngineDefaultsToSpeechAnalyzerOptions",
+            "testSpeechRecognitionHintsGroupContextualStringsByEntryKind",
+        ],
+        "src/TranscribeCLI/main.swift": [
+            "AppleSpeechEngine(defaultOptions: options)",
+            "transcribe(audioFile:",
+            "--context contextual-strings.json",
+        ],
+        "test/VoiceAgentInputCoreTests/DemoCLITests.swift": [
+            "testTranscribeCLIHelpUsesRealExecutablePath",
         ],
     },
     "user-action paste with no submit option": {
@@ -297,7 +317,7 @@ REQUIRED_COVERAGE = {
         ],
         "scripts/validate_privacy_contract.py": [
             "FORBIDDEN_SOURCE_SNIPPETS",
-            "requiresOnDeviceRecognition",
+            "downloadAndInstall",
         ],
         "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [
             "removeItem",

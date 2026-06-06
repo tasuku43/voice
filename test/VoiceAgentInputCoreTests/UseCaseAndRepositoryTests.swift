@@ -1,4 +1,5 @@
 import Foundation
+import Speech
 import XCTest
 @testable import VoiceAgentInputCore
 
@@ -58,94 +59,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("TypeScript"))
         XCTAssertEqual(result.insertion.text, result.normalizedPrompt.normalizedText)
-    }
-
-    func testSpeechTranscriptAccumulatorMergesPauseSplitSnapshots() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("最初の文章を入力しています")
-        accumulator.record("次の文章も続けて入力しています")
-
-        XCTAssertEqual(
-            accumulator.bestText(),
-            "最初の文章を入力しています次の文章も続けて入力しています"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorDeduplicatesOverlappingSnapshots() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("Codexでテストを")
-        accumulator.record("テストを追加して")
-        accumulator.record("テストを追加してmake checkを実行")
-
-        XCTAssertEqual(
-            accumulator.bestText(),
-            "Codexでテストを追加してmake checkを実行"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorReplacesRevisedRollingSnapshot() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("佐藤さや蓄積マージの方法についてつい")
-        accumulator.record("蓄積マージの方法について実装を入れてもらう")
-        accumulator.record("蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって")
-
-        XCTAssertEqual(
-            accumulator.bestText(),
-            "佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorRepairsLateSnapshotFromLastRepeatedAnchor() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって蓄積マージの方法について")
-        accumulator.record("蓄積マージの方法についてテストです")
-
-        XCTAssertEqual(
-            accumulator.bestText(),
-            "佐藤さや蓄積マージの方法について実装を入れてもらったんだけどどうなってるかなって蓄積マージの方法についてテストです"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorKeepsEarlierTextWhenFinalOnlyContainsLastChunk() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("録音開始から最初の依頼を話す")
-        accumulator.record("次に補足を話す")
-
-        XCTAssertEqual(
-            accumulator.bestText(preferredFinalText: "次に補足を話す"),
-            "録音開始から最初の依頼を話す次に補足を話す"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorKeepsJapanesePauseSeparatedPromptWhenFinalOnlyContainsLastSentence() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("使い勝手はだいぶ良くなっている気がする")
-        accumulator.record("というのも")
-        accumulator.record("今ってレコードからストップまで全部見てくれているんですよね")
-
-        XCTAssertEqual(
-            accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね"),
-            "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね"
-        )
-    }
-
-    func testSpeechTranscriptAccumulatorKeepsPauseSeparatedPromptAcrossRollingRevisionsAndFinalRegression() {
-        var accumulator = SpeechTranscriptAccumulator()
-
-        accumulator.record("使い勝手はだいぶ良くなっている気がする")
-        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも")
-        accumulator.record("というのも今ってレコードからストップまで全部見てくれているんですよね")
-
-        XCTAssertEqual(
-            accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね"),
-            "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね"
-        )
     }
 
     func testPromptProcessingPipelineRunsAfterSTTWithoutAudioDependencies() async throws {
@@ -479,6 +392,49 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertFalse(hints.contextualStrings.contains("くらのコード"))
     }
 
+    func testSpeechRecognitionHintsGroupContextualStringsByEntryKind() {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["めいくちぇっく"],
+                canonical: "make check",
+                kind: .command,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true
+            ),
+            DictionaryEntry(
+                spokenForms: ["くらのコード"],
+                canonical: "Claude Code",
+                kind: .toolName,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true
+            ),
+            DictionaryEntry(
+                spokenForms: ["すぴーちあな"],
+                canonical: "SpeechAnalyzer",
+                kind: .framework,
+                scope: .user,
+                confidence: 0.9,
+                autoApply: true
+            )
+        ]
+
+        let hints = SpeechRecognitionHintsUseCase().hints(from: entries)
+
+        XCTAssertEqual(hints.contextualStringsConfig.strings(for: .commands), [
+            "make check"
+        ])
+        XCTAssertEqual(hints.contextualStringsConfig.strings(for: .appTerms), [
+            "Claude Code",
+            "くろーどこーど"
+        ])
+        XCTAssertEqual(hints.contextualStringsConfig.strings(for: .technicalTerms), [
+            "SpeechAnalyzer",
+            "speech analyzer"
+        ])
+    }
+
     func testSpeechRecognitionHintsCanBeBounded() {
         let entries = [
             DictionaryEntry(
@@ -750,24 +706,50 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         ))
     }
 
-    func testAppleSpeechEngineRequiresOnDeviceRecognitionByDefault() {
+    func testAppleSpeechEngineDefaultsToSpeechAnalyzerOptions() {
         let engine = AppleSpeechEngine()
 
-        XCTAssertTrue(engine.requiresOnDeviceRecognition)
-        XCTAssertEqual(engine.localeIdentifier, "ja-JP")
-        XCTAssertEqual(engine.recognitionHints, SpeechRecognitionHints())
+        XCTAssertEqual(engine.defaultOptions.locale.identifier, "ja-JP")
+        XCTAssertEqual(engine.defaultOptions.contextualStrings, ContextualStringsConfig())
+        XCTAssertEqual(engine.defaultOptions.recognitionMode, .accurate)
+        XCTAssertEqual(engine.defaultOptions.outputDetailLevel, .textOnly)
     }
 
-    func testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest() {
+    func testAppleSpeechEngineCarriesTaggedContextualStringsIntoDefaultOptions() {
         let engine = AppleSpeechEngine(
-            recognitionHints: SpeechRecognitionHints(contextualStrings: ["ProjectVoice", "Claude Code"])
+            recognitionHints: SpeechRecognitionHints(
+                contextualStringsConfig: ContextualStringsConfig(
+                    stringsByTag: [
+                        .appTerms: ["ProjectVoice"],
+                        .technicalTerms: ["SpeechAnalyzer"]
+                    ]
+                )
+            )
         )
 
-        let request = engine.recognitionRequest(url: URL(fileURLWithPath: "/tmp/audio.caf"))
+        XCTAssertEqual(engine.defaultOptions.contextualStrings.strings(for: .appTerms), ["ProjectVoice"])
+        XCTAssertEqual(engine.defaultOptions.contextualStrings.strings(for: .technicalTerms), ["SpeechAnalyzer"])
+    }
 
-        XCTAssertTrue(request.shouldReportPartialResults)
-        XCTAssertTrue(request.requiresOnDeviceRecognition)
-        XCTAssertEqual(request.contextualStrings, ["ProjectVoice", "Claude Code"])
+    @available(macOS 26.0, *)
+    func testAppleSpeechEngineBuildsAnalysisContextWithTaggedContextualStrings() {
+        let config = ContextualStringsConfig(stringsByTag: [
+            .general: ["Voice Agent"],
+            .commands: ["make check"],
+            .people: ["Tasuku"]
+        ])
+
+        let context = SpeechAnalysisContextBuilder().analysisContext(from: config)
+
+        XCTAssertEqual(context.contextualStrings[.general], ["Voice Agent"])
+        XCTAssertEqual(
+            context.contextualStrings[.init(ContextualStringsTag.commands.rawValue)],
+            ["make check"]
+        )
+        XCTAssertEqual(
+            context.contextualStrings[.init(ContextualStringsTag.people.rawValue)],
+            ["Tasuku"]
+        )
     }
 
     func testAppleSpeechEngineUsesExistingTemporaryRecordingFileAndDeletesItAfterOperation() async throws {
@@ -814,25 +796,14 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
     }
 
-    func testAppleSpeechEngineMapsNoSpeechDetectedError() {
-        let error = NSError(
-            domain: "kAFAssistantErrorDomain",
-            code: 1110,
-            userInfo: [NSLocalizedDescriptionKey: "No speech detected"]
+    func testSpeechEngineErrorSeparatesUserMessageAndDebugDescription() {
+        let error = SpeechEngineError.onDeviceAssetMissing(
+            localeIdentifier: "ja-JP",
+            status: "supported"
         )
 
-        XCTAssertEqual(AppleSpeechEngineError.map(error), .noSpeechDetected)
-    }
-
-    func testSpeechTranscriptAccumulatorKeepsFullPartialWhenFinalOnlyContainsLastUtterance() {
-        var accumulator = SpeechTranscriptAccumulator()
-        accumulator.record("使い勝手はだいぶ良くなっている気がする")
-        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも")
-        accumulator.record("使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね")
-
-        let best = accumulator.bestText(preferredFinalText: "今ってレコードからストップまで全部見てくれているんですよね")
-
-        XCTAssertEqual(best, "使い勝手はだいぶ良くなっている気がするというのも今ってレコードからストップまで全部見てくれているんですよね")
+        XCTAssertTrue(error.userFacingMessage.contains("on-device speech asset"))
+        XCTAssertTrue(error.debugDescription.contains("status=supported"))
     }
 
     func testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation() async throws {

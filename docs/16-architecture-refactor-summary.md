@@ -45,6 +45,9 @@ These are acceptable UI boundary responsibilities. Further work can split menu c
 ## Added Contracts
 
 - `Transcript`
+- `TranscriptionOptions`
+- `TranscriptionResult`
+- `SpeechEngineError`
 - `NormalizedPrompt`
 - `PromptNormalizer`
 - `LocalContextModel`

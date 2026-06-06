@@ -141,7 +141,6 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 }
                 let speechEngine = AppleSpeechEngine(
                     localeIdentifier: AppleSpeechEngine.defaultLocaleIdentifier,
-                    requiresOnDeviceRecognition: true,
                     recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)
                 )
                 let voiceInputPipeline = VoiceInputPipeline(
@@ -903,19 +902,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             }
         }
 
-        if let speechError = error as? AppleSpeechEngineError {
-            switch speechError {
-            case let .recognizerUnavailable(localeIdentifier):
-                return "Apple Speech is not available for \(localeIdentifier) right now. Check the macOS speech recognition setting and try again."
-            case .noSpeechDetected:
-                return """
-                No speech was detected in the recording.
-
-                Try again while speaking until you stop recording. Also check that macOS is using the expected microphone input.
-                """
-            case let .transcriptionFailed(description):
-                return "Apple Speech could not transcribe the recording: \(description)"
-            }
+        if let speechError = error as? SpeechEngineError {
+            return speechError.userFacingMessage
         }
 
         return String(describing: error)

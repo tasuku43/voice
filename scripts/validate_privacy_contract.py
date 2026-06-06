@@ -23,12 +23,15 @@ FORBIDDEN_SOURCE_SNIPPETS = [
     "speech snapshot final=\\(isFinal) text=\\(snapshot)",
     "recognitionSnapshotHandler",
     "recordedAudioHandler",
+    "downloadAndInstall",
 ]
 
 REQUIRED_SOURCE_SNIPPETS = {
     "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
-        "requiresOnDeviceRecognition: Bool = true",
-        "request.contextualStrings = recognitionHints.contextualStrings",
+        "SpeechAnalyzer",
+        "SpeechTranscriber",
+        "AnalysisContext",
+        "AssetInventory.status",
         "TemporaryRecordedAudioFileStore",
     ],
     "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [

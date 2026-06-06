@@ -3,6 +3,29 @@ import XCTest
 import VoiceAgentInputCore
 
 final class DemoCLITests: XCTestCase {
+    func testTranscribeCLIHelpUsesRealExecutablePath() throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: ".build/debug/TranscribeCLI")
+        process.arguments = ["--help"]
+
+        let outputPipe = Pipe()
+        let errorPipe = Pipe()
+        process.standardOutput = outputPipe
+        process.standardError = errorPipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        let outputText = String(data: outputData, encoding: .utf8) ?? ""
+        let errorText = String(data: errorData, encoding: .utf8) ?? ""
+
+        XCTAssertEqual(process.terminationStatus, 0, errorText)
+        XCTAssertTrue(outputText.contains("swift run TranscribeCLI <audio-file>"))
+        XCTAssertTrue(outputText.contains("--context contextual-strings.json"))
+    }
+
     func testDemoNormalizeModeUsesRealExecutablePath() throws {
         let output = try runDemo(arguments: [
             "くらのコードでタイプスクリプトエラーを直して"

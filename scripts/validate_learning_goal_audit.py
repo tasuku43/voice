@@ -120,7 +120,8 @@ REQUIRED_SNIPPETS = {
     ],
     "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
         "recognitionHints",
-        "request.contextualStrings = recognitionHints.contextualStrings",
+        "SpeechAnalysisContextBuilder",
+        "context.contextualStrings = contextualStrings",
     ],
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         "Model Education",
@@ -150,7 +151,7 @@ REQUIRED_SNIPPETS = {
         "testDictionaryEntryLoadingDeduplicatesSeedAndSavedLocalContextModelEntries",
         "testLearningSourceSelectionReportsSelectedKinds",
         "testAgentHistoryLearningModeReportsSourceTextCounts",
-        "testAppleSpeechEngineAppliesContextualStringsToRecognitionRequest",
+        "testAppleSpeechEngineBuildsAnalysisContextWithTaggedContextualStrings",
         "testLearningModeCanCombineAgentHistoryAndRepositoryVocabularySources",
         "testRuntimeDictionaryLoadingDefaultsToSeedEntriesOnly",
     ],
