@@ -202,7 +202,7 @@ REQUIRED_COVERAGE = {
         "docs/17-learning-goal-audit.md": [
             "Learning Goal Audit",
             "Keep ordinary hotkey dictation mostly rule-based and fast.",
-            "without candidate approval",
+            "without opening review/approval UI",
             "testAgentHistoryLearningModelEvolvesRuleBasedNormalizationForProjectTerms",
             "LocalContextModelBuildUseCase",
             "local Foundation Models only",

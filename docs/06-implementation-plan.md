@@ -42,7 +42,7 @@
 - Learning source selection. Initial app flow done.
 - Local Codex / Claude Code history source. Done through bounded local history adapters.
 - Git repository vocabulary source. Done through explicit repository vocabulary learning source.
-- Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering candidate approval.
+- Local context model rebuild. The app can rebuild and persist the local context model from selected sources without entering review/approval UI.
 - No edit-derived learning from preview.
 - Local dictionary persistence. JSON-backed Application Support store done.
 - Local context model data controls. `Model Education` can export, import, open, and delete the saved local context model.

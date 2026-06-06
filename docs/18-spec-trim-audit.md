@@ -37,8 +37,8 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 ## Drop
 
 - Any requirement that the default hotkey path show a preview before insertion.
-- Any requirement that normal dictation wait for candidate approval.
-- Candidate approve/reject UI for the current MVP.
+- Any requirement that normal dictation wait for review/approval UI.
+- Separate review UI for generated model entries in the current MVP.
 - Edit-derived learning from preview confirmation.
 - Any cloud STT, cloud LLM, transcript upload, cloud sync, or team dictionary sharing in the MVP.
 - Automatic prompt submission after insertion.

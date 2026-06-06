@@ -40,7 +40,7 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 5. Verify recording does not start again while already recording.
 6. Release the push-to-talk shortcut or stop recording and verify that this explicit stop acts as the confirmation for paste.
 7. Verify no raw/corrected preview window appears in `Quick Paste`.
-8. Verify no candidate approval UI appears in `Quick Paste`.
+8. Verify no review/approval UI appears in `Quick Paste`.
 9. Verify the pasted or copied prompt normalizes expected developer terms such as `Claude Code` and `TypeScript`.
 10. Verify the debug log contains `mode=quickPaste` for the completed recording.
 11. Run `python3 scripts/summarize_debug_log.py` and keep the `mode=quickPaste` summary for the report.
@@ -50,9 +50,9 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 
 ## Local Learning
 
-1. Choose `Model Education` -> `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening candidate approval and the summary shows the rebuild time and source kinds.
+1. Choose `Model Education` -> `Rebuild Local Context Model...`, select `Codex / Claude local sessions` and, when configured, `Git repository vocabulary`, then verify the model is rebuilt without opening review/approval UI and the summary shows the rebuild time and source kinds.
 2. Verify the rebuild summary shows the last rebuild time, source kinds, source text counts, generated entries, and runtime entry count.
-3. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening candidate approval.
+3. Verify later Quick Paste runs can use entries from the rebuilt local context model without opening review/approval UI.
 
 ## Local Data Controls
 

@@ -10,7 +10,7 @@ REQUIRED_SNIPPETS = {
     "docs/17-learning-goal-audit.md": [
         "mostly rule-based voice input tool",
         "`Quick Paste` is the only normal voice input mode",
-        "no learning reviewer, local Foundation Model fallback, or candidate approval dialog",
+        "no learning reviewer, local Foundation Model fallback, or separate review dialog",
         "Reuse learned context before and after ASR.",
         "SpeechRecognitionHintsUseCase",
         "contextualStrings",
@@ -23,7 +23,7 @@ REQUIRED_SNIPPETS = {
         "katakana project identifier aliases",
         "LearningSourceSelection",
         "Rebuild Local Context Model...",
-        "without candidate approval",
+        "without opening review/approval UI",
         "source text counts",
         "RepositoryVocabularyLearningSource",
         "Runtime hotkey behavior is not implicitly repository-specific",
@@ -42,7 +42,7 @@ REQUIRED_SNIPPETS = {
         "Keep Quick Paste outside candidate review and approval",
         "Reuse deterministic developer-term speech rules across source learning.",
         "Treat repository folders as learning-source configuration",
-        "Build local context model entries without candidate approval UI.",
+        "Build local context model entries without review/approval UI.",
         "Quick Paste remains a fast rule-based insertion path",
     ],
     "docs/contracts/local-context-model.md": [
@@ -57,7 +57,7 @@ REQUIRED_SNIPPETS = {
     "docs/18-spec-trim-audit.md": [
         "Spec trim audit",
         "hotkey voice input",
-        "Any requirement that normal dictation wait for candidate approval",
+        "Any requirement that normal dictation wait for review/approval UI",
         "local Foundation Model adapter",
     ],
     "src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift": [
@@ -179,7 +179,7 @@ REQUIRED_SNIPPETS = {
     ],
     "test/e2e/manual-macos-mvp-checklist.md": [
         "Rebuild Local Context Model...",
-        "without opening candidate approval",
+        "without opening review/approval UI",
         "rebuilt local context model",
     ],
 }

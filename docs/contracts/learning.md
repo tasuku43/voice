@@ -20,7 +20,7 @@
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across source learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
-- Build local context model entries without candidate approval UI.
+- Build local context model entries without review/approval UI.
 - Keep voice-input edits out of model education.
 - Keep model education separate from the ordinary voice-input app layer.
 
@@ -58,5 +58,5 @@
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Learning-source adapters remain bounded and local.
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.
-- Quick Paste remains a fast rule-based insertion path with no learning reviewer or candidate approval dialog.
+- Quick Paste remains a fast rule-based insertion path with no learning reviewer or separate review dialog.
 - Repository vocabulary is available as an explicit learning source and is not mixed into the runtime dictionary by default.

@@ -86,7 +86,7 @@ Future Codex session prompts:
 - `validate_component_contracts.py` ensures contract and session docs keep the required short sections.
 - `validate_architecture_refactor.py` checks the core refactor success criteria in one place: contracts, pipelines, responsibility moves, and session prompts.
 - `validate_architecture_boundaries.py` guards Domain and App use-case boundaries from macOS framework dependencies.
-- `validate_app_ui_split.py` guards against reintroducing preview/edit UI or candidate approval UI into the app source.
+- `validate_app_ui_split.py` guards against reintroducing preview/edit UI or review/approval UI into the app source.
 - `validate_privacy_contract.py` guards against direct network/cloud snippets and unexpected file writes.
 - `validate_mvp_coverage.py` requires the new pipeline and session-boundary artifacts to stay present.
 

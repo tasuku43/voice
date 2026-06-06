@@ -75,7 +75,7 @@ def main() -> None:
 
     forbidden_candidate_ui = [snippet for snippet in CANDIDATE_UI_FORBIDDEN if snippet in app_sources]
     if forbidden_candidate_ui:
-        fail("app source contains candidate approval snippets: " + ", ".join(forbidden_candidate_ui))
+        fail("app source contains review/approval UI snippets: " + ", ".join(forbidden_candidate_ui))
 
     print("app UI split ok")
 
