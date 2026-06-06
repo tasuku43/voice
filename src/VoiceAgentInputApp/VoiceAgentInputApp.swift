@@ -679,7 +679,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         do {
             guard let selection = try promptForLearningSourceSelection(
                 title: "Rebuild local context model",
-                informativeText: "Selected local sources refresh the model used for STT hints and post-STT transforms. Nothing is uploaded, and no candidate approval is required.",
+                informativeText: "Selected local sources refresh the model used for STT hints and post-STT transforms. Nothing is uploaded.",
                 confirmButtonTitle: "Rebuild"
             ) else {
                 return

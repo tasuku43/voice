@@ -11,7 +11,7 @@
 - `VoiceInputPipelineResult`
 - Stage data: `Transcript`, `NormalizedPrompt`, `PromptInsertion`
 
-`VoiceInputPipeline` owns capture and STT orchestration. `PromptProcessingPipeline` owns the post-STT text path:
+`VoiceInputPipeline` owns capture and STT orchestration. `PromptProcessingPipeline` owns the current deterministic post-STT text path:
 
 ```text
 RecordedAudio
@@ -22,12 +22,14 @@ RecordedAudio
 -> corrected transcript for insertion
 ```
 
+The optional local Foundation Model fallback is a future boundary after deterministic transforms. It is not implemented in the current normal hotkey path.
+
 Dictionary normalization exposes `PromptNormalizer.normalizeText(_:context:)` for simple `String -> String` checks when correction metadata is not needed.
 
 ## Allowed
 - Orchestrate audio, speech, normalization, and insertion text creation.
 - Pass local recognition hints into STT adapters that support contextual strings.
-- Keep local Foundation Model conversion as an optional fallback stage.
+- Keep local Foundation Model conversion as an explicitly enabled optional fallback stage after deterministic transforms, not as the default hotkey conversion path.
 - Preserve stage outputs for debugging and component tests.
 
 ## Forbidden
