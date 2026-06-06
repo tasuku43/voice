@@ -37,7 +37,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Component-level future work boundaries | `docs/contracts/`, `docs/codex-sessions/`, `VoiceInputPipeline`, pipeline tests, MVP coverage validation | Verified structurally |
 | Do not persist raw audio | AVFoundation temporary URL handoff, Apple Speech cleanup tests, `TemporaryRecordedAudioFileStore` fallback tests, privacy contract validation | Verified for current adapters |
 | Do not upload audio or transcripts | on-device Apple Speech default and privacy contract validation against direct networking/cloud snippets | Verified for current source |
-| Do not persist raw transcripts by default | no transcript persistence adapter exists; debug logging records transcript and snapshot lengths instead of raw text; privacy validation guards against raw speech snapshot logging; manual E2E privacy checklist covers Application Support inspection | Verified for current source, needs manual filesystem confirmation |
+| Do not persist raw transcripts by default | no transcript persistence adapter exists; debug logging records completed transcript length instead of raw text; raw speech snapshots stay inside the STT adapter and are not exposed to the app debug logger; privacy validation guards against raw speech snapshot logging callbacks; manual E2E privacy checklist covers Application Support inspection | Verified for current source, needs manual filesystem confirmation |
 | Do not auto-submit | insertion tests and manual E2E checklist | Verified at use-case/adapter level, needs target-app manual confirmation |
 
 ## Remaining completion evidence

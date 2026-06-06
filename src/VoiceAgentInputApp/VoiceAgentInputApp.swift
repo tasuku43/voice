@@ -142,10 +142,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                 let speechEngine = AppleSpeechEngine(
                     localeIdentifier: AppSettings.defaultSpeechLocaleIdentifier,
                     requiresOnDeviceRecognition: true,
-                    recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries),
-                    recognitionSnapshotHandler: { [debugLogger] snapshot, isFinal in
-                        debugLogger.log("speech snapshot final=\(isFinal) textLength=\(snapshot.count)")
-                    }
+                    recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)
                 )
                 let voiceInputPipeline = VoiceInputPipeline(
                     audioRecorder: audioRecorder,
