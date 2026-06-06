@@ -5,7 +5,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 ## Current automated evidence
 
 - `make check` runs Swift tests, fixture evals, app build, app bundle creation, app launch smoke, required-file validation, eval coverage validation, architecture boundary validation, app contract validation, privacy contract validation, MVP coverage validation, manual E2E artifact validation, and a smoke test for the manual privacy inspection helper.
-- `make check` also smoke-runs the built `voice-agent-input-demo` command and verifies JSON normalization output for Claude Code, TypeScript, error, and local history-learning candidates.
+- `make check` also smoke-runs the built `voice-agent-input-demo` command and verifies JSON normalization output for Claude Code, TypeScript, error, and local history-learning entries.
 - Eval coverage validation requires realistic mixed Japanese-English developer terms such as Claude Code, Codex, Cursor, TypeScript, Swift, pnpm, npm, MCP, GitHub, branch, and error.
 - Architecture boundary validation ensures Domain and App remain free of UI/macOS framework dependencies while framework-specific work stays in Infra.
 - Component contract validation through required-file and MVP coverage checks ensures `VoiceInputPipeline`, `docs/contracts/`, and `docs/codex-sessions/` stay present.

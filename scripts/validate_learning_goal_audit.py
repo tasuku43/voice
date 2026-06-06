@@ -39,7 +39,7 @@ REQUIRED_SNIPPETS = {
         "Bounded local Codex/Claude history text",
         "Configured repository vocabulary exposed through a learning-source adapter.",
         "Generate local context candidates from local learning sources after explicit user action.",
-        "Keep Quick Paste outside candidate review and approval",
+        "Keep Quick Paste outside separate review UI",
         "Reuse deterministic developer-term speech rules across source learning.",
         "Treat repository folders as learning-source configuration",
         "Build local context model entries without review/approval UI.",

@@ -162,7 +162,7 @@ App shell rules:
 Current providers:
 
 - `GitRepositoryContextProvider` reads git root, current branch, and a bounded list of tracked file paths through local read-only `git` commands only.
-- `RepositoryVocabularyUseCase` can turn repository name, branch name, and tracked file names into dictionary entries or learning candidates.
+- `RepositoryVocabularyUseCase` can turn repository name, branch name, and tracked file names into dictionary entries or generated learning entries.
 - `RepositoryVocabularyLearningSource` adapts configured repository vocabulary into the explicit learning flow. The macOS shell does not mix repository vocabulary into the hotkey runtime dictionary.
 - `JSONAppSettingsRepository` stores local app settings, including an optional repository folder override.
 - `LearningSource` is the app-level interface for local learning inputs. `LocalAgentHistoryTextProvider` reads bounded local Codex and Claude history text, while repository vocabulary is another learning source.

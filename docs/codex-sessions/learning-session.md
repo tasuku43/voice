@@ -24,7 +24,7 @@ Contract:
 - Local agent history learning is explicit, bounded, and local-only.
 - Repository vocabulary learning is explicit, bounded, and local-only.
 - Local context model rebuilds can feed both recognition hints and post-STT transforms.
-- Voice-input edits do not create learning candidates.
+- Voice-input edits do not create learning entries.
 
 Tests:
 - `swift test --filter UseCaseAndRepositoryTests/testLocalContextCandidateGenerationFindsRepeatedDeveloperTerms`

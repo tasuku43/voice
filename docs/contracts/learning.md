@@ -16,7 +16,7 @@
 - Report source-level scan counts so the app can explain what was used.
 - Build local context model data from bounded source adapters.
 - Use local Foundation Model assistance for model education when explicitly enabled and local-only.
-- Keep Quick Paste outside candidate review and approval; the recording flow inserts the corrected prompt with no learning candidates.
+- Keep Quick Paste outside separate review UI; the recording flow inserts the corrected prompt with no learning entries.
 - Skip agent-history candidates already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across source learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
