@@ -39,7 +39,7 @@ History learning mode reports local context model candidates without saving them
 swift run voice-agent-input-demo --mode learn-history
 ```
 
-History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the fixed user scope for generated candidates, and does not persist local context model data.
+History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the fixed user scope for generated learning entries, and does not persist local context model data.
 
 History learning normalize mode simulates rebuilding from generated history candidates and immediately normalizes a later utterance without writing local files:
 

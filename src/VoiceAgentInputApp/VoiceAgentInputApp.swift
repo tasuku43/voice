@@ -780,9 +780,9 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             )
         ).rebuild(scope: learningScope, existingEntries: existingEntries)
         let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
-        debugLogger.log("local context model education loaded \(result.learningResult.scannedTextCount) source texts, sourceTextCounts=\(result.learningResult.sourceTextCounts), skipped \(result.learningResult.skippedExistingCandidateCount) existing candidates, scope=\(learningScope.rawValue), sources=\(sourceNames)")
+        debugLogger.log("local context model education loaded \(result.learningResult.scannedTextCount) source texts, sourceTextCounts=\(result.learningResult.sourceTextCounts), skipped \(result.learningResult.skippedExistingCandidateCount) existing entries, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
-        debugLogger.log("local context model rebuilt with \(result.model.entries.count) entries and \(result.model.generatedCandidateCount) generated candidates")
+        debugLogger.log("local context model rebuilt with \(result.model.entries.count) entries and \(result.model.generatedCandidateCount) generated entries")
 
         return result
     }
@@ -823,7 +823,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         Source kinds: \(sourceText).
         \(scannedTextLine)
         \(sourceCountLine)
-        Generated candidates: \(generatedCount).
+        Generated entries: \(generatedCount).
         Runtime model entries: \(model.entries.count).
         """
     }

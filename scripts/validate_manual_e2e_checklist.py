@@ -44,6 +44,7 @@ REQUIRED_SNIPPETS = [
     "rebuild time and source kinds",
     "last rebuild time",
     "source text counts",
+    "generated entries",
     "Codex / Claude local sessions",
     "Git repository vocabulary",
     "rebuilt local context model",

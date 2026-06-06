@@ -14,7 +14,7 @@ Initial contents:
 - source metadata and scan counts,
 - confidence and scope metadata.
 
-Current code represents this with `LocalContextModel` in the App layer. It wraps `DictionaryEntry` values plus source counts and generated candidate counts. `LocalContextModelDocument` persists it as versioned JSON:
+Current code represents this with `LocalContextModel` in the App layer. It wraps `DictionaryEntry` values plus source counts and generated entry counts. `LocalContextModelDocument` persists it as versioned JSON:
 
 - `schemaVersion`
 - `model.entries`
