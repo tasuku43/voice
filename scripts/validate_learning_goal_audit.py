@@ -33,7 +33,7 @@ REQUIRED_SNIPPETS = {
         "local Foundation Models only",
         "Remaining Completion Evidence",
         "Deferred, Not Completion Gates",
-        "manual evidence still needed",
+        "manual filesystem evidence still needed",
     ],
     "docs/contracts/learning.md": [
         "Bounded local Codex/Claude history text",

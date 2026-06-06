@@ -9,7 +9,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 - Eval coverage validation requires realistic mixed Japanese-English developer terms such as Claude Code, Codex, Cursor, TypeScript, Swift, pnpm, npm, MCP, GitHub, branch, and error.
 - Architecture boundary validation ensures Domain and App remain free of UI/macOS framework dependencies while framework-specific work stays in Infra.
 - Component contract validation through required-file and MVP coverage checks ensures `VoiceInputPipeline`, `docs/contracts/`, and `docs/codex-sessions/` stay present.
-- Privacy contract validation includes direct networking/cloud guards and an allowlist for Swift file writes so raw transcript or raw audio persistence cannot be added silently.
+- Privacy contract validation includes direct networking/cloud guards, an allowlist for Swift file writes, and debug-log raw transcript guards so raw transcript or raw audio persistence cannot be added silently.
 - `DemoCLITests` exercise process-level normalization and history-learning flows.
 - `UseCaseAndRepositoryTests` cover voice-flow orchestration, permission use cases, settings persistence, local context model persistence, repository vocabulary, STT recognition hints, and temporary audio cleanup.
 - `PasteboardInsertionTests` cover pasteboard insertion, Accessibility paste insertion, and user-action enforcement; insertion requests expose no automatic-submit option.
@@ -37,7 +37,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Component-level future work boundaries | `docs/contracts/`, `docs/codex-sessions/`, `VoiceInputPipeline`, pipeline tests, MVP coverage validation | Verified structurally |
 | Do not persist raw audio | AVFoundation temporary URL handoff, Apple Speech cleanup tests, `TemporaryRecordedAudioFileStore` fallback tests, privacy contract validation | Verified for current adapters |
 | Do not upload audio or transcripts | on-device Apple Speech default and privacy contract validation against direct networking/cloud snippets | Verified for current source |
-| Do not persist raw transcripts by default | no transcript persistence adapter exists; manual E2E privacy checklist covers Application Support inspection | Implemented by absence, needs manual filesystem confirmation |
+| Do not persist raw transcripts by default | no transcript persistence adapter exists; debug logging records transcript and snapshot lengths instead of raw text; privacy validation guards against raw speech snapshot logging; manual E2E privacy checklist covers Application Support inspection | Verified for current source, needs manual filesystem confirmation |
 | Do not auto-submit | insertion tests and manual E2E checklist | Verified at use-case/adapter level, needs target-app manual confirmation |
 
 ## Remaining completion evidence

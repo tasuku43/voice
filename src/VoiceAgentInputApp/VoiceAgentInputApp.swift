@@ -144,7 +144,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     requiresOnDeviceRecognition: true,
                     recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries),
                     recognitionSnapshotHandler: { [debugLogger] snapshot, isFinal in
-                        debugLogger.log("speech snapshot final=\(isFinal) text=\(snapshot)")
+                        debugLogger.log("speech snapshot final=\(isFinal) textLength=\(snapshot.count)")
                     }
                 )
                 let voiceInputPipeline = VoiceInputPipeline(

@@ -20,6 +20,7 @@ FORBIDDEN_SOURCE_SNIPPETS = [
     "CloudKit",
     "http://",
     "https://",
+    "speech snapshot final=\\(isFinal) text=\\(snapshot)",
 ]
 
 REQUIRED_SOURCE_SNIPPETS = {
@@ -81,6 +82,8 @@ REQUIRED_DOC_SNIPPETS = {
 ALLOWED_WRITE_SNIPPETS = {
     "src/VoiceAgentInputApp/VoiceAgentInputApp.swift": [
         ".write(to: url, options: [.atomic])",
+        "speech snapshot final=\\(isFinal) textLength=\\(snapshot.count)",
+        "transcriptLength=\\(result.transcript.text.count)",
     ],
     "src/VoiceAgentInputApp/AppDebugLogger.swift": [
         "enabled = arguments.contains(\"--debug\") || environment[\"VOICE_AGENT_INPUT_DEBUG\"] == \"1\"",
