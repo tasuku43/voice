@@ -14,10 +14,6 @@ public struct AppSettings: Codable, Equatable, Sendable {
         self.voiceInputShortcut = voiceInputShortcut
     }
 
-    public var preferredLearningScope: DictionaryScope {
-        .user
-    }
-
     private enum CodingKeys: String, CodingKey {
         case repositoryPath
         case voiceInputShortcut

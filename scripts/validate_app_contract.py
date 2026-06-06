@@ -61,8 +61,8 @@ REQUIRED_SOURCE_SNIPPETS = [
     "LocalContextModelRebuildUseCase",
     "LocalContextModelDataUseCase",
     ".rebuild(scope: learningScope, existingEntries: existingEntries)",
+    "let learningScope = DictionaryScope.user",
     "local context model rebuilt",
-    "preferredLearningScope",
     "Open Local Data Folder...",
     "Delete Local Context Model...",
 ]

@@ -63,7 +63,7 @@ History learning eval cases in `evals/history-learning-cases.json` should includ
 - bounded local agent history text snippets,
 - later raw transcript,
 - expected canonical terms after rebuilding the local context model,
-- learning scope.
+- confirmation that learned entries are stored in the fixed user scope.
 
 Local context model eval cases should be added when the model becomes first-class. They should include:
 

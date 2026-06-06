@@ -994,11 +994,6 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(settings.voiceInputShortcut, .defaultVoiceInput)
     }
 
-    func testAppSettingsKeepsLearningScopeFixedToUser() {
-        XCTAssertEqual(AppSettings().preferredLearningScope, .user)
-        XCTAssertEqual(AppSettings(repositoryPath: "/tmp/repo").preferredLearningScope, .user)
-    }
-
     func testAppSettingsUseCaseSavesRepositoryAndHotkeySettings() throws {
         let repository = InMemoryAppSettingsRepository()
         let useCase = AppSettingsUseCase(repository: repository)

@@ -767,7 +767,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     ) throws -> LocalContextModelRebuildResult {
         let historyProvider = LocalAgentHistoryTextProvider()
         let existingEntries = try loadDictionaryEntries()
-        let learningScope = try loadSettings().preferredLearningScope
+        let learningScope = DictionaryScope.user
         let learningSources = try configuredLearningSources(
             selection: selection,
             historyProvider: historyProvider

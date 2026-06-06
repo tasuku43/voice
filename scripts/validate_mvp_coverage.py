@@ -170,10 +170,6 @@ REQUIRED_COVERAGE = {
             "contextCandidateGenerationUseCase.candidates",
             "skippedExistingCandidateCount",
         ],
-        "src/VoiceAgentInputCore/App/AppSettings.swift": [
-            "preferredLearningScope",
-            ".user",
-        ],
         "src/VoiceAgentInputCore/App/RepositoryVocabularyLearningSource.swift": [
             "RepositoryVocabularyLearningSource",
             "CorrectionCandidateLearningSource",
@@ -201,7 +197,7 @@ REQUIRED_COVERAGE = {
             "LocalAgentHistoryTextProvider",
             "LocalContextModelRebuildUseCase",
             ".rebuild(scope: learningScope, existingEntries: existingEntries)",
-            "preferredLearningScope",
+            "let learningScope = DictionaryScope.user",
         ],
         "docs/17-learning-goal-audit.md": [
             "Learning Goal Audit",
