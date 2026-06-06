@@ -11,13 +11,16 @@ final class UseCaseAndRepositoryTests: XCTestCase {
     }
 
     func testVoiceInputPipelineTranscribesThroughReplaceableEngineBeforeProcessing() async throws {
+        let recorder = MockAudioRecorder(mockText: "こーでっくすでブランチを確認して")
         let speechEngine = MockSpeechEngine()
         let pipeline = VoiceInputPipeline(
+            audioRecorder: recorder,
+            microphonePermissionProvider: MockMicrophonePermissionProvider(status: .authorized),
             speechEngine: speechEngine,
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let result = try await pipeline.run(mockAudioText: "こーでっくすでブランチを確認して")
+        let result = try await pipeline.run()
 
         XCTAssertEqual(result.transcript.text, "こーでっくすでブランチを確認して")
         XCTAssertTrue(result.insertion.text.contains("Codex"))
@@ -49,7 +52,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
             normalizationContext: NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         )
 
-        let result = try await pipeline.run(mockAudioText: "くらのコードでタイプスクリプトエラーを直して")
+        let result = try await pipeline.run(transcript: Transcript(text: "くらのコードでタイプスクリプトエラーを直して"))
 
         XCTAssertEqual(result.transcript.text, "くらのコードでタイプスクリプトエラーを直して")
         XCTAssertTrue(result.normalizedPrompt.normalizedText.contains("Claude Code"))

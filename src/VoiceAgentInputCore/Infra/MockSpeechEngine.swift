@@ -14,10 +14,6 @@ public struct MockSpeechEngine: SpeechToTextEngine {
             confidence: 1.0
         )
     }
-
-    public func transcribeMockText(_ text: String) async throws -> String {
-        text
-    }
 }
 
 public struct MockAudioRecorder: AudioRecorder {

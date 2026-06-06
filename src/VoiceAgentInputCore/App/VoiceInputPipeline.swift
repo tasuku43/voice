@@ -69,11 +69,6 @@ public struct VoiceInputPipeline {
         return try await run(transcript: transcript)
     }
 
-    public func run(mockAudioText: String) async throws -> VoiceInputPipelineResult {
-        let rawTranscript = try await speechEngine.transcribeMockText(mockAudioText)
-        return try await run(transcript: Transcript(text: rawTranscript))
-    }
-
     public func run(transcript: Transcript) async throws -> VoiceInputPipelineResult {
         let result = try await promptProcessingPipeline().process(transcript: transcript)
         return VoiceInputPipelineResult(promptProcessingResult: result)

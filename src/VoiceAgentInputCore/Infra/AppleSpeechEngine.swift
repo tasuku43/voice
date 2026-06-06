@@ -88,11 +88,6 @@ public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
             }
         }
     }
-
-    public func transcribeMockText(_ text: String) async throws -> String {
-        text
-    }
-
     func recognitionRequest(url: URL) -> SFSpeechURLRecognitionRequest {
         let request = SFSpeechURLRecognitionRequest(url: url)
         request.shouldReportPartialResults = true
