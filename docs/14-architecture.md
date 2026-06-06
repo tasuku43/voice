@@ -73,7 +73,7 @@ Domain must be deterministic and free of file, UI, environment, or macOS permiss
 Use-case orchestration:
 
 - normalize a prompt,
-- build candidates from bounded local learning sources,
+- generate local context model entries from bounded local learning sources,
 - build or load local context model data,
 - choose recognition hints for STT,
 - apply system vocabulary and personal context transforms,

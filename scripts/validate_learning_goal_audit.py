@@ -19,7 +19,7 @@ REQUIRED_SNIPPETS = {
         "legacy dictionary decoding",
         "Educate a local context model from environment-specific sources.",
         "structured user text extraction",
-        "project identifier candidates",
+        "project identifier entries",
         "katakana project identifier aliases",
         "LearningSourceSelection",
         "Rebuild Local Context Model...",
@@ -38,7 +38,7 @@ REQUIRED_SNIPPETS = {
     "docs/contracts/learning.md": [
         "Bounded local Codex/Claude history text",
         "Configured repository vocabulary exposed through a learning-source adapter.",
-        "Generate local context candidates from local learning sources after explicit user action.",
+        "Generate local context model entries from local learning sources after explicit user action.",
         "Keep Quick Paste outside separate review UI",
         "Reuse deterministic developer-term speech rules across source learning.",
         "Treat repository folders as learning-source configuration",

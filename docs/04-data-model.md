@@ -77,7 +77,7 @@ session > repository > user > global
 
 ## CorrectionCandidate
 
-Represents a possible local context model entry extracted from local learning sources.
+Internal extraction result used while generating local context model entries from local learning sources.
 
 Fields:
 
@@ -96,4 +96,4 @@ Includes:
 - rawText
 - correctedText
 - applied corrections
-- ambiguous or learned candidates
+- ambiguous corrections or learned entry metadata

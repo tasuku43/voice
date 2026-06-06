@@ -82,7 +82,7 @@ LearningSource.learningTexts() throws -> [LearningText]
 AgentHistoryLearningModeUseCase.generateCandidates(...) throws -> AgentHistoryLearningModeResult
 ```
 
-The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and candidate metadata. `LocalContextModelRebuildUseCase.rebuild(...)` runs explicit learning sources and persists the rebuilt model through `LocalContextModelDataUseCase`. `DictionaryEntryLoadingUseCase` loads seed entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
+The current concrete model is represented by dictionary entries, recognition hints, learning source text, source kind metadata, last rebuild time, and generation metadata. `LocalContextModelRebuildUseCase.rebuild(...)` runs explicit learning sources and persists the rebuilt model through `LocalContextModelDataUseCase`. `DictionaryEntryLoadingUseCase` loads seed entries, contextual entries, and saved `LocalContextModel.postSTTEntries` for the hotkey runtime, while `JSONLocalContextModelRepository` persists the model as a first-class local document.
 
 Insertion use case:
 

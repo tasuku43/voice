@@ -14,13 +14,13 @@ Read:
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
 
 May touch:
-- Source learning, candidate generation, and local context model tests.
+- Source learning, entry generation, and local context model tests.
 
 Avoid:
 - Speech engines and output adapters.
 
 Contract:
-- Candidates include a reason.
+- Generated entries include a reason.
 - Local agent history learning is explicit, bounded, and local-only.
 - Repository vocabulary learning is explicit, bounded, and local-only.
 - Local context model rebuilds can feed both recognition hints and post-STT transforms.
@@ -32,4 +32,4 @@ Tests:
 - `make check`
 
 Done:
-- Candidates are explainable and model rebuilds stay outside the hotkey voice-input path.
+- Generated entries are explainable and model rebuilds stay outside the hotkey voice-input path.

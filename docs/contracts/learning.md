@@ -7,17 +7,17 @@
 
 ## Outputs
 - `CorrectionCandidate`
-- Candidate reason.
+- Generation reason.
 - Local context model entries for recognition hints and post-STT transforms.
 
 ## Allowed
-- Generate local context candidates from local learning sources after explicit user action.
+- Generate local context model entries from local learning sources after explicit user action.
 - Let the user choose local learning sources before rebuilding the local context model.
 - Report source-level scan counts so the app can explain what was used.
 - Build local context model data from bounded source adapters.
 - Use local Foundation Model assistance for model education when explicitly enabled and local-only.
 - Keep Quick Paste outside separate review UI; the recording flow inserts the corrected prompt with no learning entries.
-- Skip agent-history candidates already represented in loaded dictionaries.
+- Skip agent-history entries already represented in loaded dictionaries.
 - Reuse deterministic developer-term speech rules across source learning.
 - Treat repository folders as learning-source configuration, not automatic hotkey runtime context.
 - Build local context model entries without review/approval UI.
@@ -43,7 +43,7 @@
 - `src/VoiceAgentInputCore/Infra/LocalAgentHistoryTextProvider.swift`
 
 ## May Touch
-- Source learning, candidate generation, and learning persistence tests.
+- Source learning, entry generation, and learning persistence tests.
 
 ## Avoid Touching
 - Audio, speech, and output adapters.
@@ -54,7 +54,7 @@
 - `make check`
 
 ## Done
-- Voice-input edits do not generate model education candidates.
+- Voice-input edits do not generate model education entries.
 - Agent history reads stay behind an app-level provider and infra adapter.
 - Learning-source adapters remain bounded and local.
 - Learned context can feed both STT recognition hints and deterministic post-STT transforms.

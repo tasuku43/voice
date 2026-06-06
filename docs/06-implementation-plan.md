@@ -7,7 +7,7 @@
 - Scope precedence.
 - Normalization pipeline.
 - Recognition hint generation.
-- Local context candidate generation.
+- Local context learning-entry generation.
 - JSON persistence.
 - Unit tests and evals.
 

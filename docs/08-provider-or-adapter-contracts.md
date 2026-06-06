@@ -123,7 +123,7 @@ Rules:
 
 - Insert only after the user invokes or stops the voice input action.
 - Never press Enter or submit the target app automatically.
-- Consume `PromptInsertion.text`; ignore candidate data for insertion.
+- Consume `PromptInsertion.text`; ignore learning-generation data for insertion.
 - The app layer cannot request automatic submission through `PromptInsertion`.
 - Pasteboard insertion writes text to the pasteboard only.
 - Accessibility insertion writes text to the pasteboard and sends Command-V only. It never presses Enter.
