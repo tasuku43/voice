@@ -10,7 +10,8 @@ REQUIRED_SNIPPETS = {
     "docs/17-learning-goal-audit.md": [
         "mostly rule-based voice input tool",
         "`Quick Paste` is the only normal voice input mode",
-        "no learning reviewer, local Foundation Model fallback, or separate review dialog",
+        "no learning reviewer or separate review dialog",
+        "Foundation Model refinement can be enabled in the shared post-STT pipeline",
         "Reuse learned context before and after ASR.",
         "SpeechRecognitionHintsUseCase",
         "contextualStrings",

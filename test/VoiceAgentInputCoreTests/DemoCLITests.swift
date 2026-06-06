@@ -24,6 +24,13 @@ final class DemoCLITests: XCTestCase {
         XCTAssertEqual(process.terminationStatus, 0, errorText)
         XCTAssertTrue(outputText.contains("swift run TranscribeCLI <audio-file>"))
         XCTAssertTrue(outputText.contains("--context contextual-strings.json"))
+        XCTAssertTrue(outputText.contains("--expected expected.txt"))
+        XCTAssertTrue(outputText.contains("--normalize"))
+        XCTAssertTrue(outputText.contains("--batch testdata-directory"))
+        XCTAssertTrue(outputText.contains("--smooth-pauses"))
+        XCTAssertTrue(outputText.contains("--foundation-model"))
+        XCTAssertTrue(outputText.contains("--corrections corrections.json"))
+        XCTAssertTrue(outputText.contains("--profile dictation|transcription"))
     }
 
     func testDemoNormalizeModeUsesRealExecutablePath() throws {

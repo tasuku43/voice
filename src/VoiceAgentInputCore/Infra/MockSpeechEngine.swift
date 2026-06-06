@@ -30,7 +30,8 @@ public struct MockSpeechEngine: SpeechEngine, SpeechToTextEngine {
                 confidence: transcript.confidence,
                 contextualStringCount: options.contextualStrings.phraseCount,
                 recognitionMode: options.recognitionMode,
-                outputDetailLevel: options.outputDetailLevel
+                outputDetailLevel: options.outputDetailLevel,
+                transcriberProfile: options.transcriberProfile
             )
         )
     }

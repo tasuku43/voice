@@ -147,7 +147,8 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     audioRecorder: audioRecorder,
                     microphonePermissionProvider: AVFoundationMicrophonePermissionProvider(),
                     speechEngine: speechEngine,
-                    normalizationContext: NormalizationContext(entries: entries)
+                    normalizationContext: NormalizationContext(entries: entries),
+                    textRefiner: makePromptTextRefiner()
                 )
                 let result = try await voiceInputPipeline.run()
                 await MainActor.run {
@@ -347,6 +348,36 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             ).insert(prompt, afterUserAction: true)
             showAccessibilityFallbackAlert()
         }
+    }
+
+    private func makePromptTextRefiner() -> (any PromptTextRefiner)? {
+        let mode = ProcessInfo.processInfo.environment["VOICE_AGENT_INPUT_TEXT_REFINER"] ?? ""
+        switch mode {
+        case "smooth-pauses":
+            return JapanesePauseSmoothingRefiner()
+        case "foundation-model":
+            return makeFoundationModelPromptTextRefiner()
+        case "smooth-pauses+foundation-model":
+            guard let foundationModelRefiner = makeFoundationModelPromptTextRefiner() else {
+                return JapanesePauseSmoothingRefiner()
+            }
+            return PromptTextRefinerChain(refiners: [
+                JapanesePauseSmoothingRefiner(),
+                foundationModelRefiner
+            ])
+        default:
+            return nil
+        }
+    }
+
+    private func makeFoundationModelPromptTextRefiner() -> (any PromptTextRefiner)? {
+        #if canImport(FoundationModels)
+        if #available(macOS 26.0, *) {
+            return FoundationModelPromptTextRefiner()
+        }
+        #endif
+        debugLogger.log("local Foundation Model text refiner unavailable")
+        return nil
     }
 
     private func showAccessibilityFallbackAlert() {

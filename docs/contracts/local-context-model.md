@@ -79,4 +79,4 @@ The current implementation starts with `LocalContextModel` and `LocalContextMode
 - The model has a versioned local JSON document shape.
 - Source adapters remain bounded and local.
 - Local Foundation Model use, if present, is optional, local, and network-free.
-- The default hotkey path can run without LLM conversion.
+- The default hotkey path can run without LLM conversion, while the shared post-STT pipeline can opt into local Foundation Model refinement when deterministic transforms are insufficient.

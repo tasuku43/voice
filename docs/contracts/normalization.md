@@ -19,7 +19,7 @@
 - Foundation Model rewriting or summarization inside this deterministic normalization contract.
 - Preview UI, paste, or persistence.
 
-Local Foundation Model conversion, if introduced later, belongs to a separate explicit fallback stage after deterministic normalization. It must not change the dictionary normalizer into an LLM-backed rewrite path.
+Local Foundation Model conversion belongs to a separate explicit `PromptTextRefiner` stage after deterministic normalization. It must not change the dictionary normalizer into an LLM-backed rewrite path.
 
 ## Read First
 - `src/VoiceAgentInputCore/App/PromptContracts.swift`

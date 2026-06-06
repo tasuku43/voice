@@ -11,7 +11,7 @@
 - Pass local context model recognition hints to STT when the STT adapter supports them.
 - Apply built-in developer vocabulary transforms after transcription.
 - Apply personal context model transforms after built-in transforms.
-- Keep local Foundation Model conversion as an optional last-resort stage, not the default hotkey path.
+- Keep local Foundation Model conversion as an optional explicitly enabled post-STT refinement stage, not a replacement for STT or deterministic dictionary normalization.
 - Insert the corrected transcript at the focused cursor.
 - Fall back to copying the corrected transcript when direct insertion is unavailable.
 - Avoid automatic submit or command execution after insertion.
@@ -26,7 +26,7 @@
 - Store learned context locally.
 - Reuse learned context for both STT recognition hints and post-STT transforms.
 - Let the user enable, disable, rebuild, export, import, or delete local learned context.
-- Keep optional local Foundation Model use inside model education unless explicitly enabled as a conversion fallback.
+- Keep optional local Foundation Model use inside model education unless explicitly enabled as shared post-STT refinement.
 
 ### Secondary workflows
 

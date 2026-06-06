@@ -9,7 +9,7 @@ The visible product discussion established these decisions:
 - macOS Dictation is not the direct competitor; the app adds a local context model that improves STT hints and deterministic post-STT transforms.
 - The product has a model education layer and a voice input app layer.
 - The normal hotkey path should be fast, local, and mostly deterministic.
-- LLM use means local Foundation Model use only. It belongs mainly in model education and may appear in voice input only as an explicit last-resort fallback.
+- LLM use means local Foundation Model use only. It belongs in model education or explicitly enabled post-STT refinement shared by file-audio and hotkey input.
 - The MVP should avoid real-time character-by-character insertion.
 - The core should be built before UI polish.
 

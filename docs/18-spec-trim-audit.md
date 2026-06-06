@@ -7,7 +7,7 @@ hotkey voice input
   -> local STT
   -> built-in developer vocabulary
   -> local context model
-  -> optional local Foundation Model fallback
+  -> optional local Foundation Model refinement
   -> focused cursor insertion
 ```
 
@@ -26,12 +26,12 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 - Deterministic post-STT transforms after transcription.
 - Focused cursor insertion with copy fallback.
 - Local storage, export, import, and deletion for learned context.
-- Optional local Foundation Model use for model education, and only as an explicit last-resort conversion fallback in the voice input path.
+- Optional local Foundation Model use for model education or explicitly enabled post-STT refinement in the shared voice input path.
 
 ## Demote
 
 - Preview/edit UI has been removed from the current app; Accessibility failures use pasteboard copy fallback.
-- Generic learning reviewer commands are removed; detectors and future local Foundation Model helpers belong in the model education path, not the hotkey STT path.
+- Generic learning reviewer commands are removed; local Foundation Model helpers must remain behind local adapters and outside the STT adapter itself.
 - Repository folders configure learning sources; they should not silently broaden the runtime dictionary without an explicit model rebuild.
 
 ## Drop
@@ -57,4 +57,4 @@ The app must run fully locally. Network IO is out of scope for STT, model educat
 ## Remaining Shape Work
 
 - `Model Education` contains local context model rebuild/export/import/delete UI, and the model stores source kinds plus last rebuild time.
-- Add local Foundation Model protocols only after deterministic model education and runtime transforms are not enough.
+- Add user-facing local Foundation Model controls only after deterministic model education and runtime transforms are not enough.

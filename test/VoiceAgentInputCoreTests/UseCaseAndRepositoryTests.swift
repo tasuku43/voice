@@ -76,6 +76,72 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(result.insertion.text, result.normalizedPrompt.normalizedText)
     }
 
+    func testPromptProcessingPipelineCanApplySharedTextRefiner() async throws {
+        let pipeline = PromptProcessingPipeline(
+            normalizationContext: NormalizationContext(entries: []),
+            textRefiner: MockPromptTextRefiner(refinedText: "整形済みテキスト")
+        )
+
+        let result = try await pipeline.process(
+            transcript: Transcript(text: "未整形テキスト")
+        )
+
+        XCTAssertEqual(result.normalizedPrompt.normalizedText, "未整形テキスト")
+        XCTAssertEqual(result.refinement?.refinedText, "整形済みテキスト")
+        XCTAssertEqual(result.insertion.text, "整形済みテキスト")
+    }
+
+    func testVoiceInputPipelineCanApplySharedTextRefinerOnHotkeyPath() async throws {
+        let pipeline = VoiceInputPipeline(
+            speechEngine: MockSpeechEngine(),
+            normalizationContext: NormalizationContext(entries: []),
+            textRefiner: MockPromptTextRefiner(refinedText: "ホットキー経路の整形済みテキスト")
+        )
+
+        let result = try await pipeline.run(transcript: Transcript(text: "ホットキー経路の未整形テキスト"))
+
+        XCTAssertEqual(result.normalizedPrompt.normalizedText, "ホットキー経路の未整形テキスト")
+        XCTAssertEqual(result.refinement?.engine, "MockPromptTextRefiner")
+        XCTAssertEqual(result.insertion.text, "ホットキー経路の整形済みテキスト")
+    }
+
+    func testPromptTextRefinerChainFeedsEachResultIntoTheNextRefiner() async throws {
+        let chain = PromptTextRefinerChain(refiners: [
+            MockPromptTextRefiner(refinedText: "一次整形", engine: "First"),
+            MockPromptTextRefiner(refinedText: "二次整形", engine: "Second")
+        ])
+
+        let result = try await chain.refine(
+            PromptTextRefinementRequest(
+                transcript: Transcript(text: "raw"),
+                normalizedText: "normalized"
+            )
+        )
+
+        XCTAssertEqual(result.inputText, "normalized")
+        XCTAssertEqual(result.refinedText, "二次整形")
+        XCTAssertEqual(result.engine, "First+Second")
+    }
+
+    func testJapanesePauseSmoothingRefinerJoinsFalseSentenceBreaksAndAddsParagraphBreaks() async throws {
+        let result = try await JapanesePauseSmoothingRefiner().refine(
+            PromptTextRefinementRequest(
+                transcript: Transcript(text: "全体の。音声を確認。そうすると。余計な区切り"),
+                normalizedText: "全体の。音声を確認。そうすると。余計な区切り"
+            )
+        )
+
+        XCTAssertEqual(result.refinedText, "全体の音声を確認。\n\nそうすると、余計な区切り。")
+    }
+
+    func testJapanesePauseSmoothingRefinerAddsLowRiskCommasAndTerminalPunctuation() {
+        let output = JapanesePauseSmoothingRefiner.smooth(
+            "特にまだ方向性を話してない。できるようにかつ共有する。そうすると自分で判断できる。そういう APIってないんですかね。"
+        )
+
+        XCTAssertEqual(output, "特に、まだ方向性を話してない。できるように、かつ共有する。そうすると、自分で判断できる。そういうAPIってないんですかね？")
+    }
+
     func testPromptNormalizerExposesTextToTextConvenience() throws {
         let context = NormalizationContext(entries: SeedDictionaries.codingAgentEntries)
         let output = try DictionaryPromptNormalizer().normalizeText(
@@ -713,6 +779,15 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(engine.defaultOptions.contextualStrings, ContextualStringsConfig())
         XCTAssertEqual(engine.defaultOptions.recognitionMode, .accurate)
         XCTAssertEqual(engine.defaultOptions.outputDetailLevel, .textOnly)
+        XCTAssertEqual(engine.defaultOptions.transcriberProfile, .dictation)
+    }
+
+    func testTranscriptionOptionsCanSelectTranscriberProfile() {
+        let options = TranscriptionOptionsBuilder(
+            transcriberProfile: .transcription
+        ).build()
+
+        XCTAssertEqual(options.transcriberProfile, .transcription)
     }
 
     func testAppleSpeechEngineCarriesTaggedContextualStringsIntoDefaultOptions() {
@@ -804,6 +879,33 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertTrue(error.userFacingMessage.contains("on-device speech asset"))
         XCTAssertTrue(error.debugDescription.contains("status=supported"))
+    }
+
+    func testTranscriptionQualityEvaluationReportsCharacterErrorRate() {
+        let evaluation = TranscriptionQualityEvaluation.evaluate(
+            actual: "CLIコマンドで精度向上",
+            expected: "CRIコマンドで制度工場"
+        )
+
+        XCTAssertEqual(evaluation.expectedCharacterCount, 12)
+        XCTAssertEqual(evaluation.actualCharacterCount, 12)
+        XCTAssertEqual(evaluation.editDistance, 4)
+        XCTAssertEqual(evaluation.characterErrorRate, 4.0 / 12.0, accuracy: 0.0001)
+        XCTAssertEqual(evaluation.contentEditDistance, 4)
+        XCTAssertEqual(evaluation.expectedPunctuationCount, 0)
+        XCTAssertEqual(evaluation.punctuationEditDistance, 0)
+        XCTAssertEqual(evaluation.lineBreakEditDistance, 0)
+    }
+
+    func testTranscriptionQualityEvaluationSeparatesPunctuationAndLineBreakDistance() {
+        let evaluation = TranscriptionQualityEvaluation.evaluate(
+            actual: "なるほどですね。精度を上げます",
+            expected: "なるほどですね。\n\n精度を上げます。"
+        )
+
+        XCTAssertEqual(evaluation.contentEditDistance, 0)
+        XCTAssertEqual(evaluation.punctuationEditDistance, 1)
+        XCTAssertEqual(evaluation.lineBreakEditDistance, 2)
     }
 
     func testTemporaryRecordedAudioFileStoreRemovesFileAfterSuccessfulOperation() async throws {

@@ -128,10 +128,30 @@ private extension AppleSpeechEngine {
         options: TranscriptionOptions,
         durationSeconds: Double?
     ) async throws -> TranscriptionResult {
+        switch options.transcriberProfile {
+        case .dictation:
+            return try await transcribeWithDictationTranscriber(
+                audioFile: audioFile,
+                options: options,
+                durationSeconds: durationSeconds
+            )
+        case .transcription:
+            return try await transcribeWithSpeechTranscriber(
+                audioFile: audioFile,
+                options: options,
+                durationSeconds: durationSeconds
+            )
+        }
+    }
+
+    func transcribeWithSpeechTranscriber(
+        audioFile: AVAudioFile,
+        options: TranscriptionOptions,
+        durationSeconds: Double?
+    ) async throws -> TranscriptionResult {
         guard SpeechTranscriber.isAvailable else {
             throw SpeechEngineError.speechAnalyzerUnavailable(requiredOS: "macOS 26 with SpeechTranscriber support")
         }
-
         let requestedLocaleIdentifier = options.locale.identifier
         guard let supportedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: options.locale) else {
             throw SpeechEngineError.unsupportedLocale(localeIdentifier: requestedLocaleIdentifier)
@@ -143,30 +163,110 @@ private extension AppleSpeechEngine {
             reportingOptions: reportingOptions(for: options),
             attributeOptions: attributeOptions(for: options)
         )
+        try await prepareInstalledAssets(
+            for: [transcriber],
+            locale: supportedLocale,
+            installedLocales: SpeechTranscriber.installedLocales
+        )
 
-        let assetStatus = await AssetInventory.status(forModules: [transcriber])
-        guard assetStatus == .installed else {
+        return try await analyze(
+            audioFile: audioFile,
+            module: transcriber,
+            options: options,
+            durationSeconds: durationSeconds,
+            collect: {
+                try await SpeechTranscriberResultCollector.collect(
+                    from: transcriber,
+                    localeIdentifier: supportedLocale.identifier,
+                    durationSeconds: durationSeconds,
+                    options: options
+                )
+            }
+        )
+    }
+
+    func transcribeWithDictationTranscriber(
+        audioFile: AVAudioFile,
+        options: TranscriptionOptions,
+        durationSeconds: Double?
+    ) async throws -> TranscriptionResult {
+        let requestedLocaleIdentifier = options.locale.identifier
+        guard let supportedLocale = await DictationTranscriber.supportedLocale(equivalentTo: options.locale) else {
+            throw SpeechEngineError.unsupportedLocale(localeIdentifier: requestedLocaleIdentifier)
+        }
+
+        let transcriber = DictationTranscriber(
+            locale: supportedLocale,
+            preset: dictationPreset(for: options)
+        )
+        try await prepareInstalledAssets(
+            for: [transcriber],
+            locale: supportedLocale,
+            installedLocales: DictationTranscriber.installedLocales
+        )
+
+        return try await analyze(
+            audioFile: audioFile,
+            module: transcriber,
+            options: options,
+            durationSeconds: durationSeconds,
+            collect: {
+                try await DictationTranscriberResultCollector.collect(
+                    from: transcriber,
+                    localeIdentifier: supportedLocale.identifier,
+                    durationSeconds: durationSeconds,
+                    options: options
+                )
+            }
+        )
+    }
+
+    func prepareInstalledAssets(
+        for modules: [any SpeechModule],
+        locale: Locale,
+        installedLocales: [Locale]
+    ) async throws {
+        let assetStatus = await AssetInventory.status(forModules: modules)
+        if assetStatus == .installed {
+            return
+        }
+
+        if assetStatus == .supported,
+           Self.locale(locale, matchesOneOf: installedLocales) {
+            _ = try await AssetInventory.reserve(locale: locale)
+            let reservedStatus = await AssetInventory.status(forModules: modules)
+            if reservedStatus == .installed {
+                return
+            }
             throw SpeechEngineError.onDeviceAssetMissing(
-                localeIdentifier: supportedLocale.identifier,
-                status: String(describing: assetStatus)
+                localeIdentifier: locale.identifier,
+                status: String(describing: reservedStatus)
             )
         }
 
+        throw SpeechEngineError.onDeviceAssetMissing(
+            localeIdentifier: locale.identifier,
+            status: String(describing: assetStatus)
+        )
+    }
+
+    func analyze(
+        audioFile: AVAudioFile,
+        module: any SpeechModule,
+        options: TranscriptionOptions,
+        durationSeconds: Double?,
+        collect: @escaping @Sendable () async throws -> TranscriptionResult
+    ) async throws -> TranscriptionResult {
         let context = SpeechAnalysisContextBuilder()
             .analysisContext(from: options.contextualStrings)
         let analyzer = SpeechAnalyzer(
-            modules: [transcriber],
+            modules: [module],
             options: SpeechAnalyzer.Options(priority: .userInitiated, modelRetention: .whileInUse)
         )
         try await analyzer.setContext(context)
 
         let resultCollector = Task {
-            try await SpeechTranscriberResultCollector.collect(
-                from: transcriber,
-                localeIdentifier: supportedLocale.identifier,
-                durationSeconds: durationSeconds,
-                options: options
-            )
+            try await collect()
         }
 
         do {
@@ -195,8 +295,25 @@ private extension AppleSpeechEngine {
         }
     }
 
+    func dictationPreset(for options: TranscriptionOptions) -> DictationTranscriber.Preset {
+        if options.outputDetailLevel == .detailed {
+            return .timeIndexedLongDictation
+        }
+        return .longDictation
+    }
+
+    static func locale(_ locale: Locale, matchesOneOf locales: [Locale]) -> Bool {
+        locales.contains { candidate in
+            normalizedLocaleIdentifier(candidate.identifier) == normalizedLocaleIdentifier(locale.identifier)
+        }
+    }
+
+    static func normalizedLocaleIdentifier(_ identifier: String) -> String {
+        identifier.replacingOccurrences(of: "-", with: "_").lowercased()
+    }
+
     func transcriptionOptions(for options: TranscriptionOptions) -> Set<SpeechTranscriber.TranscriptionOption> {
-        []
+        [.etiquetteReplacements]
     }
 
     func reportingOptions(for options: TranscriptionOptions) -> Set<SpeechTranscriber.ReportingOption> {
@@ -215,24 +332,6 @@ private extension AppleSpeechEngine {
             return []
         }
         return [.audioTimeRange, .transcriptionConfidence]
-    }
-}
-
-@available(macOS 26.0, *)
-struct SpeechAnalysisContextBuilder: Sendable {
-    func analysisContext(from config: ContextualStringsConfig) -> AnalysisContext {
-        let context = AnalysisContext()
-        var contextualStrings: [AnalysisContext.ContextualStringsTag: [String]] = [:]
-
-        for (tag, strings) in config.stringsByTag {
-            let speechTag: AnalysisContext.ContextualStringsTag = tag == .general
-                ? .general
-                : AnalysisContext.ContextualStringsTag(tag.rawValue)
-            contextualStrings[speechTag] = strings
-        }
-
-        context.contextualStrings = contextualStrings
-        return context
     }
 }
 
@@ -273,6 +372,22 @@ private struct SpeechTranscriberResultCollector {
             }
         }
 
+        return try Self.result(
+            segments: segments,
+            alternatives: alternatives,
+            localeIdentifier: localeIdentifier,
+            durationSeconds: durationSeconds,
+            options: options
+        )
+    }
+
+    static func result(
+        segments: [TranscriptionSegment],
+        alternatives: [TranscriptionAlternative],
+        localeIdentifier: String,
+        durationSeconds: Double?,
+        options: TranscriptionOptions
+    ) throws -> TranscriptionResult {
         let text = segments
             .map(\.text)
             .joined()
@@ -292,13 +407,79 @@ private struct SpeechTranscriberResultCollector {
                 confidence: nil,
                 contextualStringCount: options.contextualStrings.phraseCount,
                 recognitionMode: options.recognitionMode,
-                outputDetailLevel: options.outputDetailLevel
+                outputDetailLevel: options.outputDetailLevel,
+                transcriberProfile: options.transcriberProfile
             )
         )
     }
 
-    private static func plainText(_ text: AttributedString) -> String {
+    static func plainText(_ text: AttributedString) -> String {
         String(text.characters).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+@available(macOS 26.0, *)
+private struct DictationTranscriberResultCollector {
+    static func collect(
+        from transcriber: DictationTranscriber,
+        localeIdentifier: String,
+        durationSeconds: Double?,
+        options: TranscriptionOptions
+    ) async throws -> TranscriptionResult {
+        var segments: [TranscriptionSegment] = []
+        var alternatives: [TranscriptionAlternative] = []
+
+        for try await result in transcriber.results {
+            try Task.checkCancellation()
+            let text = SpeechTranscriberResultCollector.plainText(result.text)
+            guard !text.isEmpty else {
+                continue
+            }
+
+            segments.append(
+                TranscriptionSegment(
+                    text: text,
+                    startTimeSeconds: result.range.start.secondsIfValid,
+                    durationSeconds: result.range.duration.secondsIfValid,
+                    confidence: nil,
+                    isFinal: true
+                )
+            )
+
+            for alternative in result.alternatives {
+                let alternativeText = SpeechTranscriberResultCollector.plainText(alternative)
+                guard !alternativeText.isEmpty, alternativeText != text else {
+                    continue
+                }
+                alternatives.append(TranscriptionAlternative(text: alternativeText))
+            }
+        }
+
+        return try SpeechTranscriberResultCollector.result(
+            segments: segments,
+            alternatives: alternatives,
+            localeIdentifier: localeIdentifier,
+            durationSeconds: durationSeconds,
+            options: options
+        )
+    }
+}
+
+@available(macOS 26.0, *)
+struct SpeechAnalysisContextBuilder: Sendable {
+    func analysisContext(from config: ContextualStringsConfig) -> AnalysisContext {
+        let context = AnalysisContext()
+        var contextualStrings: [AnalysisContext.ContextualStringsTag: [String]] = [:]
+
+        for (tag, strings) in config.stringsByTag {
+            let speechTag: AnalysisContext.ContextualStringsTag = tag == .general
+                ? .general
+                : AnalysisContext.ContextualStringsTag(tag.rawValue)
+            contextualStrings[speechTag] = strings
+        }
+
+        context.contextualStrings = contextualStrings
+        return context
     }
 }
 

@@ -30,9 +30,19 @@ REQUIRED_SOURCE_SNIPPETS = {
     "src/VoiceAgentInputCore/Infra/AppleSpeechEngine.swift": [
         "SpeechAnalyzer",
         "SpeechTranscriber",
+        "DictationTranscriber",
         "AnalysisContext",
         "AssetInventory.status",
+        "AssetInventory.reserve",
         "TemporaryRecordedAudioFileStore",
+    ],
+    "src/VoiceAgentInputCore/Infra/FoundationModelPromptTextRefiner.swift": [
+        "FoundationModels",
+        "SystemLanguageModel",
+        "LanguageModelSession",
+        "GenerationOptions",
+        "model.isAvailable",
+        "guardrails: .permissiveContentTransformations",
     ],
     "src/VoiceAgentInputCore/Infra/TemporaryRecordedAudioFileStore.swift": [
         "defer",
@@ -68,7 +78,7 @@ REQUIRED_DOC_SNIPPETS = {
         "LLM-based rewriting as the primary hotkey correction mechanism",
     ],
     "docs/contracts/voice-input-pipeline.md": [
-        "optional local Foundation Model fallback",
+        "optional local Foundation Model refinement",
         "Network IO",
         "Cloud STT or cloud LLM calls",
         "The normal hotkey path remains local and mostly deterministic",

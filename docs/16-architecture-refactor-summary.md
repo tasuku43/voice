@@ -23,7 +23,7 @@ Domain remains deterministic. App owns orchestration contracts and use cases. In
 - Post-STT text processing is represented by `PromptProcessingPipeline`.
 - Dictionary replacement exposes `PromptNormalizer.normalizeText` for simple `String -> String` checks.
 - Local context model aggregation is represented by `LocalContextModel` and `LocalContextModelBuildUseCase`; local persistence is behind `LocalContextModelRepository` with `JSONLocalContextModelRepository` as the filesystem adapter.
-- Future Foundation Model conversion must live behind an explicit local-only fallback boundary, not the default hotkey processing path.
+- Foundation Model conversion lives behind an explicit local-only `PromptTextRefiner` boundary after deterministic normalization.
 - Local context model rebuild execution moved into `LocalContextModelRebuildUseCase`, leaving the UI to choose sources and trigger rebuilds.
 - App startup is explicit in `main.swift`; menu and hotkey work lives in `VoiceAgentInputApp.swift`.
 - Debug launch logging moved into `AppDebugLogger.swift`.
@@ -96,9 +96,9 @@ Future Codex session prompts:
 ## Remaining Limitations
 
 - `VoiceAgentInputApp/VoiceAgentInputApp.swift` is thinner but still contains most menu command code.
-- Local Foundation Model assistance can be integrated as opt-in model education or fallback conversion, not in the default STT or normalization hot path.
+- Local Foundation Model assistance can be integrated as opt-in model education or post-STT refinement, not inside STT or deterministic normalization.
 - Manual macOS E2E evidence is still required for microphone, Apple Speech, hotkey, Accessibility paste, Model Education data actions, and privacy filesystem checks.
 
 ## Next Recommended Session
 
-Prioritize `docs/codex-sessions/local-context-model-session.md` when improving model education. Preserve the default dictionary-only hotkey path.
+Prioritize `docs/codex-sessions/local-context-model-session.md` when improving model education. Preserve a fast dictionary-only hotkey configuration while allowing explicit local refinement experiments.

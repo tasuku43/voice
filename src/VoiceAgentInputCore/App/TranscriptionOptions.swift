@@ -10,6 +10,11 @@ public enum OutputDetailLevel: String, Codable, Equatable, Sendable {
     case detailed
 }
 
+public enum TranscriberProfile: String, Codable, Equatable, Sendable {
+    case dictation
+    case transcription
+}
+
 public enum ContextualStringsTag: String, Codable, CaseIterable, Sendable {
     case general
     case commands
@@ -121,17 +126,20 @@ public struct TranscriptionOptions: Codable, Equatable, Sendable {
     public var contextualStrings: ContextualStringsConfig
     public var recognitionMode: RecognitionMode
     public var outputDetailLevel: OutputDetailLevel
+    public var transcriberProfile: TranscriberProfile
 
     public init(
         locale: Locale = Locale(identifier: Self.defaultLocaleIdentifier),
         contextualStrings: ContextualStringsConfig = ContextualStringsConfig(),
         recognitionMode: RecognitionMode = .accurate,
-        outputDetailLevel: OutputDetailLevel = .textOnly
+        outputDetailLevel: OutputDetailLevel = .textOnly,
+        transcriberProfile: TranscriberProfile = .dictation
     ) {
         self.locale = locale
         self.contextualStrings = contextualStrings
         self.recognitionMode = recognitionMode
         self.outputDetailLevel = outputDetailLevel
+        self.transcriberProfile = transcriberProfile
     }
 }
 
@@ -140,17 +148,20 @@ public struct TranscriptionOptionsBuilder: Sendable {
     public var contextualStrings: ContextualStringsConfig
     public var recognitionMode: RecognitionMode
     public var outputDetailLevel: OutputDetailLevel
+    public var transcriberProfile: TranscriberProfile
 
     public init(
         localeIdentifier: String = TranscriptionOptions.defaultLocaleIdentifier,
         contextualStrings: ContextualStringsConfig = ContextualStringsConfig(),
         recognitionMode: RecognitionMode = .accurate,
-        outputDetailLevel: OutputDetailLevel = .textOnly
+        outputDetailLevel: OutputDetailLevel = .textOnly,
+        transcriberProfile: TranscriberProfile = .dictation
     ) {
         self.localeIdentifier = localeIdentifier
         self.contextualStrings = contextualStrings
         self.recognitionMode = recognitionMode
         self.outputDetailLevel = outputDetailLevel
+        self.transcriberProfile = transcriberProfile
     }
 
     public func withRecognitionHints(_ hints: SpeechRecognitionHints) -> TranscriptionOptionsBuilder {
@@ -164,7 +175,8 @@ public struct TranscriptionOptionsBuilder: Sendable {
             locale: Locale(identifier: localeIdentifier),
             contextualStrings: contextualStrings,
             recognitionMode: recognitionMode,
-            outputDetailLevel: outputDetailLevel
+            outputDetailLevel: outputDetailLevel,
+            transcriberProfile: transcriberProfile
         )
     }
 }

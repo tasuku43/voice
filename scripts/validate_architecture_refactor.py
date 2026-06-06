@@ -22,7 +22,7 @@ REQUIRED_SNIPPETS = {
     "src/VoiceAgentInputCore/App/PromptProcessingPipeline.swift": [
         "public struct PromptProcessingPipeline",
         "normalizer.normalize",
-        "PromptInsertion(text: normalized.normalizedText)",
+        "PromptInsertion(text: refinement?.refinedText ?? normalized.normalizedText)",
     ],
     "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
         "public struct LocalContextModel",

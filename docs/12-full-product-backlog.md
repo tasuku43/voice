@@ -17,7 +17,7 @@
 
 - Availability and locale checks.
 - Local-only WhisperKit fallback investigation.
-- Local Foundation Model conversion fallback only after deterministic transforms prove insufficient; it must be explicitly enabled, local-only, and outside the default hotkey path.
+- Local Foundation Model conversion after deterministic transforms prove insufficient; it must be explicitly enabled, local-only, and measured against deterministic smoothing before becoming a default.
 
 ## Context
 

@@ -15,6 +15,31 @@ final class NormalizationEngineTests: XCTestCase {
         XCTAssertTrue(engine.normalize("くらうどこーどで見て").correctedText.contains("Claude Code"))
     }
 
+    func testMixedJapaneseDeveloperTermsDoNotGainExtraSpaces() {
+        let entries = [
+            DictionaryEntry(
+                spokenForms: ["CRIコマンド"],
+                canonical: "CLIコマンド",
+                kind: .command,
+                scope: .user,
+                confidence: 1.0,
+                autoApply: true
+            ),
+            DictionaryEntry(
+                spokenForms: ["二通り"],
+                canonical: "2通り",
+                kind: .phrase,
+                scope: .user,
+                confidence: 1.0,
+                autoApply: true
+            )
+        ]
+        let result = NormalizationEngine(entries: entries)
+            .normalize("経路CRIコマンドで二通りを確認")
+
+        XCTAssertEqual(result.correctedText, "経路CLIコマンドで2通りを確認")
+    }
+
     func testScopePrecedence() {
         let global = DictionaryEntry(spokenForms: ["ワークスペース"], canonical: "workspace", kind: .projectTerm, scope: .global, confidence: 0.95, autoApply: true)
         let repo = DictionaryEntry(spokenForms: ["ワークスペース"], canonical: "Organization", kind: .symbol, scope: .repository, confidence: 0.80, autoApply: true)

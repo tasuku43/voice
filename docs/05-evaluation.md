@@ -14,7 +14,7 @@
 - Dangerous command substitutions are not auto-applied.
 - The app never submits text automatically.
 - The default hotkey path does not require network IO.
-- LLM-backed conversion is local-only and remains an optional fallback.
+- LLM-backed conversion is local-only and remains optional post-STT refinement.
 
 ## Agent usability
 
@@ -40,6 +40,7 @@
 - Fixture-driven normalization eval cases cover realistic utterances.
 - Fixture-driven history learning eval cases cover source-derived local context model growth and later rule-based reuse.
 - Future evals should cover context-model extraction from each learning source adapter and the recognition hints generated from that model.
+- File-audio transcription evals can use `TranscribeCLI --batch` to report CER, content CER, punctuation distance, and line-break distance for raw STT, deterministic smoothing, local corrections, and local Foundation Model refinement.
 
 ## Human usability
 

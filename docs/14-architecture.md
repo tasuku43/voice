@@ -7,7 +7,7 @@ The product has two conceptual layers:
 1. **Model education layer**: reads bounded local sources through adapters and builds a local context model.
 2. **Voice input app layer**: records audio, transcribes speech, transforms text with the local model, and inserts text at the focused cursor.
 
-The local context model is not necessarily an LLM. In the MVP it is dictionaries, recognition hints, source metadata, spoken forms, and deterministic transform rules. A local Foundation Model can be introduced later for model education and as an optional last-resort conversion stage.
+The local context model is not necessarily an LLM. In the MVP it is dictionaries, recognition hints, source metadata, spoken forms, and deterministic transform rules. A local Foundation Model may assist model education or optional post-STT refinement through a separate adapter.
 
 ## Runtime pipeline
 
@@ -17,7 +17,7 @@ Hotkey
   -> STT with local recognition hints
   -> Built-in developer vocabulary transform
   -> Personal context model transform
-  -> Optional local Foundation Model fallback
+  -> Optional local Foundation Model refinement
   -> Focused cursor insertion or copy fallback
 ```
 
@@ -81,7 +81,7 @@ Use-case orchestration:
 - produce results for UI or CLI.
 - keep capture/STT stage outputs through `VoiceInputPipeline`.
 - keep post-STT text processing through `PromptProcessingPipeline`.
-- keep any future local Foundation Model conversion behind an explicit optional fallback protocol.
+- keep local Foundation Model conversion behind the explicit optional `PromptTextRefiner` protocol.
 
 ### Infra
 
@@ -92,7 +92,7 @@ Adapters:
 - git context provider,
 - local learning source providers,
 - deferred GitHub / Slack / Chatwork local archive/cache adapters,
-- deferred local Foundation Model adapter.
+- local Foundation Model prompt text refiner.
 
 Infra adapters must not introduce network IO. GitHub, Slack, Chatwork, and similar learning sources must be represented as local archives, exports, caches, or checked-out files before this app reads them. Process-backed adapters are limited to local read-only commands; network-capable operations such as `git fetch`, `git pull`, and `git clone` are excluded.
 
@@ -120,7 +120,7 @@ The UI must call app use cases and avoid embedding core logic.
 
 - Add STT engines behind `SpeechToTextEngine`.
 - Add recognition-hint builders from the local context model.
-- Add local Foundation Model conversion only behind an explicit optional fallback protocol.
+- Add local Foundation Model conversion only behind an explicit optional refiner protocol.
 - Add persistence behind dictionary repository protocols.
 - Add context providers behind scoped vocabulary and learning-source protocols.
 - Add UI views without changing normalization internals.
@@ -145,11 +145,11 @@ Focused future Codex prompts live in `docs/codex-sessions/` so a session can imp
 - Unbounded repository scans.
 - Silent cloud calls.
 - Network IO in the MVP voice input, model education, or fallback conversion paths.
-- Using an LLM as the default hotkey conversion path.
+- Using an LLM as a replacement for STT or deterministic normalization.
 - Automatic prompt submission.
 - Dangerous command substitutions with `autoApply = true`.
 - Global dictionary entries for repo-specific symbols.
 
 ## Why this architecture
 
-The product combines native macOS integration, STT adapters, local persistence, repository context, agent-history adapters, and deterministic learning. Deferred chat/archive adapters and local Foundation Model support must evolve behind the same boundaries. A layered architecture lets coding agents safely extend one area without breaking privacy, insertion behavior, or dictionary behavior.
+The product combines native macOS integration, STT adapters, local persistence, repository context, agent-history adapters, deterministic learning, and optional local Foundation Model refinement. Deferred chat/archive adapters and future refiner policy must evolve behind the same boundaries. A layered architecture lets coding agents safely extend one area without breaking privacy, insertion behavior, or dictionary behavior.

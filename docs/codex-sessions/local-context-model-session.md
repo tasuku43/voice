@@ -34,4 +34,4 @@ Tests:
 Done:
 - Local context model data is explicit, persisted locally, and rebuildable.
 - The same model can produce STT recognition hints and deterministic post-STT transforms.
-- Any local Foundation Model use is optional, network-free, and outside the default hotkey path.
+- Any local Foundation Model use is optional, network-free, and either model education or explicit post-STT refinement.

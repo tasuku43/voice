@@ -8,7 +8,7 @@ The production app is a macOS menu bar utility. The package also includes a smal
 swift run voice-agent-input-app
 ```
 
-The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records while the hotkey is held, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to tagged `SpeechRecognitionHints` and passed to Apple Speech as `AnalysisContext.contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release or the Stop button completes the user action and pastes the corrected prompt. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
+The current shell installs a menu bar item, registers the configured voice-input hotkey (default Control-Option-Space), shows a cursor-adjacent recording HUD near the focused input when possible, records while the hotkey is held, and transcribes the clip through on-device `AppleSpeechEngine`. The HUD exposes connection/listening/quiet state, live input-level feedback, elapsed time, stop control, and stop-to-paste guidance. Loaded dictionary entries expose ASR-friendly `recognitionHints`; those are converted to tagged `SpeechRecognitionHints` and passed to Apple Speech as `AnalysisContext.contextualStrings` before the same entries are used for post-STT normalization through `spokenForms` as a fallback. Quick Paste is the only normal voice input mode: key release or the Stop button completes the user action and pastes the corrected prompt. The same post-STT `PromptTextRefiner` boundary used by `TranscribeCLI` can be enabled locally for the hotkey path with `VOICE_AGENT_INPUT_TEXT_REFINER=smooth-pauses`, `foundation-model`, or `smooth-pauses+foundation-model`; by default no Foundation Model conversion is run. Paste uses `PromptInsertionUseCase`; it attempts Accessibility-based Command-V paste only after that user action and falls back to copying the prompt to the pasteboard when Accessibility access is not trusted.
 
 The shell also includes local hotkey settings, permission status display, a voice-input permission shortcut, and a `Model Education` submenu for repository-folder selection, `Rebuild Local Context Model...`, and local context model export/import/open-folder/delete controls.
 
@@ -55,9 +55,15 @@ This output includes both `historyLearning` and `normalization`, so tests and ma
 swift run TranscribeCLI /path/to/audio.caf
 swift run TranscribeCLI /path/to/audio.caf --locale ja-JP
 swift run TranscribeCLI /path/to/audio.caf --context ./contextual-strings.json --json
+swift run TranscribeCLI /path/to/audio.caf --profile transcription --expected ./expected.txt
+swift run TranscribeCLI /path/to/audio.caf --context ./contextual-strings.json --corrections ./corrections.json --expected ./expected.txt
+swift run TranscribeCLI --batch /path/to/testdata --profile transcription --smooth-pauses
+swift run TranscribeCLI --batch /path/to/testdata --profile transcription --smooth-pauses --foundation-model
 ```
 
-`TranscribeCLI` is the thin accuracy-check route for SpeechEngine itself. It calls the same `AppleSpeechEngine.transcribe(audioFile:options:)` implementation as the app, but it does not start a hotkey monitor, request Accessibility insertion, paste into another app, or run normalization. If `--context` is omitted, it loads the saved local context model through the same local repository path as the app and converts entries with `SpeechRecognitionHintsUseCase`.
+`TranscribeCLI` is the thin accuracy-check route for SpeechEngine itself. It calls the same `AppleSpeechEngine.transcribe(audioFile:options:)` implementation as the app, but it does not start a hotkey monitor, request Accessibility insertion, or paste into another app. If `--context` is omitted, it loads the saved local context model through the same local repository path as the app and converts entries with `SpeechRecognitionHintsUseCase`.
+
+By default the CLI prints raw STT output. `--profile dictation|transcription` switches between the natural-dictation and raw-transcription SpeechAnalyzer modules. `--expected` compares the emitted text with a golden transcript and prints character error rate (CER), content CER, punctuation edit distance, and line-break edit distance. `--batch` evaluates subdirectories that contain `audio.wav` and `expected.txt`, then prints per-case and average distance metrics so feedback loops can compare profile/refiner choices numerically. `--normalize` explicitly runs the same deterministic dictionary normalization used by the hotkey path after STT. `--smooth-pauses` applies the local deterministic `JapanesePauseSmoothingRefiner` after normalization. `--foundation-model` applies the local Foundation Models `FoundationModelPromptTextRefiner` after deterministic normalization and any pause smoothing. `--corrections` adds bounded local correction entries for a repeatable feedback loop and implies `--normalize`; it does not change SpeechEngine behavior.
 
 Context JSON may be either a plain tag-to-string-list object:
 
@@ -69,6 +75,21 @@ Context JSON may be either a plain tag-to-string-list object:
 ```
 
 or an encoded `ContextualStringsConfig`. JSON output encodes `TranscriptionResult` with `text`, `segments`, `alternatives`, and `metadata`.
+
+Corrections JSON may be either an array of `DictionaryEntry` values or a compact local correction list:
+
+```json
+[
+  {
+    "spokenForms": ["CRIコマンド"],
+    "canonical": "CLIコマンド",
+    "kind": "command",
+    "confidence": 1.0
+  }
+]
+```
+
+When `--expected`, `--normalize`, `--smooth-pauses`, or `--foundation-model` is used with `--json`, JSON output wraps the raw `TranscriptionResult` with optional `normalization`, `refinement`, and `evaluation` fields so the raw engine output remains inspectable.
 
 ## Core API
 
@@ -92,7 +113,7 @@ Voice-input orchestration:
 VoiceInputPipeline.run() async throws -> VoiceInputPipelineResult
 ```
 
-This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Tests can inject `MockAudioRecorder` and `MockSpeechEngine` without adding mock-only methods to the production STT protocol. Runtime entries also feed `SpeechRecognitionHints` so the saved local context model can affect recognition before post-STT normalization.
+This keeps audio capture behind `AudioRecorder` and STT behind `SpeechToTextEngine`, with mock adapters available for tests and the app shell wired to local AVFoundation and Apple Speech adapters. Tests can inject `MockAudioRecorder` and `MockSpeechEngine` without adding mock-only methods to the production STT protocol. Runtime entries also feed `SpeechRecognitionHints` so the saved local context model can affect recognition before post-STT normalization. Optional `PromptTextRefiner` implementations run after deterministic normalization and before insertion; this is the shared boundary for CLI file input and hotkey audio input.
 
 Direct file transcription:
 
@@ -100,7 +121,15 @@ Direct file transcription:
 SpeechEngine.transcribe(audioFile: URL, options: TranscriptionOptions) async throws -> TranscriptionResult
 ```
 
-This path is shared by `TranscribeCLI` and `AppleSpeechEngine`. Hotkey recording still uses the `SpeechToTextEngine` bridge so callers that only need final text can read `Transcript.text` or `TranscriptionResult.text`.
+This path is shared by `TranscribeCLI` and `AppleSpeechEngine`. Hotkey recording still uses the `SpeechToTextEngine` bridge so callers that only need final text can read `Transcript.text` or `TranscriptionResult.text`. Raw STT remains separate from deterministic prompt normalization and optional text refinement.
+
+Shared post-STT refinement:
+
+```swift
+PromptTextRefiner.refine(_ request: PromptTextRefinementRequest) async throws -> PromptTextRefinementResult
+```
+
+`JapanesePauseSmoothingRefiner` joins obvious false sentence stops and paragraph breaks after normalization. `FoundationModelPromptTextRefiner` uses local Foundation Models only, checks `SystemLanguageModel.isAvailable`, and does not introduce network IO. The current app exposes this for local feedback through `VOICE_AGENT_INPUT_TEXT_REFINER`, while the CLI exposes it through `--smooth-pauses` and `--foundation-model`.
 
 Local context model:
 

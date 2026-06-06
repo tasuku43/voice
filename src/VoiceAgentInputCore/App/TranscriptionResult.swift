@@ -67,6 +67,7 @@ public struct TranscriptionMetadata: Codable, Equatable, Sendable {
     public var contextualStringCount: Int
     public var recognitionMode: RecognitionMode
     public var outputDetailLevel: OutputDetailLevel
+    public var transcriberProfile: TranscriberProfile
 
     public init(
         engine: String,
@@ -75,7 +76,8 @@ public struct TranscriptionMetadata: Codable, Equatable, Sendable {
         confidence: Double? = nil,
         contextualStringCount: Int = 0,
         recognitionMode: RecognitionMode = .accurate,
-        outputDetailLevel: OutputDetailLevel = .textOnly
+        outputDetailLevel: OutputDetailLevel = .textOnly,
+        transcriberProfile: TranscriberProfile = .dictation
     ) {
         self.engine = engine
         self.localeIdentifier = localeIdentifier
@@ -84,5 +86,6 @@ public struct TranscriptionMetadata: Codable, Equatable, Sendable {
         self.contextualStringCount = contextualStringCount
         self.recognitionMode = recognitionMode
         self.outputDetailLevel = outputDetailLevel
+        self.transcriberProfile = transcriberProfile
     }
 }

@@ -8,15 +8,18 @@ public enum VoiceInputPipelineError: Error, Equatable {
 public struct VoiceInputPipelineResult: Equatable, Sendable {
     public var transcript: Transcript
     public var normalizedPrompt: NormalizedPrompt
+    public var refinement: PromptTextRefinementResult?
     public var insertion: PromptInsertion
 
     public init(
         transcript: Transcript,
         normalizedPrompt: NormalizedPrompt,
+        refinement: PromptTextRefinementResult? = nil,
         insertion: PromptInsertion
     ) {
         self.transcript = transcript
         self.normalizedPrompt = normalizedPrompt
+        self.refinement = refinement
         self.insertion = insertion
     }
 
@@ -24,6 +27,7 @@ public struct VoiceInputPipelineResult: Equatable, Sendable {
         self.init(
             transcript: promptProcessingResult.transcript,
             normalizedPrompt: promptProcessingResult.normalizedPrompt,
+            refinement: promptProcessingResult.refinement,
             insertion: promptProcessingResult.insertion
         )
     }
@@ -35,19 +39,22 @@ public struct VoiceInputPipeline {
     public var speechEngine: any SpeechToTextEngine
     public var normalizer: any PromptNormalizer
     public var normalizationContext: NormalizationContext
+    public var textRefiner: (any PromptTextRefiner)?
 
     public init(
         audioRecorder: (any AudioRecorder)? = nil,
         microphonePermissionProvider: (any MicrophonePermissionProvider)? = nil,
         speechEngine: any SpeechToTextEngine,
         normalizer: any PromptNormalizer = DictionaryPromptNormalizer(),
-        normalizationContext: NormalizationContext
+        normalizationContext: NormalizationContext,
+        textRefiner: (any PromptTextRefiner)? = nil
     ) {
         self.audioRecorder = audioRecorder
         self.microphonePermissionProvider = microphonePermissionProvider
         self.speechEngine = speechEngine
         self.normalizer = normalizer
         self.normalizationContext = normalizationContext
+        self.textRefiner = textRefiner
     }
 
     public func run() async throws -> VoiceInputPipelineResult {
@@ -77,7 +84,8 @@ public struct VoiceInputPipeline {
     private func promptProcessingPipeline() -> PromptProcessingPipeline {
         PromptProcessingPipeline(
             normalizer: normalizer,
-            normalizationContext: normalizationContext
+            normalizationContext: normalizationContext,
+            textRefiner: textRefiner
         )
     }
 }

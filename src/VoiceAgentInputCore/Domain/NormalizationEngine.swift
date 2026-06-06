@@ -79,11 +79,25 @@ public struct NormalizationEngine: Sendable {
     }
 
     private func shouldSpace(_ canonical: String) -> Bool {
-        canonical.unicodeScalars.contains { scalar in
-            (65...90).contains(Int(scalar.value)) ||
-            (97...122).contains(Int(scalar.value)) ||
-            (48...57).contains(Int(scalar.value))
+        var hasASCIIWordCharacter = false
+        var hasNonASCIIWordCharacter = false
+
+        for scalar in canonical.unicodeScalars {
+            let value = Int(scalar.value)
+            if (65...90).contains(value) ||
+                (97...122).contains(value) ||
+                (48...57).contains(value) {
+                hasASCIIWordCharacter = true
+                continue
+            }
+            if value > 127,
+               !CharacterSet.whitespacesAndNewlines.contains(scalar),
+               !CharacterSet.punctuationCharacters.contains(scalar) {
+                hasNonASCIIWordCharacter = true
+            }
         }
+
+        return hasASCIIWordCharacter && !hasNonASCIIWordCharacter
     }
 }
 

@@ -29,17 +29,19 @@ Implementations:
 - `MockAudioRecorder` for tests and UI development.
 - `AVFoundationAudioRecorder` records a short local microphone clip to a temporary file and returns that URL in `RecordedAudio` so STT adapters can avoid a second audio write.
 - `MockSpeechEngine` for tests and UI development.
-- `AppleSpeechEngine` for on-device local file transcription through `SpeechAnalyzer` and `SpeechTranscriber`; it uses recorder-provided temporary file URLs directly when available, otherwise creates a temporary file through `TemporaryRecordedAudioFileStore`. Temporary audio is deleted after success or failure.
+- `AppleSpeechEngine` for on-device local file transcription through `SpeechAnalyzer` with `DictationTranscriber` or `SpeechTranscriber`; it uses recorder-provided temporary file URLs directly when available, otherwise creates a temporary file through `TemporaryRecordedAudioFileStore`. Temporary audio is deleted after success or failure.
 - `AppleSpeechEngine` accepts `SpeechRecognitionHints` and maps tagged `ContextualStringsConfig` values to `AnalysisContext.contextualStrings` so loaded dictionary entries can help ASR before post-STT normalization.
 - `WhisperSpeechEngine` optional fallback later.
 
 Current app orchestration:
 
 - `VoiceInputPipeline` accepts an optional `AudioRecorder`, a `SpeechToTextEngine`, a `PromptNormalizer`, and `NormalizationContext`.
-- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
+- `VoiceInputPipeline` accepts an optional `PromptTextRefiner` shared with `TranscribeCLI`, so file-audio evaluation and hotkey recording can exercise the same post-STT text refinement boundary.
+- `VoiceInputPipeline.run()` preserves `Transcript`, `NormalizedPrompt`, optional `PromptTextRefinementResult`, and `PromptInsertion` stage outputs. If direct paste fails, the app fallback copies the final prompt to the pasteboard.
 - The macOS shell records audio, checks speech recognition permission, and transcribes through `AppleSpeechEngine` by calling `VoiceInputPipeline.run()`.
-- `AppleSpeechEngine` requires `SpeechAnalyzer` on macOS 26 or later and requires local speech assets to already be installed; it does not download speech assets during the hotkey path.
-- `TranscribeCLI` calls the same `SpeechEngine` file API for repeatable audio-file accuracy checks without hotkey, UI, Accessibility, or paste dependencies.
+- `AppleSpeechEngine` requires `SpeechAnalyzer` on macOS 26 or later and requires local speech assets to already be installed. It may reserve already-installed local assets with `AssetInventory.reserve(locale:)`, but it does not download speech assets during the hotkey path.
+- `TranscribeCLI` calls the same `SpeechEngine` file API for repeatable audio-file accuracy checks without hotkey, UI, Accessibility, or paste dependencies. Its `--normalize`, `--corrections`, `--smooth-pauses`, `--foundation-model`, and `--batch` flags run post-STT quality loops outside SpeechEngine for explicit evaluation.
+- `FoundationModelPromptTextRefiner` is a local Foundation Models adapter behind `PromptTextRefiner`; it checks local model availability and returns corrected prompt text without uploading audio, transcripts, prompts, or learned context.
 
 ## SpeechRecognitionPermissionProvider
 
