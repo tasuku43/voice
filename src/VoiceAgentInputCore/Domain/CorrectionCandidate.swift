@@ -7,7 +7,6 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
     public var occurrenceCount: Int
     public var reason: String
     public var suggestedScope: DictionaryScope
-    public var dangerous: Bool
     public var autoApplyAllowed: Bool
 
     public init(
@@ -17,7 +16,6 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
         occurrenceCount: Int = 1,
         reason: String = "Found in local learning sources.",
         suggestedScope: DictionaryScope,
-        dangerous: Bool = false,
         autoApplyAllowed: Bool = false
     ) {
         self.rawPhrase = rawPhrase
@@ -26,7 +24,6 @@ public struct CorrectionCandidate: Codable, Equatable, Sendable {
         self.occurrenceCount = occurrenceCount
         self.reason = reason
         self.suggestedScope = suggestedScope
-        self.dangerous = dangerous
-        self.autoApplyAllowed = autoApplyAllowed && !dangerous
+        self.autoApplyAllowed = autoApplyAllowed
     }
 }

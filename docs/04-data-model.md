@@ -86,7 +86,6 @@ Fields:
 - confidence
 - occurrenceCount
 - suggestedScope
-- dangerous
 - autoApplyAllowed
 
 ## NormalizationResult
