@@ -3,9 +3,9 @@
 ## Core
 
 - Split built-in vocabulary transforms from personal context transforms.
-- Improve phrase alignment in local context candidate generation.
+- Improve phrase alignment in local context learning-entry generation.
 - Add confidence accumulation for repeated local learning-source evidence.
-- Add repository-scoped candidate promotion rules.
+- Add repository-scoped learning-entry promotion rules.
 - Add golden snapshots for demo CLI output.
 
 ## macOS app

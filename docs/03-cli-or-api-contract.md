@@ -33,7 +33,7 @@ Default output is a normalization JSON object for CI stability and debugging:
 }
 ```
 
-History learning mode reports local context model candidates without saving them:
+History learning mode reports generated local context model entries without saving them:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history
@@ -41,13 +41,13 @@ swift run voice-agent-input-demo --mode learn-history
 
 History learning output includes `historyLearning.scannedTextCount`, `historyLearning.sourceTextCounts`, `historyLearning.candidates`, and `historyLearning.skippedExistingCandidateCount`. It reads bounded local Codex/Claude-style history through `LocalAgentHistoryTextProvider`, uses the fixed user scope for generated learning entries, and does not persist local context model data.
 
-History learning normalize mode simulates rebuilding from generated history candidates and immediately normalizes a later utterance without writing local files:
+History learning normalize mode simulates rebuilding from generated history learning entries and immediately normalizes a later utterance without writing local files:
 
 ```sh
 swift run voice-agent-input-demo --mode learn-history-normalize "project specific nameの設定を直して"
 ```
 
-This output includes both `historyLearning` and `normalization`, so tests and manual experiments can verify that history-derived candidates would improve the next rule-based normalization step after rebuilding the local context model.
+This output includes both `historyLearning` and `normalization`, so tests and manual experiments can verify that history-derived entries would improve the next rule-based normalization step after rebuilding the local context model.
 
 ## Core API
 

@@ -9,7 +9,7 @@ Cover deterministic domain behavior:
 - dictionary replacement,
 - scope precedence,
 - correction metadata,
-- local context candidate generation.
+- local context learning-entry generation.
 
 ### Use-case tests
 
@@ -33,7 +33,7 @@ Cover filesystem and adapter behavior:
 Cover the real executable path where practical:
 
 - `swift run voice-agent-input-demo ...`
-- `scripts/smoke_demo_command.py` verifies the built demo command still emits JSON normalization output with expected developer-term normalization and local history-learning candidate output.
+- `scripts/smoke_demo_command.py` verifies the built demo command still emits JSON normalization output with expected developer-term normalization and local history-learning entry output.
 - expected output shape,
 - stable correction behavior.
 - `make check` also builds `.build/VoiceAgentInput.app` and validates microphone/speech usage descriptions for the bundled macOS shell.

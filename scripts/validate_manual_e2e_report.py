@@ -2,6 +2,7 @@
 from pathlib import Path
 import re
 import sys
+from typing import Optional
 
 
 REQUIRED_METADATA_FIELDS = [
@@ -63,7 +64,7 @@ def fail(message: str) -> None:
     sys.exit(1)
 
 
-def field_value(text: str, field: str) -> str | None:
+def field_value(text: str, field: str) -> Optional[str]:
     pattern = re.compile(rf"^- {re.escape(field)}:\s*(.*)$", re.MULTILINE)
     match = pattern.search(text)
     if not match:
