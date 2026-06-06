@@ -521,7 +521,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 2)
         XCTAssertEqual(model.sourceKinds, ["agentHistory"])
         XCTAssertEqual(model.lastRebuiltAt, Date(timeIntervalSince1970: 1_800))
-        XCTAssertEqual(model.generatedCandidateCount, 1)
+        XCTAssertEqual(model.generatedEntryCount, 1)
         XCTAssertEqual(model.postSTTEntries.map(\.canonical), ["SwiftUI"])
         XCTAssertEqual(
             model.recognitionHints().contextualStrings,
@@ -551,7 +551,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertTrue(model.postSTTEntries.isEmpty)
         XCTAssertTrue(model.recognitionHints().contextualStrings.isEmpty)
-        XCTAssertEqual(model.generatedCandidateCount, 1)
+        XCTAssertEqual(model.generatedEntryCount, 1)
         XCTAssertEqual(model.sourceTextCounts["agentHistory"], 1)
     }
 
@@ -629,7 +629,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
                 )
             ],
             sourceTextCounts: ["agentHistory": 2],
-            generatedCandidateCount: 1,
+            generatedEntryCount: 1,
             lastRebuiltAt: Date(timeIntervalSince1970: 3_600),
             sourceKinds: ["agentHistory"]
         )
@@ -639,6 +639,8 @@ final class UseCaseAndRepositoryTests: XCTestCase {
 
         XCTAssertEqual(decoded, model)
         XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"schemaVersion\" : 1") == true)
+        XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"generatedEntryCount\"") == true)
+        XCTAssertFalse(String(data: data, encoding: .utf8)?.contains("\"generatedCandidateCount\"") == true)
         XCTAssertTrue(String(data: data, encoding: .utf8)?.contains("\"lastRebuiltAt\"") == true)
     }
 
@@ -659,7 +661,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
         let decoded = try LocalContextModelDocumentCodec().decode(Data(legacyJSON.utf8))
 
         XCTAssertEqual(decoded.sourceTextCounts["agentHistory"], 2)
-        XCTAssertEqual(decoded.generatedCandidateCount, 1)
+        XCTAssertEqual(decoded.generatedEntryCount, 1)
         XCTAssertNil(decoded.lastRebuiltAt)
         XCTAssertTrue(decoded.sourceKinds.isEmpty)
     }
@@ -682,7 +684,7 @@ final class UseCaseAndRepositoryTests: XCTestCase {
                 )
             ],
             sourceTextCounts: ["agentHistory": 2],
-            generatedCandidateCount: 1
+            generatedEntryCount: 1
         )
 
         XCTAssertEqual(try repository.loadModel(), LocalContextModel())

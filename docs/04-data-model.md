@@ -19,7 +19,7 @@ Current code represents this with `LocalContextModel` in the App layer. It wraps
 - `schemaVersion`
 - `model.entries`
 - `model.sourceTextCounts`
-- `model.generatedCandidateCount`
+- `model.generatedEntryCount`
 - `model.lastRebuiltAt`
 - `model.sourceKinds`
 

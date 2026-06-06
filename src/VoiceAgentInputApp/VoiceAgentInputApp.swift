@@ -782,7 +782,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         let sourceNames = learningSources.map { $0.sourceKind.rawValue }.joined(separator: ",")
         debugLogger.log("local context model education loaded \(result.learningResult.scannedTextCount) source texts, sourceTextCounts=\(result.learningResult.sourceTextCounts), skipped \(result.learningResult.skippedExistingCandidateCount) existing entries, scope=\(learningScope.rawValue), sources=\(sourceNames)")
 
-        debugLogger.log("local context model rebuilt with \(result.model.entries.count) entries and \(result.model.generatedCandidateCount) generated entries")
+        debugLogger.log("local context model rebuilt with \(result.model.entries.count) entries and \(result.model.generatedEntryCount) generated entries")
 
         return result
     }
@@ -797,7 +797,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
         alert.informativeText = localContextModelStatusText(
             model: model,
             scannedTextCount: result.scannedTextCount,
-            generatedCandidateCount: result.candidates.count
+            generatedEntryCount: result.candidates.count
         )
         alert.runModal()
     }
@@ -805,7 +805,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
     private func localContextModelStatusText(
         model: LocalContextModel,
         scannedTextCount: Int? = nil,
-        generatedCandidateCount: Int? = nil
+        generatedEntryCount: Int? = nil
     ) -> String {
         let rebuiltText = model.lastRebuiltAt.map(Self.localContextModelDateFormatter.string(from:)) ?? "never"
         let sourceText = model.sourceKinds.isEmpty ? "none" : model.sourceKinds.joined(separator: ", ")
@@ -815,7 +815,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
             .map { "\($0.key): \($0.value)" }
             .joined(separator: ", ")
         let scannedTextLine = scannedTextCount.map { "Scanned \($0) local source texts." } ?? "Stored source texts: \(totalSourceTexts)."
-        let generatedCount = generatedCandidateCount ?? model.generatedCandidateCount
+        let generatedCount = generatedEntryCount ?? model.generatedEntryCount
         let sourceCountLine = sourceCounts.isEmpty ? "Source text counts: none." : "Source text counts: \(sourceCounts)."
 
         return """

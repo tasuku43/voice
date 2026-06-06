@@ -238,7 +238,7 @@ REQUIRED_COVERAGE = {
         ],
         "src/VoiceAgentInputCore/App/LocalContextModel.swift": [
             "learningResult?.candidates.map(Self.entry(from:))",
-            "generatedCandidateCount",
+            "generatedEntryCount",
         ],
     },
     "local data controls": {
