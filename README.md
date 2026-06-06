@@ -35,7 +35,7 @@ Standard dictation converts speech into general text. Coding-agent work needs mo
 3. Store the learned context model locally.
 4. Reuse the model for both STT hints and post-STT transforms.
 
-The current core implements dictionary models, normalization, local learning sources, local context candidate generation, JSON persistence, fixtures, evals, and agent instructions. A first Apple Speech adapter exists behind the replaceable STT protocol.
+The current core implements dictionary models, normalization, local learning sources, local context candidate generation, JSON persistence, fixtures, and evals. A first Apple Speech adapter exists behind the replaceable STT protocol.
 
 The current app shell includes a minimal macOS menu bar executable with a configurable global voice-input hotkey (default Control-Option-Space), press-and-hold recording, AVFoundation microphone recording, permission status display, voice input permission shortcut, on-device Apple Speech transcription, Accessibility-based paste, pasteboard fallback, and a `Model Education` submenu for local context model rebuild/export/import/delete actions.
 The menu can store a local repository folder path for repository-scoped vocabulary when the app is launched outside a terminal. Repository context includes the git root, current branch, and a bounded set of tracked file names.

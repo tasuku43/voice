@@ -54,12 +54,15 @@ REQUIRED_SOURCE_SNIPPETS = {
 }
 
 REQUIRED_DOC_SNIPPETS = {
-    "AGENTS.md": [
-        "network-backed STT",
-        "network-backed LLM",
-        "local Foundation Model adapter",
-        "must not introduce network IO",
-        "using LLM rewriting as the default hotkey conversion path",
+    "docs/02-requirements.md": [
+        "Do not make network calls for STT, model education, or LLM fallback in MVP",
+        "LLM fallback must be local-only and optional",
+        "Do not store raw audio by default",
+    ],
+    "docs/07-non-goals.md": [
+        "cloud STT",
+        "network-backed LLM calls",
+        "LLM-based rewriting as the primary hotkey correction mechanism",
     ],
     "docs/contracts/voice-input-pipeline.md": [
         "optional local Foundation Model fallback",

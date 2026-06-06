@@ -4,7 +4,6 @@ import sys
 
 required = [
     'README.md',
-    'AGENTS.md',
     'GOALS.md',
     'Package.swift',
     'Makefile',

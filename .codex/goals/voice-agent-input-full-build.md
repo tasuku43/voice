@@ -11,7 +11,7 @@ Read these files first:
 - `docs/14-architecture.md`
 - `docs/06-implementation-plan.md`
 
-Treat `AGENTS.md` as historical guidance if it conflicts with the current product docs.
+Use the current product docs above as authoritative. `AGENTS.md` is historical context only.
 
 Goal for this autonomous run:
 
@@ -24,22 +24,21 @@ The ideal MVP is a macOS-native menu bar app that:
 3. builds a local context model from enabled local learning sources,
 4. uses that model as STT recognition hints and deterministic post-STT transforms,
 5. inserts corrected text at the focused cursor or copies it when direct insertion is unavailable,
-6. keeps preview/edit/approval flows as optional curation surfaces,
+6. uses pasteboard copy as the direct-paste fallback,
 7. uses local Foundation Model assistance only for model education or explicit fallback conversion,
 8. never performs network IO for STT, model education, or LLM fallback,
 9. never uploads audio, transcripts, prompts, or learned context.
 
-Current scaffold already contains the core normalization and learning direction. Continue from there.
+Current implementation already contains the core normalization, model education loop, AppKit menu bar shell, hotkey flow, local Apple Speech adapter, and local data controls. Continue by tightening the product boundary and deleting obsolete surfaces.
 
 Implementation priorities:
 
-1. Strengthen the core domain and tests if needed.
-2. Add a macOS app shell only if the current environment supports it.
-3. If macOS APIs are unavailable, add protocols, mocks, and documented adapter seams instead of blocking.
-4. Make hotkey dictation into the focused cursor the primary path.
-5. Implement deterministic local context learning before semantic rewriting.
-6. Keep STT replaceable: Apple Speech first, local-only Whisper optional later.
-7. Keep privacy defaults local-only.
+1. Keep hotkey dictation into the focused cursor as the primary path.
+2. Keep deterministic local context learning before semantic rewriting.
+3. Remove preview/edit/approval, mock-only, debug-only, or raw-data hooks that do not support the core path.
+4. Keep STT replaceable: Apple Speech first, local-only Whisper optional later.
+5. Keep privacy defaults local-only.
+6. If macOS APIs are unavailable, preserve protocols, mocks, and documented adapter seams instead of blocking.
 
 Required constraints:
 
