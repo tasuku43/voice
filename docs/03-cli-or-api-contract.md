@@ -114,7 +114,7 @@ AppSettings(
 )
 ```
 
-Missing settings decode to the local default Control-Option-Space voice-input hotkey. Speech currently uses the fixed local Japanese Speech locale by default.
+Missing settings decode to the local default Control-Option-Space voice-input hotkey. Speech currently uses the Apple Speech adapter's fixed local Japanese locale by default; this is not an app setting.
 
 The macOS menu bar shell exposes hotkey settings locally through `Hotkey Settings...`; changing them affects later recordings only and does not upload audio or transcripts.
 

@@ -140,7 +140,7 @@ final class VoiceAgentInputApp: NSObject, NSApplicationDelegate {
                     }
                 }
                 let speechEngine = AppleSpeechEngine(
-                    localeIdentifier: AppSettings.defaultSpeechLocaleIdentifier,
+                    localeIdentifier: AppleSpeechEngine.defaultLocaleIdentifier,
                     requiresOnDeviceRecognition: true,
                     recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)
                 )

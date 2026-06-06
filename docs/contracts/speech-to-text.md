@@ -2,7 +2,7 @@
 
 ## Inputs
 - `RecordedAudio`
-- Fixed local Speech locale, currently `ja-JP`.
+- Adapter-owned fixed local Speech locale, currently `ja-JP`.
 - Optional `SpeechRecognitionHints` derived from loaded `DictionaryEntry.recognitionHints` values.
 
 ## Outputs

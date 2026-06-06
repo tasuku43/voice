@@ -2,13 +2,15 @@ import Foundation
 import Speech
 
 public final class AppleSpeechEngine: SpeechToTextEngine, @unchecked Sendable {
+    public static let defaultLocaleIdentifier = "ja-JP"
+
     public let localeIdentifier: String
     public let temporaryDirectory: URL
     public let requiresOnDeviceRecognition: Bool
     public let recognitionHints: SpeechRecognitionHints
 
     public init(
-        localeIdentifier: String = "ja-JP",
+        localeIdentifier: String = AppleSpeechEngine.defaultLocaleIdentifier,
         temporaryDirectory: URL = FileManager.default.temporaryDirectory,
         requiresOnDeviceRecognition: Bool = true,
         recognitionHints: SpeechRecognitionHints = SpeechRecognitionHints()

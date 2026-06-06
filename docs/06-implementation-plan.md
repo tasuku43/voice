@@ -17,7 +17,7 @@
 - Pasteboard fallback. When Accessibility paste cannot complete, the app copies the corrected prompt and asks the user to paste manually.
 - Apple Speech integration. Initial bundled app flow records audio and transcribes through on-device `AppleSpeechEngine`.
 - Recording state. App shell disables repeat recording triggers while a recording/transcription flow is already running.
-- Voice input uses the fixed local Japanese Speech locale by default; model education should improve developer terminology instead of adding broad speech settings.
+- Voice input uses the Apple Speech adapter's fixed local Japanese locale by default; model education should improve developer terminology instead of adding broad speech settings.
 - Permission status. App shell can display current microphone, speech recognition, and Accessibility paste permission states.
 - Focused cursor insertion or copy fallback.
 - Direct paste first; pasteboard copy fallback only when insertion cannot complete.

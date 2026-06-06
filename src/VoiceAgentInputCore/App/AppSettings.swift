@@ -1,8 +1,6 @@
 import Foundation
 
 public struct AppSettings: Codable, Equatable, Sendable {
-    public static let defaultSpeechLocaleIdentifier = "ja-JP"
-
     public var repositoryPath: String?
     public var voiceInputShortcut: KeyboardShortcut
 

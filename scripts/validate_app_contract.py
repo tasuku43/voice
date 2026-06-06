@@ -45,7 +45,7 @@ REQUIRED_SOURCE_SNIPPETS = [
     "RecordingFeedbackPresentationUseCase",
     "RecordingWaveformView",
     "elapsedSeconds",
-    "localeIdentifier: AppSettings.defaultSpeechLocaleIdentifier",
+    "localeIdentifier: AppleSpeechEngine.defaultLocaleIdentifier",
     "requiresOnDeviceRecognition: true",
     "recognitionHints: SpeechRecognitionHintsUseCase().hints(from: entries)",
     "let voiceInputPipeline = VoiceInputPipeline(",
