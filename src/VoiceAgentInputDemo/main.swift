@@ -11,7 +11,6 @@ struct Arguments {
     var mode = "normalize"
     var rawText = "くらのコードでタイプスクリプトエラーを直して"
     var homeDirectoryPath: String?
-    var scope: DictionaryScope = .user
 }
 
 func parseArguments(_ rawArguments: [String]) -> Arguments {
@@ -32,13 +31,6 @@ func parseArguments(_ rawArguments: [String]) -> Arguments {
         case "--home":
             if index + 1 < rawArguments.count {
                 arguments.homeDirectoryPath = rawArguments[index + 1]
-                index += 2
-            } else {
-                index += 1
-            }
-        case "--scope":
-            if index + 1 < rawArguments.count {
-                arguments.scope = DictionaryScope(rawValue: rawArguments[index + 1]) ?? .user
                 index += 2
             } else {
                 index += 1
@@ -77,7 +69,7 @@ case "learn-history":
         normalization: nil,
         historyLearning: try AgentHistoryLearningModeUseCase(
             historyProvider: provider
-        ).generateCandidates(scope: arguments.scope)
+        ).generateCandidates(scope: .user)
     )
 case "learn-history-normalize":
     let homeDirectory = arguments.homeDirectoryPath.map {
@@ -86,7 +78,7 @@ case "learn-history-normalize":
     let provider = LocalAgentHistoryTextProvider(homeDirectory: homeDirectory)
     let historyLearning = try AgentHistoryLearningModeUseCase(
         historyProvider: provider
-    ).generateCandidates(scope: arguments.scope)
+    ).generateCandidates(scope: .user)
     let learnedEntries = historyLearning.candidates.map { candidate in
         DictionaryEntry(
             spokenForms: [candidate.rawPhrase],

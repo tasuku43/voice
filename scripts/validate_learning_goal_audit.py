@@ -166,7 +166,7 @@ REQUIRED_SNIPPETS = {
         "learn-history",
         "learn-history-normalize",
         "LocalAgentHistoryTextProvider",
-        "generateCandidates(scope: arguments.scope)",
+        "generateCandidates(scope: .user)",
     ],
     "test/VoiceAgentInputCoreTests/EvalHarnessTests.swift": [
         "testHistoryLearningEvalCases",

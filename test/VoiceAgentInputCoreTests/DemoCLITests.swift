@@ -25,8 +25,7 @@ final class DemoCLITests: XCTestCase {
 
         let output = try runDemo(arguments: [
             "--mode", "learn-history",
-            "--home", home.path,
-            "--scope", "repository"
+            "--home", home.path
         ])
 
         XCTAssertEqual(output["mode"] as? String, "learn-history")
@@ -37,7 +36,7 @@ final class DemoCLITests: XCTestCase {
             $0["correctedPhrase"] as? String == "ProjectSpecificName"
         })
         XCTAssertEqual(candidate["rawPhrase"] as? String, "project specific name")
-        XCTAssertEqual(candidate["suggestedScope"] as? String, "repository")
+        XCTAssertEqual(candidate["suggestedScope"] as? String, "user")
     }
 
     func testDemoHistoryLearningNormalizeModeUsesRebuiltModelEntries() throws {
@@ -52,7 +51,6 @@ final class DemoCLITests: XCTestCase {
         let output = try runDemo(arguments: [
             "--mode", "learn-history-normalize",
             "--home", home.path,
-            "--scope", "repository",
             "project specific nameの設定を直して"
         ])
 

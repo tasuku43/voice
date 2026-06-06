@@ -57,7 +57,6 @@ def main() -> None:
                 str(EXECUTABLE),
                 "--mode", "learn-history",
                 "--home", temporary_home,
-                "--scope", "repository",
             ],
             cwd=ROOT,
             text=True,
@@ -80,7 +79,7 @@ def main() -> None:
         if not any(
             candidate.get("correctedPhrase") == "ProjectSpecificName"
             and candidate.get("rawPhrase") == "project specific name"
-            and candidate.get("suggestedScope") == "repository"
+            and candidate.get("suggestedScope") == "user"
             for candidate in candidates
         ):
             fail("demo history learning command missing ProjectSpecificName candidate")
@@ -90,7 +89,6 @@ def main() -> None:
                 str(EXECUTABLE),
                 "--mode", "learn-history-normalize",
                 "--home", temporary_home,
-                "--scope", "repository",
                 "project specific nameの設定を直して",
             ],
             cwd=ROOT,
