@@ -95,6 +95,7 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Raw transcripts are not written to Application Support by default: pass/fail
 - Local context model data and settings are local files only: pass/fail
 - Debug log is diagnostics only, not local learning data: pass/fail
+- `make manual-e2e-privacy-inspect` reports `manual E2E privacy inspection ok`: pass/fail
 - No network/cloud prompt observed: pass/fail
 - Notes:
 
@@ -103,4 +104,5 @@ Copy this template when running `manual-macos-mvp-checklist.md` on a real macOS 
 - Screenshots:
 - Exported local context model path:
 - Completed checklist path:
+- Privacy inspection output:
 - Related issue or PR:

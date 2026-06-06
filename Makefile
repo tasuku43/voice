@@ -2,7 +2,7 @@ SWIFT_PACKAGE_FLAGS ?= --disable-sandbox
 CLANG_MODULE_CACHE_PATH ?= $(CURDIR)/.build/clang-module-cache
 export CLANG_MODULE_CACHE_PATH
 
-.PHONY: test eval check goal demo manual-e2e-launch manual-e2e-report validate-manual-e2e-report clean xcode-test-env
+.PHONY: test eval check goal demo manual-e2e-launch manual-e2e-report manual-e2e-privacy-inspect validate-manual-e2e-report clean xcode-test-env
 
 xcode-test-env:
 	python3 scripts/require_xcode_xctest.py
@@ -43,6 +43,9 @@ manual-e2e-launch:
 
 manual-e2e-report:
 	python3 scripts/create_manual_e2e_report.py .
+
+manual-e2e-privacy-inspect:
+	python3 scripts/inspect_manual_e2e_privacy.py
 
 validate-manual-e2e-report:
 	@test -n "$(REPORT)" || (echo "usage: make validate-manual-e2e-report REPORT=test/e2e/reports/<report>.md" >&2; exit 1)

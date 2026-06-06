@@ -4,7 +4,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 
 ## Current automated evidence
 
-- `make check` runs Swift tests, fixture evals, app build, app bundle creation, app launch smoke, required-file validation, eval coverage validation, architecture boundary validation, app contract validation, privacy contract validation, MVP coverage validation, and manual E2E artifact validation.
+- `make check` runs Swift tests, fixture evals, app build, app bundle creation, app launch smoke, required-file validation, eval coverage validation, architecture boundary validation, app contract validation, privacy contract validation, MVP coverage validation, manual E2E artifact validation, and a smoke test for the manual privacy inspection helper.
 - `make check` also smoke-runs the built `voice-agent-input-demo` command and verifies JSON normalization output for Claude Code, TypeScript, error, and local history-learning candidates.
 - Eval coverage validation requires realistic mixed Japanese-English developer terms such as Claude Code, Codex, Cursor, TypeScript, Swift, pnpm, npm, MCP, GitHub, branch, and error.
 - Architecture boundary validation ensures Domain and App remain free of UI/macOS framework dependencies while framework-specific work stays in Infra.
@@ -37,7 +37,7 @@ This audit tracks the evidence for the current MVP request. It intentionally dis
 | Component-level future work boundaries | `docs/contracts/`, `docs/codex-sessions/`, `VoiceInputPipeline`, pipeline tests, MVP coverage validation | Verified structurally |
 | Do not persist raw audio | AVFoundation temporary URL handoff, Apple Speech cleanup tests, `TemporaryRecordedAudioFileStore` fallback tests, no app-level recorded-audio debug hook, privacy contract validation | Verified for current adapters |
 | Do not upload audio or transcripts | on-device Apple Speech default and privacy contract validation against direct networking/cloud snippets | Verified for current source |
-| Do not persist raw transcripts by default | no transcript persistence adapter exists; debug logging records completed transcript length instead of raw text; raw speech snapshots stay inside the STT adapter and are not exposed to the app debug logger; privacy validation guards against raw speech snapshot logging callbacks; manual E2E privacy checklist covers Application Support inspection | Verified for current source, needs manual filesystem confirmation |
+| Do not persist raw transcripts by default | no transcript persistence adapter exists; debug logging records completed transcript length instead of raw text; raw speech snapshots stay inside the STT adapter and are not exposed to the app debug logger; privacy validation guards against raw speech snapshot logging callbacks; manual E2E privacy checklist covers Application Support inspection; `make manual-e2e-privacy-inspect` scans Application Support and the debug log after a real run | Verified for current source, needs manual filesystem confirmation |
 | Do not auto-submit | insertion tests and manual E2E checklist | Verified at use-case/adapter level, needs target-app manual confirmation |
 
 ## Remaining completion evidence
@@ -53,7 +53,7 @@ The MVP should not be marked fully complete until a real macOS run fills out `te
 - pasteboard fallback when Accessibility is not trusted,
 - local context model export/import/open-folder/delete menu actions,
 - repository folder selection and repository vocabulary learning source,
-- Application Support privacy inspection for raw transcripts,
+- Application Support privacy inspection for raw transcripts, including `make manual-e2e-privacy-inspect`,
 - selected-repository privacy inspection for raw audio.
 
 ## Completion rule

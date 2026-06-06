@@ -51,6 +51,7 @@ REQUIRED_EVIDENCE_LABELS = [
     "Raw transcripts are not written to Application Support by default",
     "Local context model data and settings are local files only",
     "Debug log is diagnostics only, not local learning data",
+    "`make manual-e2e-privacy-inspect` reports `manual E2E privacy inspection ok`",
     "No network/cloud prompt observed",
 ]
 
@@ -126,7 +127,14 @@ def main() -> None:
             continue
         if label in ["Overall result", "Blocking failures", "Follow-up issues"]:
             continue
-        if label in ["Notes", "Screenshots", "Exported local context model path", "Completed checklist path", "Related issue or PR"]:
+        if label in [
+            "Notes",
+            "Screenshots",
+            "Exported local context model path",
+            "Completed checklist path",
+            "Privacy inspection output",
+            "Related issue or PR",
+        ]:
             continue
         if value == "fail":
             failed_lines.append(line)

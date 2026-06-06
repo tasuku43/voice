@@ -77,3 +77,4 @@ Use this checklist on a real macOS desktop session after `make check` builds `.b
 2. Verify raw transcripts are not written to Application Support by default.
 3. Verify settings and local context model data are local files only.
 4. Verify `debug.log` contains operational diagnostics only and does not become the local learning data source.
+5. Run `make manual-e2e-privacy-inspect` and keep the `manual E2E privacy inspection ok` output for the report.

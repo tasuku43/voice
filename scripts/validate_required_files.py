@@ -32,6 +32,7 @@ required = [
     'scripts/smoke_app_ui_layout.py',
     'scripts/launch_manual_e2e_app.py',
     'scripts/summarize_debug_log.py',
+    'scripts/inspect_manual_e2e_privacy.py',
     'scripts/validate_architecture_refactor.py',
     'scripts/validate_component_contracts.py',
     'scripts/validate_app_ui_split.py',

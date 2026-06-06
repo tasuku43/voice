@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import os
 import subprocess
 import sys
 import tempfile
@@ -10,6 +11,7 @@ CHECKLIST = ROOT / "test" / "e2e" / "manual-macos-mvp-checklist.md"
 REPORT_TEMPLATE = ROOT / "test" / "e2e" / "manual-macos-mvp-report-template.md"
 REPORT_CREATOR = ROOT / "scripts" / "create_manual_e2e_report.py"
 LOG_SUMMARIZER = ROOT / "scripts" / "summarize_debug_log.py"
+PRIVACY_INSPECTOR = ROOT / "scripts" / "inspect_manual_e2e_privacy.py"
 DEBUG_LAUNCHER = ROOT / "scripts" / "launch_manual_e2e_app.py"
 README = ROOT / "test" / "e2e" / "README.md"
 MAKEFILE = ROOT / "Makefile"
@@ -54,6 +56,8 @@ REQUIRED_SNIPPETS = [
     "Set Repository Folder...",
     "raw audio",
     "raw transcripts are not written",
+    "make manual-e2e-privacy-inspect",
+    "manual E2E privacy inspection ok",
 ]
 
 REQUIRED_REPORT_SNIPPETS = [
@@ -76,6 +80,7 @@ REQUIRED_REPORT_SNIPPETS = [
     "Privacy Evidence",
     "No automatic submit",
     "Raw transcripts are not written",
+    "`make manual-e2e-privacy-inspect` reports `manual E2E privacy inspection ok`",
     "No network/cloud prompt observed",
 ]
 
@@ -93,6 +98,7 @@ REQUIRED_REPORT_VALIDATOR_SNIPPETS = [
     "No candidate approval UI appears in Quick Paste",
     "Debug log contains mode=quickPaste for completed recording",
     "Debug log summary includes mode=quickPaste",
+    "`make manual-e2e-privacy-inspect` reports `manual E2E privacy inspection ok`",
     "Quick Paste Voice Input Evidence",
     "manual E2E report ok",
 ]
@@ -102,6 +108,8 @@ REQUIRED_MAKEFILE_SNIPPETS = [
     "scripts/launch_manual_e2e_app.py",
     "manual-e2e-report",
     "scripts/create_manual_e2e_report.py",
+    "manual-e2e-privacy-inspect",
+    "scripts/inspect_manual_e2e_privacy.py",
     "validate-manual-e2e-report",
     "scripts/validate_manual_e2e_report.py",
 ]
@@ -112,6 +120,7 @@ REQUIRED_README_SNIPPETS = [
     "open -n .build/VoiceAgentInput.app --args --debug",
     "~/Library/Logs/VoiceAgentInput/debug.log",
     "python3 scripts/summarize_debug_log.py",
+    "make manual-e2e-privacy-inspect",
     "mode=quickPaste",
     "make validate-manual-e2e-report",
 ]
@@ -235,6 +244,35 @@ def validate_debug_launcher_smoke() -> None:
         fail("manual E2E debug launcher missing snippets: " + ", ".join(missing))
 
 
+def validate_privacy_inspector_smoke() -> None:
+    with tempfile.TemporaryDirectory() as temporary_home:
+        home = Path(temporary_home)
+        support = home / "Library" / "Application Support" / "VoiceAgentInput"
+        log_directory = home / "Library" / "Logs" / "VoiceAgentInput"
+        support.mkdir(parents=True)
+        log_directory.mkdir(parents=True)
+        (support / "settings.json").write_text("{}", encoding="utf-8")
+        (support / "local-context-model.json").write_text("{}", encoding="utf-8")
+        (log_directory / "debug.log").write_text(
+            "2026-06-01T00:00:00Z recordVoiceInput completed; "
+            "transcriptLength=10 correctedLength=20; mode=quickPaste\n",
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [sys.executable, str(PRIVACY_INSPECTOR)],
+            text=True,
+            capture_output=True,
+            check=False,
+            env={**os.environ, "HOME": temporary_home},
+        )
+
+    if result.returncode != 0:
+        fail("manual E2E privacy inspector smoke failed:\n" + result.stdout + result.stderr)
+    for snippet in ["manual E2E privacy inspection ok", "forbidden_local_files=0"]:
+        if snippet not in result.stdout:
+            fail("manual E2E privacy inspector smoke missing output: " + snippet)
+
+
 def main() -> None:
     if not CHECKLIST.exists():
         fail(f"missing manual E2E checklist: {CHECKLIST}")
@@ -244,6 +282,8 @@ def main() -> None:
         fail(f"missing manual E2E report creator: {REPORT_CREATOR}")
     if not LOG_SUMMARIZER.exists():
         fail(f"missing debug log summarizer: {LOG_SUMMARIZER}")
+    if not PRIVACY_INSPECTOR.exists():
+        fail(f"missing manual E2E privacy inspector: {PRIVACY_INSPECTOR}")
     if not DEBUG_LAUNCHER.exists():
         fail(f"missing manual E2E debug launcher: {DEBUG_LAUNCHER}")
     if not README.exists():
@@ -284,6 +324,7 @@ def main() -> None:
     validate_report_creator_smoke(report_text)
     validate_synthetic_completed_report(report_text, report_validator)
     validate_log_summarizer_smoke()
+    validate_privacy_inspector_smoke()
     validate_debug_launcher_smoke()
 
     readme_text = README.read_text()
